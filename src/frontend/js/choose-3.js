@@ -179,6 +179,21 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  //    Xử lý phím Backspace
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Backspace") {
+      const answerSlots = document.querySelectorAll(".answer-slot");
+      // Tìm ô cuối cùng có ký tự
+      const lastFilledSlot = Array.from(answerSlots)
+        .filter((slot) => slot.classList.contains("filled"))
+        .pop();
+
+      if (lastFilledSlot) {
+        handleSlotClick(lastFilledSlot);
+      }
+    }
+  });
+
   // Cập nhật các ô trả lời dựa trên selectedChars
   function updateAnswerSlots() {
     const answerSlots = document.querySelectorAll(".answer-slot");
