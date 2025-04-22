@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let correctOrder = word.replace(/\s+/g, "").split("");
   let charBoxes = []; // Lưu trữ các charBox để quản lý trả về
 
+  let isIgnored = false;
   let keyTimeout = null;
   let pendingVowel = null;
   let keySequence = [];
@@ -465,43 +466,44 @@ document.addEventListener("DOMContentLoaded", function () {
     checkButton.innerText = "Continue";
   });
 
+  // Xử lý nút Ignore
+  if (ignoreDiv) {
+    ignoreDiv.addEventListener("mouseenter", () => {
+      ignoreDiv.style.backgroundColor = "#eee";
+    });
+    ignoreDiv.addEventListener("mouseleave", () => {
+      ignoreDiv.style.backgroundColor = "#ddd";
+    });
+
+    ignoreDiv.addEventListener("click", () => {
+      // Vô hiệu hóa tất cả char-box
+      charBoxes.forEach((box) => {
+        box.classList.add("disabled");
+        box.style.pointerEvents = "none";
+      });
+
+      // Ẩn nút Ignore
+      ignoreDiv.classList.add("hidden");
+
+      // Hiển thị thông báo và biểu tượng lỗi
+      resultMessage.textContent = "Try again later!";
+      resultMessage.style.color = "red";
+      resultMessage.classList.add("show");
+      tickIcon.classList.add("hidden");
+      errorIcon.classList.add("show");
+
+      // Đổi nút Check thành Continue và màu đỏ
+      checkButton.style.backgroundColor = "#ff1d0d";
+      checkButton.innerText = "Continue";
+
+      // Đánh dấu là đã nhấn Ignore
+      isIgnored = true;
+    });
+  }
+
   // Gọi hàm khi trang load
   arrangeCharacters();
 
   // // Gọi lại khi cửa sổ thay đổi kích thước
   // window.addEventListener("resize", arrangeCharacters);
 });
-
-if (ignoreButton) {
-  ignoreButton.addEventListener("mouseenter", () => {
-    ignoreButton.style.backgroundColor = "#eee";
-  });
-  ignoreButton.addEventListener("mouseleave", () => {
-    ignoreButton.style.backgroundColor = "#ddd";
-  });
-
-  // Xử lý nhấn nút Ignore
-  ignoreButton.addEventListener("click", () => {
-    // Disable các nút lựa chọn
-    buttons.forEach((btn) => {
-      btn.style.pointerEvents = "none";
-    });
-
-    // Ẩn nút Ignore
-    ignoreButton.classList.add("hidden");
-
-    // Hiển thị thông báo và biểu tượng lỗi
-    resultMessage.textContent = "Try again later!";
-    resultMessage.style.color = "red";
-    resultMessage.classList.add("show");
-    tickIcon.classList.add("hidden");
-    errorIcon.classList.add("show");
-
-    // Đổi nút Check thành Continue và màu đỏ
-    submitButton.style.backgroundColor = "#ff1d0d";
-    submitButton.innerText = "Continue";
-
-    // Đánh dấu là đã nhấn Ignore
-    isIgnored = true;
-  });
-}

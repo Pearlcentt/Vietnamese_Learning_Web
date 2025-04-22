@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let selectedChars = []; // Lưu {char, slotIndex} để theo dõi vị trí
   let correctOrder = word.split(" ");
   let charBoxes = []; // Lưu trữ các charBox để quản lý trả về
+  let isIgnored = false; // Theo dõi trạng thái nhấn Ignore
 
   function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
@@ -40,7 +41,8 @@ document.addEventListener("DOMContentLoaded", function () {
       lineUnder.appendChild(slot);
     });
   }
-  // Phấn ký tự vào các dòng
+
+  // Phân ký tự vào các dòng
   function arrangeCharacters() {
     firstContainer.innerHTML = "";
     secondContainer.innerHTML = "";
@@ -48,7 +50,7 @@ document.addEventListener("DOMContentLoaded", function () {
     charBoxes = [];
     selectedChars = [];
 
-    const shuffledText = shuffleArray([...text]); // sao chép và truyền mảng vào hàm
+    const shuffledText = shuffleArray([...text]);
 
     let firstLineFull = false;
     let maxWidth = tokenCont.offsetWidth;
@@ -58,7 +60,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const charBox = document.createElement("span");
       charBox.classList.add("char-box");
       charBox.textContent = char;
-      charBox.dataset.char = char; // data-char,...
+      charBox.dataset.char = char;
       charBox.dataset.index = index;
       charBoxes.push(charBox);
 
@@ -86,7 +88,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const char = charBox.dataset.char;
     const answerSlots = document.querySelectorAll(".answer-slot");
-    // tìm ô chưa bị điền
     const targetSlot = Array.from(answerSlots).find(
       (slot) => !slot.classList.contains("filled")
     );
@@ -96,7 +97,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const slotIndex = parseInt(targetSlot.dataset.index);
     selectedChars.push({ char, slotIndex });
 
-    // animation
+    // Animation
     const clone = charBox.cloneNode(true);
     clone.classList.add("animating");
     document.body.appendChild(clone);
@@ -182,7 +183,6 @@ document.addEventListener("DOMContentLoaded", function () {
   document.addEventListener("keydown", (event) => {
     if (event.key === "Backspace") {
       const answerSlots = document.querySelectorAll(".answer-slot");
-      // Tìm ô cuối cùng có ký tự
       const lastFilledSlot = Array.from(answerSlots)
         .filter((slot) => slot.classList.contains("filled"))
         .pop();
@@ -192,11 +192,12 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
   });
+
   // Cập nhật các ô trả lời dựa trên selectedChars
   function updateAnswerSlots() {
     const answerSlots = document.querySelectorAll(".answer-slot");
     answerSlots.forEach((slot) => {
-      const slotIndex = parseInt(slot.dataset.index); // trả về string nên chuyển sang Int
+      const slotIndex = parseInt(slot.dataset.index);
       const item = selectedChars.find((item) => item.slotIndex === slotIndex);
       if (item) {
         slot.textContent = item.char;
@@ -218,12 +219,14 @@ document.addEventListener("DOMContentLoaded", function () {
       checkButton.style.backgroundColor = ""; // Đặt lại màu mặc định nếu chưa đủ
     }
   }
+
   // Xử lý sự kiện click nút Check
   checkButton.addEventListener("click", () => {
     if (checkButton.innerText === "Continue") {
-      goToNextQuestion();
+      goToNextQuestion(); // Chuyển sang câu hỏi tiếp theo trong mọi trường hợp
       return;
     }
+
     if (selectedChars.length !== correctOrder.length) return; // Chỉ xử lý khi đủ ký tự
 
     // Vô hiệu hóa tất cả char-box
@@ -263,43 +266,44 @@ document.addEventListener("DOMContentLoaded", function () {
     checkButton.innerText = "Continue";
   });
 
+  // Xử lý nút Ignore
+  if (ignoreDiv) {
+    ignoreDiv.addEventListener("mouseenter", () => {
+      ignoreDiv.style.backgroundColor = "#eee";
+    });
+    ignoreDiv.addEventListener("mouseleave", () => {
+      ignoreDiv.style.backgroundColor = "#ddd";
+    });
+
+    ignoreDiv.addEventListener("click", () => {
+      // Vô hiệu hóa tất cả char-box
+      charBoxes.forEach((box) => {
+        box.classList.add("disabled");
+        box.style.pointerEvents = "none";
+      });
+
+      // Ẩn nút Ignore
+      ignoreDiv.classList.add("hidden");
+
+      // Hiển thị thông báo và biểu tượng lỗi
+      resultMessage.textContent = "Try again later!";
+      resultMessage.style.color = "red";
+      resultMessage.classList.add("show");
+      tickIcon.classList.add("hidden");
+      errorIcon.classList.add("show");
+
+      // Đổi nút Check thành Continue và màu đỏ
+      checkButton.style.backgroundColor = "#ff1d0d";
+      checkButton.innerText = "Continue";
+
+      // Đánh dấu là đã nhấn Ignore
+      isIgnored = true;
+    });
+  }
+
   // Gọi hàm khi trang load
   arrangeCharacters();
 
   // Gọi lại khi cửa sổ thay đổi kích thước
   window.addEventListener("resize", arrangeCharacters);
 });
-
-if (ignoreButton) {
-  ignoreButton.addEventListener("mouseenter", () => {
-    ignoreButton.style.backgroundColor = "#eee";
-  });
-  ignoreButton.addEventListener("mouseleave", () => {
-    ignoreButton.style.backgroundColor = "#ddd";
-  });
-
-  // Xử lý nhấn nút Ignore
-  ignoreButton.addEventListener("click", () => {
-    // Disable các nút lựa chọn
-    buttons.forEach((btn) => {
-      btn.style.pointerEvents = "none";
-    });
-
-    // Ẩn nút Ignore
-    ignoreButton.classList.add("hidden");
-
-    // Hiển thị thông báo và biểu tượng lỗi
-    resultMessage.textContent = "Try again later!";
-    resultMessage.style.color = "red";
-    resultMessage.classList.add("show");
-    tickIcon.classList.add("hidden");
-    errorIcon.classList.add("show");
-
-    // Đổi nút Check thành Continue và màu đỏ
-    submitButton.style.backgroundColor = "#ff1d0d";
-    submitButton.innerText = "Continue";
-
-    // Đánh dấu là đã nhấn Ignore
-    isIgnored = true;
-  });
-}

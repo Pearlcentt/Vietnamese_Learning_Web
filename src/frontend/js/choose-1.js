@@ -1,4 +1,5 @@
 const correctAnswer = "two";
+const ignoreDiv = document.querySelector(".Ignore");
 const buttons = document.querySelectorAll(".choice-box");
 const checkButton = document.querySelector(".Check");
 let selectedButton = null; // Lưu nút đã chọn
@@ -41,7 +42,6 @@ checkButton.addEventListener("click", () => {
   }
 
   const selectedWord = selectedButton ? selectedButton.innerText : null; // Lấy từ đã chọn
-  const ignoreDiv = document.querySelector(".Ignore");
   const resultMessage = document.querySelector(".result-message");
   const tickIcon = document.querySelector(".tick-icon");
   const errorIcon = document.querySelector(".error-icon");
@@ -75,23 +75,23 @@ checkButton.addEventListener("click", () => {
   checkButton.innerText = "Continue";
 });
 
-if (ignoreButton) {
-  ignoreButton.addEventListener("mouseenter", () => {
-    ignoreButton.style.backgroundColor = "#eee";
+if (ignoreDiv) {
+  ignoreDiv.addEventListener("mouseenter", () => {
+    ignoreDiv.style.backgroundColor = "#eee";
   });
-  ignoreButton.addEventListener("mouseleave", () => {
-    ignoreButton.style.backgroundColor = "#ddd";
+  ignoreDiv.addEventListener("mouseleave", () => {
+    ignoreDiv.style.backgroundColor = "#ddd";
   });
 
   // Xử lý nhấn nút Ignore
-  ignoreButton.addEventListener("click", () => {
+  ignoreDiv.addEventListener("click", () => {
     // Disable các nút lựa chọn
     buttons.forEach((btn) => {
       btn.style.pointerEvents = "none";
     });
 
     // Ẩn nút Ignore
-    ignoreButton.classList.add("hidden");
+    ignoreDiv.classList.add("hidden");
 
     // Hiển thị thông báo và biểu tượng lỗi
     resultMessage.textContent = "Try again later!";

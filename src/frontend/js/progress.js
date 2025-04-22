@@ -29,17 +29,18 @@ document.addEventListener("DOMContentLoaded", () => {
       progressFill.style.width = "0%";
     }
   } else {
-    // Cập nhật progress-fill nếu progress > 0 và progressFill tồn tại
+    // Cập nhật progress-fill dựa trên số câu đã hoàn thành (progress - 1)
     if (progress > 0 && progressFill) {
-      // Hiển thị prevPercentage ngay lập tức mà không có transition
-      progressFill.style.transition = "none";
-      progressFill.style.width = `${prevPercentage}%`;
+      const completedQuestions = progress - 1; // Số câu đã hoàn thành
+      const percentage = (completedQuestions / totalQuestions) * 100;
 
-      // Sau timeout ngắn, bật transition và cập nhật đến percentage
+      // Hiển thị percentage ngay lập tức mà không có transition
+      progressFill.style.transition = "none";
+      progressFill.style.width = `${percentage}%`;
+
+      // Sau timeout ngắn, bật transition để sẵn sàng cho lần cập nhật tiếp theo
       setTimeout(() => {
         progressFill.style.transition = "width 0.3s ease-in-out";
-        const percentage = (progress / totalQuestions) * 100;
-        progressFill.style.width = `${percentage}%`;
       }, 50);
     }
   }
@@ -72,21 +73,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Xử lý nút Done
   if (doneButton) {
-    if (progress >= totalQuestions) {
-      doneButton.classList.add("enabled");
-      doneButton.addEventListener("click", () => {
+    // Thêm sự kiện click một lần duy nhất
+    doneButton.addEventListener("click", () => {
+      if (doneButton.classList.contains("enabled")) {
         localStorage.setItem("progress", "0");
         localStorage.setItem("prevPercentage", "0");
         window.location.href = "../html/q0.html"; // Trở về q0.html
-      });
+      }
+    });
+
+    // Cập nhật trạng thái enabled
+    if (progress > totalQuestions) {
+      doneButton.classList.add("enabled");
     } else {
       doneButton.classList.remove("enabled");
     }
   }
 
-  // Nếu hoàn thành tất cả câu hỏi, không tải thêm câu hỏi
+  // Nếu hoàn thành tất cả câu hỏi (progress > totalQuestions)
   if (
-    progress >= totalQuestions &&
+    progress > totalQuestions &&
     !window.location.pathname.includes("q0.html") &&
     progressFill
   ) {
@@ -98,7 +104,8 @@ function goToNextQuestion() {
   let progress = parseInt(localStorage.getItem("progress")) || 0;
   if (progress < totalQuestions) {
     progress += 1;
-    const percentage = (progress / totalQuestions) * 100;
+    const completedQuestions = progress - 1; // Số câu đã hoàn thành
+    const percentage = (completedQuestions / totalQuestions) * 100;
     localStorage.setItem("progress", progress.toString());
     localStorage.setItem("prevPercentage", percentage.toString());
 
@@ -106,7 +113,17 @@ function goToNextQuestion() {
     const nextQuestion = questionFiles[randomIndex];
     window.location.href = `../html/${nextQuestion}`; // Cập nhật đường dẫn
   } else {
-    // Nếu đã hoàn thành, không chuyển hướng, chỉ hiển thị nút Done
+    // Khi hoàn thành câu hỏi cuối, tăng progress và cập nhật percentage
+    progress += 1;
+    const percentage = 100; // 100% khi hoàn thành
+    localStorage.setItem("progress", progress.toString());
+    localStorage.setItem("prevPercentage", percentage.toString());
+
+    // Cập nhật progress-fill và bật nút Done
+    const progressFill = document.querySelector(".progress-fill");
+    if (progressFill) {
+      progressFill.style.width = "100%";
+    }
     const doneButton = document.querySelector(".notify-done");
     if (doneButton) {
       doneButton.classList.add("enabled");

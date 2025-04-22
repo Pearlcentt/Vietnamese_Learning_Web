@@ -1,12 +1,14 @@
 const correctAnswer = "eyes";
+const ignoreDiv = document.querySelector(".Ignore");
 const chosenButtons = document.querySelectorAll(".Fill-box");
 const blankButton = document.querySelector(".sentence-part2");
 const checkButton = document.querySelector(".Check");
 let selectedButton = null;
+let isIgnored = false; // Theo dõi trạng thái nhấn Ignore
 
 chosenButtons.forEach((chosenButton) => {
   chosenButton.addEventListener("click", () => {
-    // handle selected word, replace
+    // Handle selected word, replace
     if (selectedButton) {
       document.querySelector(".Fills").appendChild(selectedButton);
     }
@@ -35,15 +37,14 @@ chosenButtons.forEach((chosenButton) => {
 
 checkButton.addEventListener("click", () => {
   if (checkButton.innerText === "Continue") {
-    goToNextQuestion();
+    goToNextQuestion(); // Chuyển sang câu hỏi tiếp theo trong mọi trường hợp
     return;
   }
+
   const selectedWord = selectedButton ? selectedButton.innerText : null; // Lấy từ đã chọn
-  const ignoreDiv = document.querySelector(".Ignore");
   const resultMessage = document.querySelector(".result-message");
   const tickIcon = document.querySelector(".tick-icon");
   const errorIcon = document.querySelector(".error-icon");
-  const submitSection = document.querySelector(".Submit-section");
 
   // Disable options
   chosenButtons.forEach((btn) => {
@@ -71,25 +72,28 @@ checkButton.addEventListener("click", () => {
   checkButton.innerText = "Continue";
 });
 
-if (ignoreButton) {
-  ignoreButton.addEventListener("mouseenter", () => {
-    ignoreButton.style.backgroundColor = "#eee";
+if (ignoreDiv) {
+  ignoreDiv.addEventListener("mouseenter", () => {
+    ignoreDiv.style.backgroundColor = "#eee";
   });
-  ignoreButton.addEventListener("mouseleave", () => {
-    ignoreButton.style.backgroundColor = "#ddd";
+  ignoreDiv.addEventListener("mouseleave", () => {
+    ignoreDiv.style.backgroundColor = "#ddd";
   });
 
   // Xử lý nhấn nút Ignore
-  ignoreButton.addEventListener("click", () => {
+  ignoreDiv.addEventListener("click", () => {
     // Disable các nút lựa chọn
-    buttons.forEach((btn) => {
+    chosenButtons.forEach((btn) => {
       btn.style.pointerEvents = "none";
     });
 
     // Ẩn nút Ignore
-    ignoreButton.classList.add("hidden");
+    ignoreDiv.classList.add("hidden");
 
     // Hiển thị thông báo và biểu tượng lỗi
+    const resultMessage = document.querySelector(".result-message");
+    const tickIcon = document.querySelector(".tick-icon");
+    const errorIcon = document.querySelector(".error-icon");
     resultMessage.textContent = "Try again later!";
     resultMessage.style.color = "red";
     resultMessage.classList.add("show");
@@ -97,8 +101,8 @@ if (ignoreButton) {
     errorIcon.classList.add("show");
 
     // Đổi nút Check thành Continue và màu đỏ
-    submitButton.style.backgroundColor = "#ff1d0d";
-    submitButton.innerText = "Continue";
+    checkButton.style.backgroundColor = "#ff1d0d";
+    checkButton.innerText = "Continue";
 
     // Đánh dấu là đã nhấn Ignore
     isIgnored = true;
