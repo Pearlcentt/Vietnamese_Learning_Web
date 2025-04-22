@@ -220,6 +220,10 @@ document.addEventListener("DOMContentLoaded", function () {
   }
   // Xử lý sự kiện click nút Check
   checkButton.addEventListener("click", () => {
+    if (checkButton.innerText === "Continue") {
+      goToNextQuestion();
+      return;
+    }
     if (selectedChars.length !== correctOrder.length) return; // Chỉ xử lý khi đủ ký tự
 
     // Vô hiệu hóa tất cả char-box
@@ -265,3 +269,37 @@ document.addEventListener("DOMContentLoaded", function () {
   // Gọi lại khi cửa sổ thay đổi kích thước
   window.addEventListener("resize", arrangeCharacters);
 });
+
+if (ignoreButton) {
+  ignoreButton.addEventListener("mouseenter", () => {
+    ignoreButton.style.backgroundColor = "#eee";
+  });
+  ignoreButton.addEventListener("mouseleave", () => {
+    ignoreButton.style.backgroundColor = "#ddd";
+  });
+
+  // Xử lý nhấn nút Ignore
+  ignoreButton.addEventListener("click", () => {
+    // Disable các nút lựa chọn
+    buttons.forEach((btn) => {
+      btn.style.pointerEvents = "none";
+    });
+
+    // Ẩn nút Ignore
+    ignoreButton.classList.add("hidden");
+
+    // Hiển thị thông báo và biểu tượng lỗi
+    resultMessage.textContent = "Try again later!";
+    resultMessage.style.color = "red";
+    resultMessage.classList.add("show");
+    tickIcon.classList.add("hidden");
+    errorIcon.classList.add("show");
+
+    // Đổi nút Check thành Continue và màu đỏ
+    submitButton.style.backgroundColor = "#ff1d0d";
+    submitButton.innerText = "Continue";
+
+    // Đánh dấu là đã nhấn Ignore
+    isIgnored = true;
+  });
+}

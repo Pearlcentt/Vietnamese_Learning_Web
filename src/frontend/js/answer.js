@@ -1,10 +1,12 @@
 const ignoreButton = document.querySelector(".Ignore");
 const submitButton = document.querySelector(".Check");
-const quitButton = document.querySelector(".quit");
+const resultMessage = document.querySelector(".result-message");
+const tickIcon = document.querySelector(".tick-icon");
+const errorIcon = document.querySelector(".error-icon");
 
-ignoreButton.addEventListener("click", () => {
-  alert("Đừng bỏ qua");
-});
+// ignoreButton.addEventListener("click", () => {
+//   alert("Đừng bỏ qua");
+// });
 ignoreButton.addEventListener("mouseenter", () => {
   ignoreButton.style.backgroundColor = "#eee";
 });
@@ -12,22 +14,6 @@ ignoreButton.addEventListener("mouseleave", () => {
   ignoreButton.style.backgroundColor = "#ddd";
 });
 
-// màu trả về là rgb, not hex
-// submitButton.addEventListener("click", () => {
-//   if (submitButton.style.backgroundColor === "rgb(82, 245, 42)") {
-//     alert("Sai/Đúng");
-//   }
-// });
-// submitButton.addEventListener("mouseenter", () => {
-//   if (submitButton.style.backgroundColor === "rgb(82, 245, 42)") {
-//     submitButton.style.backgroundColor = "#8df757";
-//   }
-// });
-// submitButton.addEventListener("mouseleave", () => {
-//   if (submitButton.style.backgroundColor === "rgb(141, 247, 87)") {
-//     submitButton.style.backgroundColor = "rgb(82, 245, 42)";
-//   }
-// });
 submitButton.addEventListener("mouseenter", () => {
   const currentColor = window.getComputedStyle(submitButton).backgroundColor;
   if (currentColor === "rgb(82, 245, 42)") {
@@ -48,12 +34,18 @@ submitButton.addEventListener("mouseleave", () => {
   }
 });
 
-quitButton.addEventListener("click", () => {
-  alert("Bạn chắc muốn rời bài học không ?");
-});
-quitButton.addEventListener("mouseenter", () => {
-  quitButton.style.backgroundColor = "#eee";
-});
-quitButton.addEventListener("mouseleave", () => {
-  quitButton.style.backgroundColor = "#ddd";
-});
+// // Xử lý nút Ignore (bỏ qua câu này))
+// if (ignoreButton) {
+//   ignoreButton.addEventListener("click", () => {
+//     // Hide Ignore
+//     const ignoreDiv = document.querySelector(".Ignore");
+//     ignoreDiv.classList.add("hidden");
+//     resultMessage.textContent = "Try again later!";
+//     resultMessage.style.color = "red";
+//     resultMessage.classList.add("show");
+//     tickIcon.classList.add("hidden");
+//     errorIcon.classList.add("show");
+//     submitButton.style.backgroundColor = "#ff1d0d";
+//     submitButton.innerText = "Continue";
+//   });
+// }
