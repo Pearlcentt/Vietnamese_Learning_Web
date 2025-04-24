@@ -4,7 +4,7 @@ const questionFiles = [
   "qtype3.html",
   "qtype4.html",
 ];
-const totalQuestions = 2;
+const totalQuestions = 6;
 
 // Khởi tạo tiến độ nếu chưa có
 if (!localStorage.getItem("progress")) {
@@ -29,19 +29,24 @@ document.addEventListener("DOMContentLoaded", () => {
       progressFill.style.width = "0%";
     }
   } else {
-    // Cập nhật progress-fill dựa trên số câu đã hoàn thành (progress - 1)
+    // Cập nhật progress-fill dựa trên số câu đã hoàn thành
     if (progress > 0 && progressFill) {
-      const completedQuestions = progress - 1; // Số câu đã hoàn thành
-      const percentage = (completedQuestions / totalQuestions) * 100;
+      // Hiển thị phần trăm của câu trước (progress - 2) / totalQuestions
+      const previousQuestions = progress - 2; // Số câu đã hoàn thành trước câu hiện tại
+      const previousPercentage =
+        previousQuestions >= 0 ? (previousQuestions / totalQuestions) * 100 : 0;
 
-      // Hiển thị percentage ngay lập tức mà không có transition
-      progressFill.style.transition = "none";
-      progressFill.style.width = `${percentage}%`;
+      // Đặt progress bar về phần trăm của câu trước
+      progressFill.style.transition = "none"; // Tắt transition để hiển thị ngay lập tức
+      progressFill.style.width = `${previousPercentage}%`;
 
-      // Sau timeout ngắn, bật transition để sẵn sàng cho lần cập nhật tiếp theo
+      // Sau 0.5s, chuyển mượt mà lên phần trăm của câu hiện tại
       setTimeout(() => {
-        progressFill.style.transition = "width 0.3s ease-in-out";
-      }, 50);
+        const completedQuestions = progress - 1; // Số câu đã hoàn thành
+        const percentage = (completedQuestions / totalQuestions) * 100;
+        progressFill.style.transition = "width 0.3s ease-in-out"; // Bật lại transition
+        progressFill.style.width = `${percentage}%`;
+      }, 200);
     }
   }
 
@@ -55,7 +60,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Xử lý nút Quit
   if (quitButton) {
     quitButton.addEventListener("click", () => {
       alert("Bạn chắc muốn rời bài học không?");
@@ -71,14 +75,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Xử lý nút Done
   if (doneButton) {
     // Thêm sự kiện click một lần duy nhất
     doneButton.addEventListener("click", () => {
       if (doneButton.classList.contains("enabled")) {
         localStorage.setItem("progress", "0");
         localStorage.setItem("prevPercentage", "0");
-        window.location.href = "../html/q0.html"; // Trở về q0.html
+        window.location.href = "../html/q0.html";
       }
     });
 
@@ -102,13 +105,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
 function goToNextQuestion() {
   let progress = parseInt(localStorage.getItem("progress")) || 0;
+  const progressFill = document.querySelector(".progress-fill");
+
   if (progress < totalQuestions) {
     progress += 1;
+    const previousQuestions = progress - 2; // Số câu đã hoàn thành trước câu hiện tại
+    const previousPercentage =
+      previousQuestions >= 0 ? (previousQuestions / totalQuestions) * 100 : 0;
     const completedQuestions = progress - 1; // Số câu đã hoàn thành
     const percentage = (completedQuestions / totalQuestions) * 100;
+
+    // Cập nhật localStorage
     localStorage.setItem("progress", progress.toString());
     localStorage.setItem("prevPercentage", percentage.toString());
 
+    // Đặt progress bar về phần trăm của câu trước
+    if (progressFill) {
+      progressFill.style.transition = "none"; // Tắt transition
+      progressFill.style.width = `${previousPercentage}%`;
+
+      // Sau 0.5s, chuyển mượt mà lên phần trăm của câu hiện tại
+      setTimeout(() => {
+        progressFill.style.transition = "width 0.3s ease-in-out"; // Bật lại transition
+        progressFill.style.width = `${percentage}%`;
+      }, 500);
+    }
+
+    // Chuyển sang câu hỏi tiếp theo
     const randomIndex = Math.floor(Math.random() * questionFiles.length);
     const nextQuestion = questionFiles[randomIndex];
     window.location.href = `../html/${nextQuestion}`; // Cập nhật đường dẫn
@@ -120,7 +143,6 @@ function goToNextQuestion() {
     localStorage.setItem("prevPercentage", percentage.toString());
 
     // Cập nhật progress-fill và bật nút Done
-    const progressFill = document.querySelector(".progress-fill");
     if (progressFill) {
       progressFill.style.width = "100%";
     }
