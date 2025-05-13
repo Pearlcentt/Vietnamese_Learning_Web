@@ -8,10 +8,15 @@
 }
 
 :root {
-  --PRIMARY_COLOR: #0a192f;
-  --ACTIVE_ITEM_COLOR: #50a70e;
+  --PRIMARY_COLOR: #f5efe6;
+  --ACTIVE_ITEM_COLOR: #da251d;
+  --TITLE-text: #ff9e0c;
+  --ITEM-text: #c75a00;
+  --BORDER_LINE: #d9cfc0;
+  --RIGHT-BOX: #5c5149;
 }
-/* color from #0a192f to #f6f7dc
+/* color primary from #0a192f to #f6f7dc
+color active item from ##4b9e0b to 	#da251dff
 */
 body {
   background-color: var(--PRIMARY_COLOR);
@@ -25,16 +30,12 @@ body {
   max-width: 1400px;
   margin: 0 auto;
 }
-
-/* Sidebar Styles 
-border-right from #253858 to eaa225
- */
-
 .sidebar {
   width: 20%;
   background-color: var(--PRIMARY_COLOR);
   padding: 20px 0;
-  border-right: 1px solid #253858;
+  border-right: 2px solid var(--BORDER_LINE);
+
   display: flex;
   flex-direction: column;
   position: sticky;
@@ -49,7 +50,7 @@ border-right from #253858 to eaa225
 
 /* border-right from #4da00d to ff9e0c */
 .logo h1 {
-  color: #4da00d;
+  color: var(--ITEM-text);
   font-size: 28px;
   font-weight: 700;
 }
@@ -72,13 +73,14 @@ border-right from #253858 to eaa225
 }
 
 .nav-item:hover {
-  background-color: #1a2b34;
+  /* background-color: #1a2b34; */
+  background-color: var(--TITLE-text);
   color: #ffffff;
 }
 
 .nav-item.active {
-  background-color: #1a2b34;
-  color: var(--ACTIVE_ITEM_COLOR);
+  background-color: var(--TITLE-text);
+  color: white;
 }
 
 .nav-icon {
@@ -101,6 +103,8 @@ border-right from #253858 to eaa225
 .home-icon {
   background-color: #4ca409;
   /* background-color: #0ea795; */
+  background-color: #f9e79f;
+  background-color: #e1d9c8;
   border-radius: 8px;
 }
 
@@ -144,12 +148,13 @@ border-right from #253858 to eaa225
 .topic-header {
   display: flex;
   align-items: center;
-  background-color: #56b50d;
+  background-color: var(--TITLE-text);
   color: white;
   /* padding: 18px 16px; */
   border-radius: 16px;
   width: 100%;
   min-height: 80px;
+  margin-bottom: 20px;
 }
 
 .general-title {
@@ -195,8 +200,9 @@ border-right from #253858 to eaa225
   justify-content: center;
   position: relative;
   z-index: 1;
-  background-color: #4e9d12;
-  box-shadow: 0 0 10px rgba(88, 204, 2, 0.5);
+  background-color: var(--ACTIVE_ITEM_COLOR);
+  /* box-shadow: 0 0 10px rgba(88, 204, 2, 0.5); */
+  box-shadow: 0 0 10px rgba(255, 100, 100, 0.5);
 }
 /* Progress ring for each level */
 .progress-ring {
@@ -209,7 +215,7 @@ border-right from #253858 to eaa225
 }
 
 .topic-item .progress-ring {
-  border-color: #4b9e0b;
+  border-color: var(--ACTIVE_ITEM_COLOR);
   border-width: 4px;
 }
 
@@ -229,6 +235,98 @@ border-right from #253858 to eaa225
   width: 35px;
   height: 35px;
 }
+
+/* Hover effect for topic items */
+.topic-item {
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.2s ease;
+}
+
+.topic-item:hover {
+  transform: scale(1.1);
+}
+
+/* Hover topic information box */
+.hover-topic {
+  position: absolute;
+  width: 220px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 12px;
+  z-index: 10;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  pointer-events: none;
+  top: -15px;
+  left: 85px; /* Position to the right of the topic circle */
+}
+
+.topic-item.left-position .hover-topic {
+  left: 85px; /* For left-positioned items, show on right */
+}
+
+.topic-item.right-position .hover-topic {
+  right: 85px; /* For right-positioned items, show on left */
+  left: auto;
+}
+
+.topic-item:hover .hover-topic {
+  opacity: 1;
+  visibility: visible;
+}
+
+.topic-title {
+  margin-bottom: 10px;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #56b50d;
+  margin-bottom: 4px;
+}
+
+.topic-title h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+}
+
+.progress-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* margin-top: 8px; */
+}
+
+.progress-bar-wrapper {
+  flex-grow: 1;
+  height: 12px;
+  background-color: #e0e0e0;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+  margin-right: 10px;
+}
+
+.progress-bar-topic {
+  height: 100%;
+  background-color: #ffc107; /* Yellow color */
+  border-radius: 6px;
+  /* transition: width 0.3s ease; */
+}
+
+.progress-text-topic {
+  font-size: 12px;
+  font-weight: 700;
+  color: #333;
+  white-space: nowrap;
+}
+
 /* 
 /* Rock container and rock images */
 
@@ -255,7 +353,7 @@ border-right from #253858 to eaa225
 }
 
 .lesson-container {
-  margin-top: 50px;
+  margin-top: 30px;
 }
 .lesson-row {
   display: flex;
@@ -268,7 +366,7 @@ border-right from #253858 to eaa225
   display: flex;
   align-items: center;
   /* justify-content: center; */
-  background-color: #56b50d; /* Same as topic-header */
+  background-color: var(--TITLE-text); /* Same as topic-header */
   color: white;
   border-radius: 16px;
   width: 100%;
@@ -287,20 +385,26 @@ border-right from #253858 to eaa225
   cursor: pointer;
 }
 
+.lesson-box.locked {
+  background-color: #ccc; /* màu xám */
+  pointer-events: none; /* vô hiệu hóa tương tác */
+  cursor: default; /* không đổi con trỏ khi hover */
+  transform: none !important;
+  box-shadow: none !important;
+}
 .bullet-point img {
   width: 30px;
   height: 30px;
   margin-right: 10px;
   margin-bottom: 20px;
 }
-/* Xếp dọc các ảnh rock */
 
 /****************************************** Right Sidebar Styles ********************************************/
 .right-sidebar {
   width: 25%;
-  background-color: #0a192f;
+  background-color: var(--PRIMARY_COLOR);
   padding: 20px;
-  border-left: 1px solid #253858;
+  border-left: 2px solid var(--BORDER_LINE);
   display: flex;
   flex-direction: column;
   gap: 15px;
@@ -338,6 +442,7 @@ border-right from #253858 to eaa225
 .stat-item .count {
   font-weight: 700;
   font-size: 18px;
+  color: var(--ITEM-text);
 }
 
 .flag img {
@@ -348,6 +453,7 @@ border-right from #253858 to eaa225
 
 .sidebar-card {
   background-color: #152642;
+  background-color: var(--RIGHT-BOX);
   border-radius: 16px;
   padding: 20px;
   margin-bottom: 15px;
@@ -387,6 +493,7 @@ border-right from #253858 to eaa225
 
 .view-all {
   color: #1899d6;
+  color: #00aeff;
   font-size: 14px;
   cursor: pointer;
   font-weight: 700;
@@ -456,11 +563,13 @@ border-right from #253858 to eaa225
 
 .btn-primary {
   background-color: #71b616;
+  background-color: #ff9e0c;
   color: white;
 }
 
 .btn-secondary {
   background-color: #1899d6;
+  background-color: #9c3d20;
   color: white;
 }
 

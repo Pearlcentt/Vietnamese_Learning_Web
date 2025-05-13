@@ -46,6 +46,14 @@ document.addEventListener("DOMContentLoaded", () => {
       .rock-item .rock-1.shift-right-3 { transform: translateX(120px) !important; }
       .rock-item .rock-2.shift-right-2 { transform: translateX(80px) !important; }
       .rock-item .rock-3.shift-right-1 { transform: translateX(40px) !important; }
+      
+      /* Override hover transform for positioned items */
+      .topic-item.left-position:hover {
+        transform: translateX(-160px) scale(1.1) !important;
+      }
+      .topic-item.right-position:hover {
+        transform: translateX(160px) scale(1.1) !important;
+      }
     `;
   document.head.appendChild(styleSheet);
 
@@ -72,9 +80,59 @@ document.addEventListener("DOMContentLoaded", () => {
     starImg.src = "../images/star.png";
     starImg.alt = "Star";
 
+    // Create the hover topic box
+    const hoverTopic = document.createElement("div");
+    hoverTopic.className = "hover-topic";
+
+    const topicTitle = document.createElement("div");
+    topicTitle.className = "topic-title";
+
+    const sectionTitle = document.createElement("div");
+    sectionTitle.className = "section-title";
+    sectionTitle.textContent = `TOPIC ${topicNumber}`;
+
+    const titleHeader = document.createElement("h2");
+    titleHeader.textContent = topicsData[topicNumber - 1].title;
+
+    // Create progress container
+    const progressContainer = document.createElement("div");
+    progressContainer.className = "progress-container";
+
+    // Create progress bar wrapper
+    const progressBarWrapper = document.createElement("div");
+    progressBarWrapper.className = "progress-bar-wrapper";
+
+    // Create progress bar
+    const progressBar = document.createElement("div");
+    progressBar.className = "progress-bar-topic";
+
+    // Set random completed lessons for demo (replace with actual data later)
+    const completedLessons = Math.floor(Math.random() * 6); // 0-5 completed
+    const totalLessons = 5;
+    const progressPercentage = (completedLessons / totalLessons) * 100;
+    progressBar.style.width = `${progressPercentage}%`;
+
+    // // Create progress text
+    // const progressText = document.createElement("div");
+    // progressText.className = "progress-text-topic";
+    // progressText.textContent = `${completedLessons}/${totalLessons}`;
+
+    // Assemble the components
+    progressBarWrapper.appendChild(progressBar);
+    // progressBarWrapper.appendChild(progressText);
+    progressContainer.appendChild(progressBarWrapper);
+    // progressContainer.appendChild(progressText);
+
+    topicTitle.appendChild(sectionTitle);
+    topicTitle.appendChild(titleHeader);
+
+    hoverTopic.appendChild(topicTitle);
+    hoverTopic.appendChild(progressContainer);
+
     starContainer.appendChild(starImg);
     topicItem.appendChild(progressRing);
     topicItem.appendChild(starContainer);
+    topicItem.appendChild(hoverTopic);
 
     return topicItem;
   }
@@ -180,10 +238,4 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
-
-  // Optional: Initialize the first topic as selected
-  const firstTopic = document.querySelector(".topic-item");
-  if (firstTopic) {
-    firstTopic.style.boxShadow = "0 0 20px rgba(255, 215, 0, 0.8)";
-  }
 });
