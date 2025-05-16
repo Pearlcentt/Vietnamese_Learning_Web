@@ -22,30 +22,30 @@ document.addEventListener("DOMContentLoaded", () => {
   const styleSheet = document.createElement("style");
   styleSheet.textContent = `
       .topic-item.left-position {
-        transform: translateX(-160px) !important; 
+        transform: translateX(-175px) !important; 
       }
       .topic-item.right-position {
-        transform: translateX(160px) !important;
+        transform: translateX(175px) !important;
       }
       /* Rocks going from center to left */
-      .rock-item .rock-1.shift-left-1 { transform: translateX(-40px) !important; }
-      .rock-item .rock-2.shift-left-2 { transform: translateX(-80px) !important; }
-      .rock-item .rock-3.shift-left-3 { transform: translateX(-120px) !important; }
+      .rock-item .rock-1.ctl-shift-1 { transform: translateX(-60px) translateY(-20px) !important; }
+      .rock-item .rock-2.ctl-shift-2 { transform: translateX(-110px) translateY(-13px) !important; }
+      .rock-item .rock-3.ctl-shift-3 { transform: translateX(-150px) translateY(5px) !important; }
       
       /* Rocks going from left to center */
-      .rock-item .rock-1.shift-left-3 { transform: translateX(-120px) !important; }
-      .rock-item .rock-2.shift-left-2 { transform: translateX(-80px) !important; }
-      .rock-item .rock-3.shift-left-1 { transform: translateX(-40px) !important; }
+      .rock-item .rock-1.ltc-shift-3 { transform: translateX(-150px) translateY(5px) !important; }
+      .rock-item .rock-2.ltc-shift-2 { transform: translateX(-110px) translateY(+13px) !important; }
+      .rock-item .rock-3.ltc-shift-1 { transform: translateX(-60px) translateY(+20px) !important; }
       
       /* Rocks going from center to right */
-      .rock-item .rock-1.shift-right-1 { transform: translateX(40px) !important; }
-      .rock-item .rock-2.shift-right-2 { transform: translateX(80px) !important; }
-      .rock-item .rock-3.shift-right-3 { transform: translateX(120px) !important; }
+      .rock-item .rock-1.ctr-shift-1 { transform: translateX(60px) translateY(-20px) !important; }
+      .rock-item .rock-2.ctr-shift-2 { transform: translateX(110px) translateY(-13px) !important; }
+      .rock-item .rock-3.ctr-shift-3 { transform: translateX(150px) translateY(+5px) !important; }
       
       /* Rocks going from right to center */
-      .rock-item .rock-1.shift-right-3 { transform: translateX(120px) !important; }
-      .rock-item .rock-2.shift-right-2 { transform: translateX(80px) !important; }
-      .rock-item .rock-3.shift-right-1 { transform: translateX(40px) !important; }
+      .rock-item .rock-1.rtc-shift-3 { transform: translateX(150px) translateY(5px) !important; }
+      .rock-item .rock-2.rtc-shift-2 { transform: translateX(110px) translateY(+13px) !important; }
+      .rock-item .rock-3.rtc-shift-1 { transform: translateX(60px) translateY(20px) !important; }
       
       /* Override hover transform for positioned items */
       .topic-item.left-position:hover {
@@ -112,16 +112,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const progressPercentage = (completedLessons / totalLessons) * 100;
     progressBar.style.width = `${progressPercentage}%`;
 
-    // // Create progress text
-    // const progressText = document.createElement("div");
-    // progressText.className = "progress-text-topic";
-    // progressText.textContent = `${completedLessons}/${totalLessons}`;
-
-    // Assemble the components
     progressBarWrapper.appendChild(progressBar);
-    // progressBarWrapper.appendChild(progressText);
     progressContainer.appendChild(progressBarWrapper);
-    // progressContainer.appendChild(progressText);
 
     topicTitle.appendChild(sectionTitle);
     topicTitle.appendChild(titleHeader);
@@ -150,13 +142,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Apply appropriate classes based on the pattern
       if (pattern === "center-to-left") {
-        rock.classList.add(`shift-left-${i}`);
+        rock.classList.add(`ctl-shift-${i}`);
       } else if (pattern === "left-to-center") {
-        rock.classList.add(`shift-left-${4 - i}`); // 3, 2, 1
+        rock.classList.add(`ltc-shift-${4 - i}`); // 3, 2, 1
       } else if (pattern === "center-to-right") {
-        rock.classList.add(`shift-right-${i}`);
+        rock.classList.add(`ctr-shift-${i}`);
       } else if (pattern === "right-to-center") {
-        rock.classList.add(`shift-right-${4 - i}`); // 3, 2, 1
+        rock.classList.add(`rtc-shift-${4 - i}`); // 3, 2, 1
       }
 
       const rockImg = document.createElement("img");
@@ -180,24 +172,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const cycle = index % 4;
 
     if (cycle === 0) {
-      // First in cycle - center position
       topicPosition = "center";
-      // Rocks lead toward left
       rockPattern = "center-to-left";
     } else if (cycle === 1) {
-      // Second in cycle - left position
       topicPosition = "left";
-      // Rocks lead back to center
       rockPattern = "left-to-center";
     } else if (cycle === 2) {
-      // Third in cycle - center position
       topicPosition = "center";
-      // Rocks lead toward right
       rockPattern = "center-to-right";
     } else {
-      // Fourth in cycle - right position
       topicPosition = "right";
-      // Rocks lead back to center
       rockPattern = "right-to-center";
     }
 
