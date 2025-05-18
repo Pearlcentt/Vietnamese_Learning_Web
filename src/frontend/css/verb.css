@@ -163,7 +163,13 @@ body {
   margin-top: 15%;
   margin-left: 15%;
 }
-
+#speaker-image {
+  width: 6vw;
+  object-fit: contain;
+  /* margin-top: 15%; */
+  margin-left: 25%;
+  cursor: pointer;
+}
 .word-box {
   background: white;
   color: black;
@@ -333,6 +339,10 @@ body {
   position: relative;
   z-index: 1;
   transform: translateY(-0.5em);
+}
+.word-container {
+  display: inline-flex;
+  margin: 0 10px;
 }
 .answer-slot {
   transition: all 0.3s ease-in-out;
