@@ -222,4 +222,10 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
+  const logoutNavItem = document.querySelector(
+    ".nav-item .logout-icon"
+  ).parentElement;
+  logoutNavItem.addEventListener("click", () => {
+    window.location.href = "../html/login.html";
+  });
 });
