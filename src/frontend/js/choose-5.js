@@ -7,7 +7,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const lineUnder = document.querySelector(".line-answer");
   const speakerImage = document.getElementById("speaker-image");
 
-  const word = "hoả bạo";
+  const word = "Thành đi ỉa".toLowerCase();
+
   const wordParts = word.split(" ");
   const text = word.replace(/\s+/g, "").split(""); // Tách thành ký
   let selectedChars = [];
