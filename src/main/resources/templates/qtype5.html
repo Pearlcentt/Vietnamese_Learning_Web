@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>Listen and Fill</title>
+  <link rel="stylesheet" th:href="@{/css/verb.css}" />
+</head>
+<body>
+<div class="question-bg">
+  <div class="col-top">
+    <div class="progress-section">
+      <div class="quit">Quit</div>
+      <div class="progress-bar"><div class="progress-fill"></div></div>
+      <div class="notify-done">Done</div>
+    </div>
+  </div>
+  <div class="col-bot">
+    <div class="col-mid">
+      <div class="main-question">
+        <div class="Guidance">Click the speaker icon and write what you hear!</div>
+        <div class="cartoon-telling">
+          <div class="cartoon-image"><img th:src="@{/images/speaker.png}" id="speaker-image" /></div>
+          <div class="line-answer"></div>
+        </div>
+      </div>
+      <div class="Submit-section">
+        <div class="Ignore">Ignore</div>
+        <div class="tick-icon"><img th:src="@{/images/tick.png}" /></div>
+        <div class="error-icon"><img th:src="@{/images/error.png}" /></div>
+        <p class="result-message">Correct!</p>
+        <div class="Check">Check</div>
+      </div>
+    </div>
+  </div>
+</div>
+<script th:src="@{/js/choose-5.js}" defer></script>
+<script th:src="@{/js/answer.js}" defer></script>
+<script th:src="@{/js/progress.js}" defer></script>
+</body>
+</html>

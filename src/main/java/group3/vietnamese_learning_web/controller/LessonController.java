@@ -1,56 +1,34 @@
 package group3.vietnamese_learning_web.controller;
-import group3.vietnamese_learning_web.dto.LessonDTO;
+
+import group3.vietnamese_learning_web.dto.LessonWithProgressDTO;
+import group3.vietnamese_learning_web.model.User;
 import group3.vietnamese_learning_web.service.LessonService;
-import lombok.RequiredArgsConstructor;
+
+import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Controller
-@RequestMapping("/lessons")
-@RequiredArgsConstructor
 public class LessonController {
-    private final LessonService lessonService;
 
-    @GetMapping
-    public String listLessons(Model model) {
-        model.addAttribute("lessons", lessonService.findAll());
-        return "lesson/list";
-    }
+    @Autowired
+    private LessonService lessonService;
 
-    @GetMapping("/{id}")
-    public String detailLesson(@PathVariable Long id, Model model) {
-        model.addAttribute("lesson", lessonService.findById(id));
-        return "lesson/detail";
-    }
+    @GetMapping("/lessons")
+    public String viewLessons(@RequestParam("topicId") int topicId,
+                              HttpSession session,
+                              Model model) {
 
-    @GetMapping("/create")
-    public String createForm(Model model) {
-        model.addAttribute("lesson", new LessonDTO());
-        return "lesson/create";
-    }
+        User user = (User) session.getAttribute("currentUser");
+        if (user == null) return "redirect:/login";
 
-    @PostMapping
-    public String createLesson(@ModelAttribute LessonDTO dto) {
-        lessonService.createLesson(dto);
-        return "redirect:/lessons";
-    }
-
-    @GetMapping("/edit/{id}")
-    public String editForm(@PathVariable Long id, Model model) {
-        model.addAttribute("lesson", lessonService.findById(id));
-        return "lesson/edit";
-    }
-
-    @PostMapping("/update/{id}")
-    public String updateLesson(@PathVariable Long id, @ModelAttribute LessonDTO dto) {
-        lessonService.updateLesson(id, dto);
-        return "redirect:/lessons";
-    }
-
-    @PostMapping("/delete/{id}")
-    public String deleteLesson(@PathVariable Long id) {
-        lessonService.deleteLesson(id);
-        return "redirect:/lessons";
+        List<LessonWithProgressDTO> lessons = lessonService.getLessonsForUserAndTopic(user.getUId(), topicId);
+        model.addAttribute("lessons", lessons);
+        model.addAttribute("topicId", topicId);
+        return "lessons";
     }
 }

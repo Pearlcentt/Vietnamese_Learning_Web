@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Learn Vietnamese - Free Online Vietnamese Lessons</title>
+    <link rel="stylesheet" th:href="@{/css/start copy.css}" />
+    <!-- <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    /> -->
+  </head>
+
+  <body>
+    <div class="container">
+      <!-- ##################################################### Left Sidebar ################################################## -->
+      <div class="sidebar">
+        <div class="logo">
+          <h1>vietlingo</h1>
+        </div>
+        <div class="nav-items">
+          <div class="nav-item active" id="home-button">
+            <div class="nav-icon home-icon">
+              <link rel="stylesheet" th:href="@{/css/start copy.css}" />
+            </div>
+            <span class="nav-text">LEARN</span>
+          </div>
+          <div class="nav-item">
+            <div class="nav-icon">
+              <img th:src="@{/images/businessman-with-target.png}" alt="Leaderboards" />
+            </div>
+            <span class="nav-text">LEADERBOARDS</span>
+          </div>
+          <div class="nav-item">
+            <div class="nav-icon">
+              <img th:src="@{/images/treasure-chest.png}" alt="Quests" />
+            </div>
+            <span class="nav-text">QUESTS</span>
+          </div>
+          <div class="nav-item">
+            <div class="nav-icon">
+              <img th:src="@{/images/gem.png}" alt="Shop" />
+            </div>
+            <span class="nav-text">SHOP</span>
+          </div>
+          <div class="nav-item">
+            <div class="nav-icon">
+              <img th:src="@{/images/person.png}" alt="Profile" />
+            </div>
+            <span class="nav-text">PROFILE</span>
+          </div>
+          <div class="nav-item">
+            <div class="nav-icon more-icon">
+              <span>•••</span>
+            </div>
+            <span class="nav-text">MORE</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ################################################# Main Content ###################################################### -->
+      <div class="main-content">
+        <div class="topic-cards-container" id="topicCardsContainer">
+          <div class="topic-card">
+            <div class="topic-header">
+              <div class="general-title">
+                <h2>Lessons for Topic <span th:text="${topicId}">#</span></h2>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="lesson-container">
+          <div class="lesson-row" th:each="lesson : ${lessons}">
+            <div class="bullet-point">
+              <img th:src="@{/images/rock.png}" alt="rock" />
+            </div>
+
+            <div class="lesson-box"
+                 th:id="'q' + ${lesson.lessonId}"
+                 th:classappend="${lesson.status != 'Completed'} ? ' locked' : ''"
+                 th:onclick="'window.location.href=\'/q0.html?topicId=' + ${lesson.topicId} + '&lessonId=' + ${lesson.lessonId} + '\';'">
+              <h3 th:text="'Lesson ' + ${lesson.lessonId} + ': ' + ${lesson.lessonType}">Lesson Title</h3>
+            </div>
+          </div>
+          <div class="lesson-row">
+            <div class="bullet-point">
+              <img th:src="@{/images/lock.png}" alt="lock" />
+            </div>
+            <div class="lesson-box locked" id="Test">
+              <h3>Topic's Test</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- ##################################################################################################################### -->
+    </div>
+    <script th:src="@{/js/lessons.js}" defer></script>
+  </body>
+</html>

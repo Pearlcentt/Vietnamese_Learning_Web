@@ -3,24 +3,27 @@ package group3.vietnamese_learning_web.model;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
-
 @Entity
+@Table(name = "Lesson")
+@IdClass(LessonId.class)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Lesson {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer lessonId;
 
-    private String title;
+    @Id
+    private Integer topicId;
 
-    @Column(length = 5000)
-    private String content;
+    @Enumerated(EnumType.STRING)
+    private LessonType lessonType;
 
-    private LocalDateTime createdAt;
+    @Column(columnDefinition = "TEXT")
+    private String sId; // comma-separated sentence IDs
 
-    private LocalDateTime updatedAt;
+    public enum LessonType {
+        Vocab, Fill_in_the_blank, Re_order_words, Re_order_chars, Listen_and_fill
+    }
 }

@@ -4,22 +4,19 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
+@Table(name = "Topic")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Topic {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer topicId;
 
-    @Column(nullable = false)
-    private String name;
+    @Column(nullable = false, unique = true)
+    private String topicName;
 
+    @Column(columnDefinition = "TEXT")
     private String description;
-
-    private Integer order;
-
-    @Column(nullable = false)
-    private String difficulty;
 }

@@ -1,82 +1,49 @@
 package group3.vietnamese_learning_web.controller;
 
-import group3.vietnamese_learning_web.dto.QuestionDTO;
-import group3.vietnamese_learning_web.model.Question.QuestionType;
-import group3.vietnamese_learning_web.service.LessonService;
 import group3.vietnamese_learning_web.service.QuestionService;
-import group3.vietnamese_learning_web.service.TestService;
-import lombok.RequiredArgsConstructor;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @Controller
-@RequestMapping("/questions")
-@RequiredArgsConstructor
 public class QuestionController {
-    private final QuestionService questionService;
-    private final LessonService lessonService;
-    private final TestService testService;
 
-    @GetMapping
-    public String listQuestions(Model model) {
-        model.addAttribute("questions", questionService.findAll());
-        return "question/list";
-    }
+    @Autowired private QuestionService questionService;
 
-    @GetMapping("/{id}")
-    public String detailQuestion(@PathVariable Long id, Model model) {
-        model.addAttribute("question", questionService.findById(id));
-        return "question/detail";
-    }
+    @GetMapping("/q0")
+    public String routeToQ0(@RequestParam("topicId") int topicId,
+                            @RequestParam("lessonId") int lessonId,
+                            HttpSession session,
+                            Model model) {
 
-    @GetMapping("/create")
-    public String createForm(Model model) {
-        model.addAttribute("question", new QuestionDTO());
-        model.addAttribute("lessons", lessonService.findAll());
-        model.addAttribute("tests", testService.findAll());
-        model.addAttribute("questionTypes", QuestionType.values());
-        return "question/create";
+        Map<String, Object> data = questionService.loadQuestionData(topicId, lessonId);
+        if (data.isEmpty()) return "redirect:/lessons?topicId=" + topicId;
+
+        session.setAttribute("quizData", data);
+        model.addAttribute("lessonType", data.get("lessonType")); // Optional: display on q0.html
+        return "q0"; // Thymeleaf view: templates/q0.html
     }
 
-    @PostMapping
-    public String createQuestion(@ModelAttribute QuestionDTO dto) {
-        questionService.createQuestion(dto);
-        return "redirect:/questions";
+    @SuppressWarnings("unchecked")
+    @GetMapping("/quiz-start")
+    public String resolveQuizType(HttpSession session) {
+        Map<String, Object> data = (Map<String, Object>) session.getAttribute("quizData");
+        if (data == null) return "redirect:/home";
+
+        String type = (String) data.get("lessonType");
+
+        return switch (type) {
+            case "Vocab" -> "redirect:/qtype1";
+            case "Fill_in_the_blank" -> "redirect:/qtype2";
+            case "Re_order_chars" -> "redirect:/qtype3";
+            case "Re_order_words" -> "redirect:/qtype4";
+            case "Listen_and_fill" -> "redirect:/qtype5";
+            default -> "redirect:/home";
+        };
     }
 
-    @GetMapping("/edit/{id}")
-    public String editForm(@PathVariable Long id, Model model) {
-        model.addAttribute("question", questionService.findById(id));
-        model.addAttribute("lessons", lessonService.findAll());
-        model.addAttribute("tests", testService.findAll());
-        model.addAttribute("questionTypes", QuestionType.values());
-        return "question/edit";
-    }
-
-    @PostMapping("/update/{id}")
-    public String updateQuestion(@PathVariable Long id, @ModelAttribute QuestionDTO dto) {
-        questionService.updateQuestion(id, dto);
-        return "redirect:/questions";
-    }
-
-    @PostMapping("/delete/{id}")
-    public String deleteQuestion(@PathVariable Long id) {
-        questionService.deleteQuestion(id);
-        return "redirect:/questions";
-    }
-    
-    @GetMapping("/by-lesson/{lessonId}")
-    public String getQuestionsByLesson(@PathVariable Long lessonId, Model model) {
-        model.addAttribute("questions", questionService.findByLessonId(lessonId));
-        model.addAttribute("lesson", lessonService.findById(lessonId));
-        return "question/by-lesson";
-    }
-    
-    @GetMapping("/by-test/{testId}")
-    public String getQuestionsByTest(@PathVariable Long testId, Model model) {
-        model.addAttribute("questions", questionService.findByTestId(testId));
-        model.addAttribute("test", testService.findById(testId));
-        return "question/by-test";
-    }
 }
