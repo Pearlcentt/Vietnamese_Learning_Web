@@ -4,24 +4,22 @@ document.addEventListener("DOMContentLoaded", function () {
   const resultMessage = document.querySelector(".result-message");
   const tickIcon = document.querySelector(".tick-icon");
   const errorIcon = document.querySelector(".error-icon");
-
-  const tokenCont = document.querySelector(".line-wait");
-  const firstContainer = document.getElementById("first-line");
-  const secondContainer = document.getElementById("second-line");
   const lineUnder = document.querySelector(".line-answer");
-  const word = "hoả bạo";
-  const text = word.replace(/\s+/g, "").split("");
+  const speakerImage = document.getElementById("speaker-image");
+
+  const word = "Thành đi ỉa".toLowerCase();
+
+  const wordParts = word.split(" ");
+  const text = word.replace(/\s+/g, "").split(""); // Tách thành ký
   let selectedChars = [];
   let correctOrder = word.replace(/\s+/g, "").split("");
-  let charBoxes = []; // Lưu trữ các charBox để quản lý trả về
-
   let isIgnored = false;
   let keyTimeout = null;
   let pendingVowel = null;
   let keySequence = [];
-  let isChecked = false; // Flag to track if Check button has been clicked
+  let isChecked = false;
 
-  // combo dấu
+  // Combo dấu
   const vowelCombinations = {
     a: {
       f: "à",
@@ -31,7 +29,6 @@ document.addEventListener("DOMContentLoaded", function () {
       r: "ả",
       a: "â",
       w: "ă",
-      // tổ hợp 3 phím
       combo: {
         "a+w+s": "ắ",
         "a+s+w": "ắ",
@@ -94,6 +91,7 @@ document.addEventListener("DOMContentLoaded", function () {
         "o+x+w": "ỡ",
         "o+w+j": "ợ",
         "o+j+w": "ợ",
+        "o+o+s": "ố",
         "o+s+o": "ố",
         "o+o+f": "ồ",
         "o+f+o": "ồ",
@@ -144,165 +142,83 @@ document.addEventListener("DOMContentLoaded", function () {
     },
   };
 
-  function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-  }
-
-  // Tạo các ô trả lời
+  // Tạo các ô trả lời theo số từ
   function createAnswerSlots() {
     lineUnder.innerHTML = "";
-    text.forEach((_, index) => {
-      const slot = document.createElement("span");
-      slot.classList.add("answer-slot");
-      slot.style.width = "5rem";
-      slot.style.height = "4rem";
-      slot.style.display = "inline-flex";
-      slot.style.justifyContent = "center";
-      slot.style.alignItems = "center";
-      slot.style.margin = "0 2px";
-      slot.dataset.index = index;
-      slot.addEventListener("click", () => handleSlotClick(slot));
-      lineUnder.appendChild(slot);
+    wordParts.forEach((part, partIndex) => {
+      const wordContainer = document.createElement("span");
+      wordContainer.classList.add("word-container");
+      wordContainer.style.display = "inline-flex";
+      wordContainer.style.margin = "0 10px"; // Khoảng cách giữa các từ
+
+      const chars = part.replace(/\s+/g, "").split("");
+      let charIndexOffset = wordParts
+        .slice(0, partIndex)
+        .reduce((sum, p) => sum + p.replace(/\s+/g, "").length, 0);
+
+      chars.forEach((_, charIndex) => {
+        const slot = document.createElement("span");
+        slot.classList.add("answer-slot");
+        slot.style.width = "5rem";
+        slot.style.height = "4rem";
+        slot.style.display = "inline-flex";
+        slot.style.justifyContent = "center";
+        slot.style.alignItems = "center";
+        slot.style.margin = "0 2px";
+        slot.style.borderBottom = "2px solid";
+        slot.dataset.index = charIndexOffset + charIndex;
+        slot.addEventListener("click", () => handleSlotClick(slot));
+        wordContainer.appendChild(slot);
+      });
+
+      lineUnder.appendChild(wordContainer);
     });
   }
+  async function playWord() {
+    try {
+      const apiKey = "mpNlGxwzJLYQegaUVHJtTWfSwSU1Vfeu";
+      const response = await fetch("https://api.fpt.ai/hmi/tts/v5", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "api-key": apiKey,
+          voice: "banmai",
+        },
+        body: JSON.stringify({ ListenAndFill: word }),
+      });
 
-  // Phân ký tự vào các dòng
-  function arrangeCharacters() {
-    firstContainer.innerHTML = "";
-    secondContainer.innerHTML = "";
-    lineUnder.innerHTML = "";
-    charBoxes = [];
-    selectedChars = [];
-    isChecked = false; // Reset isChecked when rearranging characters
-
-    const shuffledText = shuffleArray([...text]); // sao chép và truyền mảng vào hàm
-
-    let firstLineFull = false;
-    let maxWidth = tokenCont.offsetWidth;
-    let currentWidth = 0;
-
-    shuffledText.forEach((char, index) => {
-      const charBox = document.createElement("span");
-      charBox.classList.add("char-box");
-      charBox.textContent = char;
-      // data-char, data-index,..
-      charBox.dataset.char = char;
-      charBox.dataset.index = index;
-      charBoxes.push(charBox);
-
-      charBox.addEventListener("click", () => handleCharClick(charBox));
-
-      document.body.appendChild(charBox);
-      let charWidth = charBox.offsetWidth + 4;
-      document.body.removeChild(charBox);
-
-      if (!firstLineFull && currentWidth + charWidth <= maxWidth) {
-        firstContainer.appendChild(charBox);
-        currentWidth += charWidth;
-      } else {
-        firstLineFull = true;
-        secondContainer.appendChild(charBox);
+      if (!response.ok) {
+        throw new Error(
+          `API error: ${response.status} - ${response.statusText}`
+        );
       }
-    });
 
-    createAnswerSlots();
-  }
-  // Xử lý khi click vào ký tự
-  function handleCharClick(charBox) {
-    if (charBox.classList.contains("disabled")) return;
+      const responseData = await response.json();
+      console.log("API Response:", responseData);
 
-    const char = charBox.dataset.char;
-    const answerSlots = document.querySelectorAll(".answer-slot");
-    // tìm ô chưa bị điền
-    const targetSlot = Array.from(answerSlots).find(
-      (slot) => !slot.classList.contains("filled")
-    );
+      if (responseData && responseData.async) {
+        // Đường dẫn file âm thanh có thể nằm trong response data
+        const audioUrl = responseData.async;
 
-    if (!targetSlot) return;
-
-    const slotIndex = parseInt(targetSlot.dataset.index);
-    selectedChars.push({ char, slotIndex });
-    // animation
-    const clone = charBox.cloneNode(true);
-    clone.classList.add("animating");
-    document.body.appendChild(clone);
-
-    const charRect = charBox.getBoundingClientRect();
-    const slotRect = targetSlot.getBoundingClientRect();
-
-    clone.style.position = "fixed";
-    clone.style.left = `${charRect.left}px`;
-    clone.style.top = `${charRect.top}px`;
-    // thời gian clone bay
-    clone.style.transition = "all 0.10s ease-in-out";
-
-    setTimeout(() => {
-      clone.style.left = `${slotRect.left}px`;
-      clone.style.top = `${slotRect.top}px`;
-
-      setTimeout(() => {
-        targetSlot.textContent = char;
-        targetSlot.classList.add("filled");
-        targetSlot.dataset.char = char;
-
-        document.body.removeChild(clone);
-        charBox.classList.add("disabled");
-
-        checkAnswer();
-      }, 100); // thời gian chờ trước khi shape chữ thay
-    }, 20); // thời gian khoảng [clone được tạo ra, clone bay lên]
-  }
-
-  // Xử lý khi click vào ô trả lời để trả lại ký tự
-  function handleSlotClick(slot) {
-    if (!slot.classList.contains("filled")) return;
-
-    const char = slot.dataset.char;
-    const slotIndex = parseInt(slot.dataset.index);
-
-    // Xóa ký tự khỏi selectedChars
-    selectedChars = selectedChars.filter(
-      (item) => item.slotIndex !== slotIndex
-    );
-    // Tìm charBox tương ứng
-    const charBox = charBoxes.find(
-      (box) => box.dataset.char === char && box.classList.contains("disabled")
-    );
-
-    if (charBox) {
-      // Tạo bản sao để animate quay về
-      const clone = charBox.cloneNode(true);
-      clone.classList.add("animating");
-      document.body.appendChild(clone);
-
-      const slotRect = slot.getBoundingClientRect();
-      const charRect = charBox.getBoundingClientRect();
-
-      clone.style.position = "fixed";
-      clone.style.left = `${slotRect.left}px`;
-      clone.style.top = `${slotRect.top}px`;
-      clone.style.transition = "all 0.10s ease-in-out";
-
-      setTimeout(() => {
-        clone.style.left = `${charRect.left}px`;
-        clone.style.top = `${charRect.top}px`;
-
+        // Chờ vài giây để file được xử lý
         setTimeout(() => {
-          charBox.classList.remove("disabled");
-          document.body.removeChild(clone);
-
-          slot.textContent = "";
-          slot.classList.remove("filled");
-          delete slot.dataset.char;
-
-          updateAnswerSlots();
-        }, 100);
-      }, 20);
-      checkAnswer();
+          const audio = new Audio(audioUrl);
+          audio.oncanplaythrough = () => {
+            console.log("Audio loaded successfully");
+            audio.play();
+          };
+          audio.onerror = (err) => {
+            console.error("Error loading audio:", err);
+          };
+        }, 2000); // Chờ 2 giây cho file audio được xử lý
+      } else {
+        console.error(
+          "Không tìm thấy URL âm thanh trong phản hồi",
+          responseData
+        );
+      }
+    } catch (error) {
+      console.error("Lỗi khi gọi API TTS:", error);
     }
   }
 
@@ -315,19 +231,52 @@ document.addEventListener("DOMContentLoaded", function () {
   const t2 = 100;
   const t3 = 50;
 
+  function handleSlotClick(slot) {
+    if (!slot.classList.contains("filled")) return;
+
+    const slotIndex = parseInt(slot.dataset.index);
+    // Xóa ký tự khỏi selectedChars
+    selectedChars = selectedChars.filter(
+      (item) => item.slotIndex !== slotIndex
+    );
+    // Cập nhật giao diện
+    slot.textContent = "";
+    slot.classList.remove("filled");
+    delete slot.dataset.char;
+    // Kiểm tra lại trạng thái
+    checkAnswer();
+  }
+
   document.addEventListener("keydown", (event) => {
+    if (isChecked) return;
+
     const key = event.key.toLowerCase();
 
-    // Handle Backspace, disable khi check
+    // Allow only letters (a-z) and Backspace
+    if (!/^[a-z]$/.test(key) && key !== "backspace") {
+      event.preventDefault();
+      return;
+    }
+
+    // Xử lý Backspace
     if (key === "backspace") {
-      if (isChecked) return; // Ignore backspace after check
       const answerSlots = document.querySelectorAll(".answer-slot");
       const lastFilledSlot = Array.from(answerSlots)
         .filter((slot) => slot.classList.contains("filled"))
         .pop();
 
       if (lastFilledSlot) {
-        handleSlotClick(lastFilledSlot);
+        const slotIndex = parseInt(lastFilledSlot.dataset.index);
+        // Xóa ký tự khỏi selectedChars
+        selectedChars = selectedChars.filter(
+          (item) => item.slotIndex !== slotIndex
+        );
+        // Cập nhật giao diện
+        lastFilledSlot.textContent = "";
+        lastFilledSlot.classList.remove("filled");
+        delete lastFilledSlot.dataset.char;
+        // Kiểm tra lại trạng thái
+        checkAnswer();
       }
       pendingVowel = null;
       keySequence = [];
@@ -335,11 +284,10 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    // If already processing a vowel combo
+    // Xử lý tổ hợp phím
     if (pendingVowel) {
       keySequence.push(key);
 
-      // Kiểm tra tổ hợp 3 phím trước
       if (keySequence.length >= 3) {
         const comboChar = checkCombo(pendingVowel, keySequence.slice(0, 3));
         if (comboChar) {
@@ -350,17 +298,15 @@ document.addEventListener("DOMContentLoaded", function () {
           return;
         }
       }
-
       return;
     }
 
-    // xử lý d và nguyên âm
+    // Xử lý nguyên âm và 'd'
     if (["a", "e", "i", "o", "u", "y", "d"].includes(key)) {
       pendingVowel = key;
       keySequence = [key];
 
       clearTimeout(keyTimeout);
-      // Kiểm tra tổ hợp 2 phím hoặc phím đơn
       keyTimeout = setTimeout(() => {
         if (keySequence.length >= 2) {
           const comboChar = checkCombo(pendingVowel, keySequence.slice(0, 2));
@@ -370,7 +316,6 @@ document.addEventListener("DOMContentLoaded", function () {
             moveCharToSlot(comboChar);
             return;
           }
-          // phím đơn
           const singleChar = vowelCombinations[pendingVowel][keySequence[1]];
           if (singleChar) {
             pendingVowel = null;
@@ -387,22 +332,29 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    // Xử lý phụ âm
+    // Xử lý các ký tự khác
     moveCharToSlot(key);
   });
 
   function moveCharToSlot(char) {
-    const charBox = charBoxes.find(
-      (box) =>
-        box.dataset.char.toLowerCase() === char.toLowerCase() &&
-        !box.classList.contains("disabled")
+    const answerSlots = document.querySelectorAll(".answer-slot");
+    const targetSlot = Array.from(answerSlots).find(
+      (slot) => !slot.classList.contains("filled")
     );
 
-    if (charBox) {
-      handleCharClick(charBox);
-    }
+    if (!targetSlot) return;
+
+    const slotIndex = parseInt(targetSlot.dataset.index);
+    selectedChars.push({ char, slotIndex });
+
+    targetSlot.textContent = char;
+    targetSlot.classList.add("filled");
+    targetSlot.dataset.char = char;
+
+    checkAnswer();
   }
-  // Cập nhật các ô trả lời dựa trên selectedChars
+
+  // Cập nhật các ô trả lờ
   function updateAnswerSlots() {
     const answerSlots = document.querySelectorAll(".answer-slot");
     answerSlots.forEach((slot) => {
@@ -429,7 +381,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // Xử lý sự kiện click nút Check
+  // Xử lý nút Check
   checkButton.addEventListener("click", () => {
     if (checkButton.innerText === "Continue") {
       goToNextQuestion();
@@ -437,18 +389,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     if (selectedChars.length !== correctOrder.length) return;
 
-    isChecked = true; // Set flag to disable backspace
+    isChecked = true;
 
-    // Vô hiệu hóa tất cả char-box
-    charBoxes.forEach((box) => {
-      box.classList.add("disabled");
-      box.style.pointerEvents = "none";
-    });
-
-    // Ẩn nút Ignore
     ignoreDiv.classList.add("hidden");
 
-    // Kiểm tra đáp án
     const currentOrder = Array(text.length).fill(null);
     selectedChars.forEach((item) => {
       currentOrder[item.slotIndex] = item.char;
@@ -471,7 +415,6 @@ document.addEventListener("DOMContentLoaded", function () {
       errorIcon.classList.add("show");
       checkButton.style.backgroundColor = "#ff1d0d";
     }
-    // Đổi văn bản nút Check thành "Continue"
     checkButton.innerText = "Continue";
   });
 
@@ -485,34 +428,23 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     ignoreDiv.addEventListener("click", () => {
-      // Vô hiệu hóa tất cả char-box
-      charBoxes.forEach((box) => {
-        box.classList.add("disabled");
-        box.style.pointerEvents = "none";
-      });
-
-      // Ẩn nút Ignore
       ignoreDiv.classList.add("hidden");
-
-      // Hiển thị thông báo và biểu tượng lỗi
       resultMessage.textContent = "Try again later!";
       resultMessage.style.color = "red";
       resultMessage.classList.add("show");
       tickIcon.classList.add("hidden");
       errorIcon.classList.add("show");
-
-      // Đổi nút Check thành Continue và màu đỏ
       checkButton.style.backgroundColor = "#ff1d0d";
       checkButton.innerText = "Continue";
-
-      // Đánh dấu là đã nhấn Ignore
       isIgnored = true;
+      isChecked = true;
     });
   }
 
-  // Gọi hàm khi trang load
-  arrangeCharacters();
+  // Thêm sự kiện click cho loa
+  speakerImage.addEventListener("click", playWord);
 
-  // // Gọi lại khi cửa sổ thay đổi kích thước
-  // window.addEventListener("resize", arrangeCharacters);
+  // Khởi tạo
+  createAnswerSlots();
+  playWord(); // Phát âm thanh khi trang load
 });
