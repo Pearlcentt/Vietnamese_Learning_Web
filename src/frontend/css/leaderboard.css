@@ -1,0 +1,519 @@
+:root {
+    --duo-green: #58cc02;
+    --duo-blue: #1cb0f6;
+    --duo-gray-light: #e5e5e5;
+    --duo-gray-medium: #afafaf;
+    --duo-gray-dark: #777777;
+    --duo-text-dark: #4b4b4b;
+    --duo-text-light: #ffffff;
+    --duo-border: #e5e5e5;
+    --duo-yellow: #ffc800;
+    --duo-red: #ff4b4b;
+    --pearl-color: #f7b9d0;
+    --light-green-button: #c8e6c9;
+    /* Màu xanh lá cây nhạt cho nút back */
+    --light-green-button-hover: #b9d8ba;
+}
+
+html,
+body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background-color: #f0f2f5;
+    color: var(--duo-text-dark);
+    overflow: hidden;
+    /* Ngăn cuộn ở body, để các phần con tự quản lý cuộn */
+}
+
+.app-container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    background-color: #fff;
+    overflow: hidden;
+}
+
+/* Left Navigation Sidebar */
+.left-nav-sidebar {
+    width: 200px;
+    /* Độ rộng cố định cho sidebar trái */
+    min-width: 180px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    /* Màu nền nhẹ cho sidebar trái */
+    border-right: 1px solid var(--duo-border);
+    display: flex;
+    flex-direction: column;
+    /* Sắp xếp các item con theo chiều dọc */
+    align-items: flex-start;
+    /* Căn các item con về bên trái */
+}
+
+.back-to-home-button {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 15px;
+    background-color: var(--light-green-button);
+    color: var(--duo-text-dark);
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: background-color 0.2s;
+    width: calc(100% - 30px);
+    /* Chiếm gần hết chiều rộng sidebar, trừ padding */
+    box-sizing: border-box;
+    justify-content: center;
+    /* Căn giữa nội dung nút */
+}
+
+.back-to-home-button i {
+    margin-right: 8px;
+}
+
+.back-to-home-button:hover {
+    background-color: var(--light-green-button-hover);
+}
+
+
+/* Main Content */
+.main-content {
+    flex-grow: 1;
+    padding: 20px 30px;
+    background-color: #fff;
+    overflow-y: auto;
+    /* Cho phép cuộn nếu nội dung dài */
+}
+
+/* Ẩn thanh trượt cho .main-content */
+.main-content::-webkit-scrollbar {
+    display: none;
+    /* WebKit (Chrome, Safari, new Edge, Opera) */
+}
+
+.main-content {
+    -ms-overflow-style: none;
+    /* IE and Edge (old) */
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+
+.leaderboard-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.leaderboard-header .league-icons {
+    margin-bottom: 15px;
+}
+
+.league-icon {
+    display: inline-block;
+    width: 40px;
+    height: 45px;
+    margin: 0 5px;
+    border-radius: 8px;
+    background-color: var(--duo-gray-light);
+    position: relative;
+    border: 3px solid transparent;
+}
+
+.league-icon.ruby {
+    background-color: #ff4b4b;
+}
+
+.league-icon.emerald {
+    background-color: #58cc02;
+}
+
+.league-icon.amethyst {
+    background-color: #9b59b6;
+}
+
+.league-icon.pearl {
+    background-color: var(--pearl-color);
+}
+
+.league-icon.obsidian-locked::after,
+.league-icon.diamond-locked::after {
+    content: "\f023";
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #777;
+    font-size: 18px;
+}
+
+.league-icon.active-league {
+    border-color: #fff;
+    box-shadow: 0 0 0 3px var(--pearl-color);
+    transform: scale(1.1);
+}
+
+.league-icon.pearl.active-league::before {
+    content: "\f52d";
+    font-family: "Font Awesome 5 Free";
+    font-weight: 900;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-30deg);
+    color: #fff;
+    font-size: 20px;
+}
+
+.leaderboard-header h1 {
+    margin: 5px 0;
+    font-size: 28px;
+    color: var(--duo-text-dark);
+}
+
+.leaderboard-header .promotion-info {
+    color: var(--duo-gray-dark);
+    font-size: 16px;
+    margin: 5px 0;
+}
+
+.leaderboard-header .time-left {
+    color: var(--duo-yellow);
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.tabs {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--duo-border);
+}
+
+.tab-button {
+    padding: 10px 20px;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--duo-gray-medium);
+    position: relative;
+}
+
+.tab-button.active {
+    color: var(--duo-blue);
+}
+
+.tab-button.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: var(--duo-blue);
+}
+
+#leaderboard-list-container {
+    /* Styles for the list itself */
+}
+
+.leaderboard-item {
+    display: flex;
+    align-items: center;
+    padding: 15px 10px;
+    border-bottom: 1px solid var(--duo-border);
+    transition: background-color 0.2s;
+}
+
+.leaderboard-item:last-child {
+    border-bottom: none;
+}
+
+.leaderboard-item.current-user-highlight {
+    background-color: #e6f7ff;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+.rank {
+    width: 45px;
+    height: 45px;
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--duo-gray-dark);
+    text-align: center;
+    margin-right: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+/* Style cho ảnh huy chương */
+.rank-medal-image {
+    width: 35px;
+    height: auto;
+    display: block;
+}
+
+.username-leaderboard {
+    font-size: 17px;
+    color: var(--duo-text-dark);
+    flex-grow: 1;
+}
+
+.xp {
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--duo-gray-dark);
+    margin-left: auto;
+    padding-left: 10px;
+}
+
+
+
+/* Right Sidebar */
+.right-sidebar {
+    width: 320px;
+    min-width: 300px;
+    padding: 20px;
+    border-left: 1px solid var(--duo-border);
+    background-color: #fdfdfd;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    /* Cho phép cuộn nếu nội dung profile dài */
+}
+
+/* Ẩn thanh trượt cho .right-sidebar */
+.right-sidebar::-webkit-scrollbar {
+    display: none;
+}
+
+.right-sidebar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+
+.user-language-stats {
+    display: flex;
+    /* Cho phép các group con nằm trên 1 dòng */
+    align-items: center;
+    /* Căn giữa theo chiều dọc */
+    justify-content: space-between;
+    /* Phân bố không gian giữa language group và stats group */
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--duo-border);
+    flex-wrap: wrap;
+    /* Cho phép xuống dòng nếu không đủ không gian */
+}
+
+.language-info-group {
+    display: flex;
+    align-items: center;
+    margin-right: 15px;
+    /* Khoảng cách với group badges nếu trên cùng 1 dòng */
+}
+
+.language-info-group img {
+    height: 24px;
+    /* Điều chỉnh kích thước cờ */
+    width: auto;
+    margin-right: 8px;
+    border-radius: 3px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.language-info-group span {
+    font-size: 14px;
+    /* Điều chỉnh kích thước chữ ngôn ngữ */
+    font-weight: bold;
+    color: var(--duo-text-dark);
+}
+
+.stats-badges-group {
+    display: flex;
+    align-items: center;
+}
+
+.stats-badges-group .stat-item {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    /* Điều chỉnh kích thước chữ badge */
+    font-weight: bold;
+    color: var(--duo-gray-dark);
+    margin-left: 15px;
+    /* Khoảng cách giữa các badge items */
+}
+
+.stats-badges-group .stat-item:first-child {
+    margin-left: 0;
+    /* Không có margin cho item đầu tiên trong group */
+}
+
+.stats-badges-group .stat-item i {
+    font-size: 18px;
+    /* Điều chỉnh kích thước icon badge */
+    margin-right: 5px;
+}
+
+.stats-badges-group .stat-item .fa-fire {
+    color: #ff9600;
+}
+
+.stats-badges-group .stat-item .fa-gem {
+    color: var(--duo-red);
+}
+
+
+.user-profile-section {
+    text-align: center;
+}
+
+.user-profile-section .profile-avatar-main {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 15px;
+    border: 3px solid var(--duo-green);
+}
+
+.user-profile-section h3 {
+    font-size: 22px;
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: var(--duo-text-dark);
+}
+
+.user-profile-section p {
+    font-size: 15px;
+    color: var(--duo-gray-dark);
+    margin: 5px 0;
+}
+
+.user-profile-section h4 {
+    font-size: 16px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: var(--duo-text-dark);
+    text-align: left;
+}
+
+.user-profile-section #profile-achievements-list {
+    list-style: none;
+    padding: 0;
+    text-align: left;
+}
+
+.user-profile-section #profile-achievements-list li {
+    padding: 8px 0;
+    font-size: 14px;
+    color: var(--duo-gray-dark);
+    border-bottom: 1px solid var(--duo-gray-light);
+}
+
+.user-profile-section #profile-achievements-list li:last-child {
+    border-bottom: none;
+}
+
+.user-profile-section #profile-achievements-list i {
+    margin-right: 10px;
+    color: var(--duo-yellow);
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+    .left-nav-sidebar {
+        width: auto;
+        /* Cho phép thu nhỏ hơn */
+        min-width: 60px;
+        /* Chỉ hiển thị icon nếu cần */
+        padding: 15px 10px;
+    }
+
+    .back-to-home-button {
+        width: auto;
+        /* Nút co lại theo nội dung */
+        padding: 8px 10px;
+    }
+
+    .back-to-home-button span {
+        /* Ẩn chữ "Homepage" trên màn hình nhỏ nếu chỉ muốn icon */
+        /* display: none; */
+    }
+
+    .right-sidebar {
+        display: none;
+    }
+
+    .main-content {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .left-nav-sidebar {
+        /* Có thể ẩn hoàn toàn sidebar trái trên mobile */
+        display: none;
+    }
+
+    .main-content {
+        padding: 15px;
+    }
+}
+
+@media (max-width: 600px) {
+    .leaderboard-header h1 {
+        font-size: 24px;
+    }
+
+    .league-icon {
+        width: 35px;
+        height: 40px;
+        margin: 0 3px;
+    }
+
+    .tab-button {
+        padding: 8px 15px;
+        font-size: 15px;
+    }
+
+    .username-leaderboard {
+        font-size: 15px;
+    }
+
+    .xp {
+        font-size: 15px;
+    }
+
+    .user-language-stats {
+        flex-direction: column;
+        /* Xếp cờ/ngôn ngữ và badges thành 2 dòng trên mobile */
+        align-items: flex-start;
+    }
+
+    .language-info-group {
+        margin-bottom: 10px;
+        /* Khoảng cách khi xuống dòng */
+        margin-right: 0;
+    }
+
+    .stats-badges-group .stat-item {
+        margin-left: 0;
+        margin-right: 15px;
+        /* Khoảng cách giữa các badge items khi trên 1 dòng */
+    }
+
+    .stats-badges-group .stat-item:last-child {
+        margin-right: 0;
+    }
+}

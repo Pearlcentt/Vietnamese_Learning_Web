@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile and Add Friend</title>
+    <link rel="stylesheet" href="../css/profile_add_friend.css"> <!-- Đổi đường dẫn nếu cần -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body>
+    <div class="app-layout-container"> <!-- Container chính cho layout 3 cột -->
+        <!-- Sidebar Trái -->
+        <aside class="left-sidebar-profile">
+            <a href="/homepage" class="back-to-home-btn-profile">
+                <i class="fas fa-arrow-left"></i> Homepage
+            </a>
+        </aside>
+
+        <!-- Main Content (Profile View & Edit View) -->
+        <main class="main-profile-content">
+            <div id="profileView" class="profile-view-active">
+                <div class="profile-main">
+                    <div class="profile-header">
+                        <div class="avatar-container">
+                            <img src="img/default-avatar.svg" alt="Avatar" id="profileAvatarDisplay"
+                                class="avatar-placeholder">
+                            <button class="edit-avatar-btn" id="openAvatarModalBtnMain" title="Change Avatar"><i
+                                    class="fas fa-pencil-alt"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="user-info">
+                        <h1 id="displayName">bhuy</h1>
+                        <p class="username-joined">
+                            <span id="username">bhuy690413</span> -
+                            Joined <span id="joinedDate">March 2025</span>
+                        </p>
+                        <div class="follow-stats">
+                            <a href="#" id="followingCountLink"><span id="followingCount">0</span> Following</a>
+                            <a href="#" id="followersCountLink"><span id="followersCount">0</span> Followers</a>
+                        </div>
+                        <button id="editProfileBtn" class="action-btn"><i class="fas fa-user-edit"></i> Edit
+                            profile</button>
+                    </div>
+
+                    <div class="statistics-section">
+                        <h2>Statistics</h2>
+                        <div class="stats-grid">
+                            <div class="stat-box">
+                                <i class="fas fa-fire stat-icon"></i>
+                                <p><strong id="dayStreak">0</strong></p>
+                                <p>Day streak</p>
+                            </div>
+                            <div class="stat-box">
+                                <i class="fas fa-star stat-icon"></i>
+                                <p><strong id="totalXP">14</strong></p>
+                                <p>Total XP</p>
+                            </div>
+                            <div class="stat-box">
+                                <i class="fas fa-shield-alt stat-icon"></i>
+                                <p><strong id="currentLeague">None</strong></p>
+                                <p>Current league</p>
+                            </div>
+                            <div class="stat-box">
+                                <i class="fas fa-trophy stat-icon"></i>
+                                <p><strong id="top3Finishes">0</strong></p>
+                                <p>Top 3 finishes</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="editProfileView" class="edit-profile-container" style="display: none;">
+                <h2><i class="fas fa-user-cog"></i> Edit profile</h2>
+                <form id="editProfileForm">
+                    <div class="form-group avatar-edit-group">
+                        <label>Avatar</label>
+                        <img src="img/default-avatar.svg" alt="Current Avatar" id="editAvatarPreview"
+                            class="avatar-preview">
+                        <button type="button" class="edit-avatar-icon-btn" id="openAvatarModalBtnEdit"
+                            title="Change Avatar">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button>
+                        <input type="hidden" id="selectedAvatarUrlInput" name="selectedAvatarUrl">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editNameInput">Name</label>
+                        <input type="text" id="editNameInput" value="bhuy">
+                    </div>
+                    <div class="form-group">
+                        <label for="editUsernameInput">Username</label>
+                        <input type="text" id="editUsernameInput" value="bhuy690413" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="editEmailInput">Email</label>
+                        <input type="email" id="editEmailInput" value="buivanhuy0701@gmail.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="editCurrentPasswordInput">Current password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="editCurrentPasswordInput">
+                            <i class="fas fa-eye toggle-password"></i>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="editNewPasswordInput">New password</label>
+                        <div class="password-wrapper">
+                            <input type="password" id="editNewPasswordInput">
+                            <i class="fas fa-eye toggle-password"></i>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" id="saveProfileChangesBtn" class="action-btn primary">Save
+                            changes</button>
+                        <button type="button" id="cancelEditProfileBtn" class="action-btn">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+
+        <!-- Sidebar Phải -->
+        <aside class="profile-sidebar">
+            <!-- Phần cờ và badges -->
+            <div class="sidebar-user-stats card">
+                <div class="language-info-group-sidebar">
+                    <img src="../html/images/vietnam.png" alt="Vietnamese Flag" id="userFlagSidebar">
+                    <span id="userLanguageSidebar">VIETNAMESE</span>
+                </div>
+                <div class="stats-badges-group-sidebar">
+                    <div class="stat-item-sidebar">
+                        <i class="fas fa-fire"></i> <span id="userStreakSidebar">0</span>
+                    </div>
+                    <div class="stat-item-sidebar">
+                        <i class="fas fa-gem"></i> <span id="userGemsSidebar">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Các phần còn lại của sidebar phải -->
+            <div class="friend-list-container card">
+                <h3><i class="fas fa-users"></i> Friend List</h3>
+                <ul id="friendListUi"></ul>
+                <p id="noFriendsMessage" class="empty-message">You have no friend. Let's connect with other people.</p>
+            </div>
+
+            <div class="add-friends-section card">
+                <h3><i class="fas fa-user-plus"></i> Add Friends</h3>
+                <div class="action-item" id="findFriendsToggle">
+                    <i class="fas fa-search"></i>
+                    <span>Find friends</span>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+                <div id="findFriendsContent" class="collapsible-content">
+                    <input type="text" id="findFriendInput" placeholder="Enter name">
+                    <button id="searchFriendBtn"><i class="fas fa-search"></i> Find</button>
+                    <ul id="searchResultsUi"></ul>
+                </div>
+
+                <div class="action-item" id="friendRequestsToggle">
+                    <i class="fas fa-user-friends"></i>
+                    <span>Friend requests</span>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+                <div id="friendRequestsContent" class="collapsible-content">
+                    <div class="friend-request-tabs">
+                        <button class="fr-tab-btn active" data-tab="received">Received (<span
+                                id="receivedRequestCountBadge">0</span>)</button>
+                        <button class="fr-tab-btn" data-tab="sent">Sent (<span
+                                id="sentRequestCountBadge">0</span>)</button>
+                    </div>
+                    <ul id="friendRequestsListUiReceived" class="friend-requests-list-display active"></ul>
+                    <ul id="friendRequestsListUiSent" class="friend-requests-list-display" style="display:none;"></ul>
+                    <p id="noFriendRequestsMessage" class="empty-message" style="display: none;">No request</p>
+                </div>
+            </div>
+            <div class="sidebar-promo card">
+                <img src="../html/images/promo_image.png" alt="Promo image" class="promo-image">
+                <p>Learning is more fun and effective when you connect with others.</p>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Avatar Selection Modal -->
+    <div id="avatarModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-modal-btn" id="closeAvatarModalBtn">×</span>
+            <h3>Choose your avatar</h3>
+            <p>You can <label for="avatarUpload" class="upload-link">upload your avatar</label>.</p>
+            <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
+
+            <div class="avatar-selection-grid" id="avatarSelectionGrid">
+                <!-- Các avatar mẫu sẽ được chèn vào đây bằng JavaScript -->
+            </div>
+            <button id="confirmAvatarSelectionBtn" class="action-btn primary">Confirm</button>
+        </div>
+    </div>
+
+    <script src="../js/profile_add_friend.js"></script> <!-- Đổi đường dẫn nếu cần -->
+</body>
+
+</html>
