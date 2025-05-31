@@ -8,6 +8,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString
 public class UserResponseDTO {
     private Integer uId;
     private String username;

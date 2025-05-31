@@ -1,38 +1,85 @@
 package group3.vietnamese_learning_web.controller;
 
 import group3.vietnamese_learning_web.dto.TopicProgressDTO;
+import group3.vietnamese_learning_web.dto.UserResponseDTO;
+import group3.vietnamese_learning_web.model.User;
+import group3.vietnamese_learning_web.repository.UserRepository;
 import group3.vietnamese_learning_web.service.TopicService;
+import group3.vietnamese_learning_web.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpSession;
 import java.util.List;
+import java.util.Enumeration;
 
 @Controller
 @RequiredArgsConstructor
 public class HomeController {
     private final TopicService topicService;
+    private final AuthService authService;
+
 
     // Show dashboard with user topic progress
     @GetMapping("/dashboard")
-    public String dashboard(@RequestParam Integer uId, Model model) {
-        List<TopicProgressDTO> topics = topicService.getTopicProgressByUser(uId);
-        model.addAttribute("topics", topics);
-        return "dashboard"; // Thymeleaf template for the dashboard
+    public String dashboard(@RequestParam(required = false) Integer uId,
+                            Model model, HttpSession session) {
+
+        // Get user from session or use provided uId
+//        Enumeration<String> attributeNames = session.getAttributeNames();
+//        while (attributeNames.hasMoreElements()) {
+//            String name = attributeNames.nextElement();
+//            Object value = session.getAttribute(name);
+//            System.out.println("Session attribute: " + name + " = " + value);
+//        }
+
+//        UserResponseDTO user = (UserResponseDTO) session.getAttribute("username")
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null) {
+            System.out.println("Current logged-in user: " + authentication.getPrincipal().toString());
+        }
+
+
+
+//        UserResponseDTO user = userService.findByUsername(username);
+//        Integer userId = user.getUId();
+
+//        UserResponseDTO user_dto = authService.getUserByUsername(authentication.getName());
+//
+//        System.out.println(user_dto);
+        String username = authentication.getName();
+        UserResponseDTO user = authService.getUserByUsername(username);
+        Integer userId = user.getUId();
+
+        if (userId == null) {
+            // User not logged in, redirect to log in
+            return "redirect:/login";
+        }
+
+        try {
+            List<TopicProgressDTO> topics = topicService.getTopicProgressByUser(userId);
+            model.addAttribute("topics", topics);
+            model.addAttribute("user", user != null ? user : new UserResponseDTO()); // Provide user info to template
+
+            return "dashboard"; // Your main dashboard template (the one with the HTML you provided)
+        } catch (Exception e) {
+            model.addAttribute("error", "Failed to load dashboard: " + e.getMessage());
+            return "login";
+        }
     }
 
-    // Search topics (optional)
-    @GetMapping("/topics/search")
-    public String searchTopics(@RequestParam String keyword, Model model) {
-        model.addAttribute("topics", topicService.searchTopics(keyword));
-        return "topics";
-    }
-
-    // Topic detail page
-    @GetMapping("/topics/{topicId}")
-    public String topicDetail(@PathVariable Integer topicId, Model model) {
-        model.addAttribute("topic", topicService.getTopic(topicId));
-        return "topic-detail";
+    // Handle root path
+    @GetMapping("/")
+    public String home(HttpSession session) {
+        UserResponseDTO user = (UserResponseDTO) session.getAttribute("user");
+        if (user != null) {
+            return "dashboard";
+        }
+        return "redirect:/login";
     }
 }

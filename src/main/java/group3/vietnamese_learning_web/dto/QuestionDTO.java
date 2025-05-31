@@ -16,3 +16,5 @@ public class QuestionDTO {
     private List<String> choices; // For MCQ, if needed
     private Integer answerIdx; // For fill/reorder answers
 }
+
+// vietlingo

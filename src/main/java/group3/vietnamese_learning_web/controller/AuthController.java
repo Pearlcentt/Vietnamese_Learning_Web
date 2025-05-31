@@ -9,26 +9,19 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpSession;
+
 @Controller
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
 
     @GetMapping("/login")
-    public String showLoginPage() {
-        return "login";
-    }
-
-    @PostMapping("/login")
-    public String processLogin(@ModelAttribute UserLoginDTO dto, Model model) {
-        try {
-            UserResponseDTO user = authService.authenticate(dto);
-            model.addAttribute("user", user);
-            return "redirect:/dashboard";
-        } catch (RuntimeException e) {
-            model.addAttribute("error", e.getMessage());
-            return "login";
+    public String login(@RequestParam(value = "error", required = false) String error, Model model) {
+        if (error != null) {
+            model.addAttribute("error", "Invalid username or password.");
         }
+        return "login";
     }
 
     @GetMapping("/register")
@@ -40,10 +33,17 @@ public class AuthController {
     public String processRegistration(@ModelAttribute UserRegistrationDTO dto, Model model) {
         try {
             authService.register(dto);
-            return "redirect:/login";
+            model.addAttribute("success", "Registration successful! Please log in.");
+            return "login"; // Return to login page with success message
         } catch (RuntimeException e) {
             model.addAttribute("error", e.getMessage());
-            return "register";
+            return "login"; // Return to login page (signup section) with error
         }
+    }
+
+    @GetMapping("/logout")
+    public String logout(HttpSession session) {
+        session.invalidate();
+        return "redirect:/login";
     }
 }
