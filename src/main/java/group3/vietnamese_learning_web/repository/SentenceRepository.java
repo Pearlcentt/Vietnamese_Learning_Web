@@ -2,8 +2,9 @@ package group3.vietnamese_learning_web.repository;
 
 import group3.vietnamese_learning_web.model.Sentence;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import java.util.List;
 
-@Repository
 public interface SentenceRepository extends JpaRepository<Sentence, Integer> {
+    List<Sentence> findByTopicName(String topicName);
+    List<Sentence> findByTopicNameAndEngContainingIgnoreCase(String topicName, String keyword);
 }

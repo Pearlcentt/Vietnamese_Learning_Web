@@ -1,32 +1,38 @@
 package group3.vietnamese_learning_web.controller;
 
 import group3.vietnamese_learning_web.dto.TopicProgressDTO;
-import group3.vietnamese_learning_web.model.User;
 import group3.vietnamese_learning_web.service.TopicService;
-
-import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @Controller
+@RequiredArgsConstructor
 public class HomeController {
+    private final TopicService topicService;
 
-    @Autowired
-    private TopicService topicService;
-
-    @GetMapping("/home")
-    public String showDashboard(HttpSession session, Model model) {
-        User user = (User) session.getAttribute("currentUser");
-        if (user == null) return "redirect:/login";
-
-        List<TopicProgressDTO> topics = topicService.getTopicsWithProgress(user.getUId());
-        model.addAttribute("user", user);
+    // Show dashboard with user topic progress
+    @GetMapping("/dashboard")
+    public String dashboard(@RequestParam Integer uId, Model model) {
+        List<TopicProgressDTO> topics = topicService.getTopicProgressByUser(uId);
         model.addAttribute("topics", topics);
+        return "dashboard"; // Thymeleaf template for the dashboard
+    }
 
-        return "start-copy";
+    // Search topics (optional)
+    @GetMapping("/topics/search")
+    public String searchTopics(@RequestParam String keyword, Model model) {
+        model.addAttribute("topics", topicService.searchTopics(keyword));
+        return "topics";
+    }
+
+    // Topic detail page
+    @GetMapping("/topics/{topicId}")
+    public String topicDetail(@PathVariable Integer topicId, Model model) {
+        model.addAttribute("topic", topicService.getTopic(topicId));
+        return "topic-detail";
     }
 }

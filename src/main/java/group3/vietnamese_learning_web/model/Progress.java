@@ -2,36 +2,25 @@ package group3.vietnamese_learning_web.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.io.Serializable;
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 
 @Entity
 @Table(name = "Progress")
-@IdClass(ProgressId.class)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Progress {
 
-    @Id
-    private Integer uId;
-
-    @Id
-    private Integer topicId;
-
-    @Id
-    private Integer lessonId;
+    @EmbeddedId
+    private ProgressId id;
 
     private Integer score;
 
     @Enumerated(EnumType.STRING)
-    private Status status;
+    @Column(nullable = false)
+    private ProgressStatus status = ProgressStatus.Not_Started;
 
-    @Column(name = "last_updated")
-    private LocalDateTime lastUpdated;
-
-    public enum Status {
-        Not_Started, In_Progress, Completed
-    }
+    @Column(name = "last_updated", nullable = false, updatable = false, insertable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private Timestamp lastUpdated;
 }

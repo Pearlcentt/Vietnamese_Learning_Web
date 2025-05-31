@@ -3,12 +3,13 @@ package group3.vietnamese_learning_web.dto;
 import lombok.*;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class TopicProgressDTO {
-    private int topicId;
+    private Integer topicId;
     private String topicName;
     private String description;
-    private long totalLessons;
-    private long completedLessons;
+    private Integer completedLessons;
+    private Integer totalLessons;
 }

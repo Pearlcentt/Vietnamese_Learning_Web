@@ -5,25 +5,20 @@ import lombok.*;
 
 @Entity
 @Table(name = "Lesson")
-@IdClass(LessonId.class)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Lesson {
-
-    @Id
-    private Integer lessonId;
-
-    @Id
-    private Integer topicId;
+    @EmbeddedId
+    private LessonId id;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private LessonType lessonType;
 
-    @Column(columnDefinition = "TEXT")
-    private String sId; // comma-separated sentence IDs
-
-    public enum LessonType {
-        Vocab, Fill_in_the_blank, Re_order_words, Re_order_chars, Listen_and_fill
-    }
+    // Optional: Fetch topic data in code if needed
+    // @ManyToOne(fetch = FetchType.LAZY)
+    // @JoinColumn(name = "topic_id", insertable = false, updatable = false)
+    // private Topic topic;
 }

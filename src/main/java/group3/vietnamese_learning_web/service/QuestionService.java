@@ -1,45 +1,39 @@
 package group3.vietnamese_learning_web.service;
 
-import group3.vietnamese_learning_web.model.*;
-import group3.vietnamese_learning_web.repository.*;
-import org.springframework.beans.factory.annotation.Autowired;
+import group3.vietnamese_learning_web.dto.QuestionDTO;
+import group3.vietnamese_learning_web.model.Sentence;
+import group3.vietnamese_learning_web.model.Word;
+import group3.vietnamese_learning_web.repository.SentenceRepository;
+import group3.vietnamese_learning_web.repository.WordRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class QuestionService {
+    private final SentenceRepository sentenceRepository;
+    private final WordRepository wordRepository;
 
-    @Autowired private LessonRepository lessonRepository;
-    @Autowired private SentenceRepository sentenceRepository;
-    @Autowired private WordRepository wordRepository;
-
-    public Map<String, Object> loadQuestionData(int topicId, int lessonId) {
-        Lesson lesson = lessonRepository.findLessonByTopicAndLessonId(lessonId, topicId);
-        if (lesson == null) return Collections.emptyMap();
-
-        String lessonType = lesson.getLessonType().name(); // e.g. "Vocab"
-        List<Sentence> sentences = new ArrayList<>();
-
-        if (lesson.getSId() != null) {
-            String[] ids = lesson.getSId().split(",");
-            for (String id : ids) {
-                sentenceRepository.findById(Integer.parseInt(id.trim()))
-                        .ifPresent(sentences::add);
-            }
+    // Example: Get all questions for a lesson (by sentence IDs)
+    public List<QuestionDTO> getQuestionsForLesson(List<Integer> sentenceIds) {
+        List<QuestionDTO> questions = new ArrayList<>();
+        for (Integer sId : sentenceIds) {
+            Sentence sentence = sentenceRepository.findById(sId).orElseThrow(() -> new RuntimeException("Sentence not found"));
+            List<Word> words = wordRepository.findBySIdOrderByIdxAsc(sId);
+            List<String> wordList = words.stream().map(Word::getEng).collect(Collectors.toList());
+            // Shuffle or apply your own logic for question type
+            questions.add(QuestionDTO.builder()
+                    .sId(sentence.getSId())
+                    .eng(sentence.getEng())
+                    .viet(sentence.getViet())
+                    .words(wordList)
+                    .build());
         }
-
-        // Also load words if needed
-        List<Word> words = new ArrayList<>();
-        for (Sentence s : sentences) {
-            words.addAll(wordRepository.findBySId(s.getSId()));
-        }
-
-        Map<String, Object> result = new HashMap<>();
-        result.put("lessonType", lessonType);
-        result.put("sentences", sentences);
-        result.put("words", words);
-
-        return result;
+        return questions;
     }
 }

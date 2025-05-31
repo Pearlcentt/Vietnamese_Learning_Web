@@ -8,15 +8,16 @@ import lombok.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Topic {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "topic_id")
     private Integer topicId;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 255)
     private String topicName;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(length = 1000)
     private String description;
 }

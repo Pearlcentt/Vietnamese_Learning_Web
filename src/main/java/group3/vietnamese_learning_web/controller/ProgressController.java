@@ -1,44 +1,46 @@
 package group3.vietnamese_learning_web.controller;
 
-import group3.vietnamese_learning_web.model.Progress;
-import group3.vietnamese_learning_web.model.User;
-import group3.vietnamese_learning_web.repository.ProgressRepository;
-
-import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
+import group3.vietnamese_learning_web.dto.ProgressDTO;
+import group3.vietnamese_learning_web.model.ProgressStatus;
+import group3.vietnamese_learning_web.service.ProgressService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/progress")
+@RequiredArgsConstructor
 public class ProgressController {
+    private final ProgressService progressService;
 
-    @Autowired
-    private ProgressRepository progressRepository;
+    // Get all progress for a user
+    @GetMapping("/user/{uId}")
+    public List<ProgressDTO> getProgressByUser(@PathVariable Integer uId) {
+        return progressService.getProgressByUser(uId);
+    }
 
-    @PostMapping("/complete")
-    public String markLessonComplete(@RequestParam("topicId") int topicId,
-                                     @RequestParam("lessonId") int lessonId,
-                                     HttpSession session) {
+    // Get all progress for a user in a topic
+    @GetMapping("/user/{uId}/topic/{topicId}")
+    public List<ProgressDTO> getProgressByUserAndTopic(@PathVariable Integer uId, @PathVariable Integer topicId) {
+        return progressService.getProgressByUserAndTopic(uId, topicId);
+    }
 
-        User user = (User) session.getAttribute("currentUser");
-        if (user == null) return "User not logged in";
+    // Get progress for a single lesson
+    @GetMapping("/user/{uId}/topic/{topicId}/lesson/{lessonId}")
+    public ProgressDTO getProgress(@PathVariable Integer uId, @PathVariable Integer topicId, @PathVariable Integer lessonId) {
+        return progressService.getProgress(uId, topicId, lessonId);
+    }
 
-        int uId = user.getUId();
-
-        Progress existing = progressRepository.findByUIdAndTopicIdAndLessonId(uId, topicId, lessonId);
-        if (existing == null) {
-            Progress newProgress = new Progress(uId, topicId, lessonId, 100,
-                    Progress.Status.Completed, LocalDateTime.now());
-            progressRepository.save(newProgress);
-        } else {
-            existing.setStatus(Progress.Status.Completed);
-            existing.setScore(100);
-            existing.setLastUpdated(LocalDateTime.now());
-            progressRepository.save(existing);
-        }
-
-        return "Saved";
+    // Update progress (could use @RequestBody for more complex needs)
+    @PutMapping("/update")
+    public ProgressDTO updateProgress(
+            @RequestParam Integer uId,
+            @RequestParam Integer topicId,
+            @RequestParam Integer lessonId,
+            @RequestParam Integer score,
+            @RequestParam ProgressStatus status
+    ) {
+        return progressService.updateProgress(uId, topicId, lessonId, score, status);
     }
 }

@@ -1,31 +1,28 @@
 package group3.vietnamese_learning_web.repository;
+import group3.vietnamese_learning_web.projection.LessonWithProgressProjection;
 
-import group3.vietnamese_learning_web.dto.LessonWithProgressDTO;
+
 import group3.vietnamese_learning_web.model.Lesson;
-import org.springframework.data.jpa.repository.*;
-import org.springframework.stereotype.Repository;
+import group3.vietnamese_learning_web.model.LessonId;
+import group3.vietnamese_learning_web.model.LessonType;
+import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
 
-@Repository
-public interface LessonRepository extends JpaRepository<Lesson, Integer> {
+public interface LessonRepository extends JpaRepository<Lesson, LessonId> {
+    List<Lesson> findByIdTopicId(Integer topicId);
+    Optional<Lesson> findByIdTopicIdAndIdLessonId(Integer topicId, Integer lessonId);
+    List<Lesson> findByIdTopicIdAndLessonType(Integer topicId, LessonType lessonType);
+    long countByIdTopicId(Integer topicId);
 
-    @Query("""
-        SELECT new group3.vietnamese_learning_web.dto.LessonWithProgressDTO(
-            l.lessonId, l.topicId, l.lessonType,
-            COALESCE(p.status, 'Not_Started')
-        )
-        FROM group3.vietnamese_learning_web.model.Lesson l
-        LEFT JOIN group3.vietnamese_learning_web.model.Progress p
-            ON p.lessonId = l.lessonId AND p.topicId = l.topicId AND p.uId = :userId
-        WHERE l.topicId = :topicId
-        ORDER BY l.lessonId
-    """)
-    List<LessonWithProgressDTO> findLessonsWithProgress(@Param("topicId") int topicId, @Param("userId") int userId);
-
-
-
-    @Query("SELECT l FROM Lesson l WHERE l.lessonId = :lessonId AND l.topicId = :topicId")
-    Lesson findLessonByTopicAndLessonId(@Param("lessonId") int lessonId, @Param("topicId") int topicId);
+    @Query("SELECT l.id.topicId AS topicId, l.id.lessonId AS lessonId, l.lessonType AS lessonType, " +
+        "COALESCE(p.status, 'Not Started') AS status, p.score AS score " +
+        "FROM Lesson l LEFT JOIN Progress p " +
+        "ON l.id.topicId = p.id.topicId AND l.id.lessonId = p.id.lessonId AND p.id.uId = :userId " +
+        "WHERE l.id.topicId = :topicId")
+    List<LessonWithProgressProjection> findAllWithProgressByTopicIdAndUserId(@Param("topicId") Integer topicId, @Param("userId") Integer userId);
 }

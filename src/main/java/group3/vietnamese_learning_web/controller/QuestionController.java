@@ -1,49 +1,39 @@
-package group3.vietnamese_learning_web.controller;
+package group3.vietnamese_learning_web.service;
 
-import group3.vietnamese_learning_web.service.QuestionService;
-import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import group3.vietnamese_learning_web.dto.QuestionDTO;
+import group3.vietnamese_learning_web.model.Sentence;
+import group3.vietnamese_learning_web.model.Word;
+import group3.vietnamese_learning_web.repository.SentenceRepository;
+import group3.vietnamese_learning_web.repository.WordRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
-@Controller
-public class QuestionController {
+@Service
+@RequiredArgsConstructor
+public class QuestionService {
+    private final SentenceRepository sentenceRepository;
+    private final WordRepository wordRepository;
 
-    @Autowired private QuestionService questionService;
-
-    @GetMapping("/q0")
-    public String routeToQ0(@RequestParam("topicId") int topicId,
-                            @RequestParam("lessonId") int lessonId,
-                            HttpSession session,
-                            Model model) {
-
-        Map<String, Object> data = questionService.loadQuestionData(topicId, lessonId);
-        if (data.isEmpty()) return "redirect:/lessons?topicId=" + topicId;
-
-        session.setAttribute("quizData", data);
-        model.addAttribute("lessonType", data.get("lessonType")); // Optional: display on q0.html
-        return "q0"; // Thymeleaf view: templates/q0.html
+    // Example: Get all questions for a lesson (by sentence IDs)
+    public List<QuestionDTO> getQuestionsForLesson(List<Integer> sentenceIds) {
+        List<QuestionDTO> questions = new ArrayList<>();
+        for (Integer sId : sentenceIds) {
+            Sentence sentence = sentenceRepository.findById(sId).orElseThrow(() -> new RuntimeException("Sentence not found"));
+            List<Word> words = wordRepository.findBySIdOrderByIdxAsc(sId);
+            List<String> wordList = words.stream().map(Word::getEng).collect(Collectors.toList());
+            // Shuffle or apply your own logic for question type
+            questions.add(QuestionDTO.builder()
+                    .sId(sentence.getSId())
+                    .eng(sentence.getEng())
+                    .viet(sentence.getViet())
+                    .words(wordList)
+                    .build());
+        }
+        return questions;
     }
-
-    @SuppressWarnings("unchecked")
-    @GetMapping("/quiz-start")
-    public String resolveQuizType(HttpSession session) {
-        Map<String, Object> data = (Map<String, Object>) session.getAttribute("quizData");
-        if (data == null) return "redirect:/home";
-
-        String type = (String) data.get("lessonType");
-
-        return switch (type) {
-            case "Vocab" -> "redirect:/qtype1";
-            case "Fill_in_the_blank" -> "redirect:/qtype2";
-            case "Re_order_chars" -> "redirect:/qtype3";
-            case "Re_order_words" -> "redirect:/qtype4";
-            case "Listen_and_fill" -> "redirect:/qtype5";
-            default -> "redirect:/home";
-        };
-    }
-
 }

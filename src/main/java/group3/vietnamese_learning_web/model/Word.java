@@ -8,22 +8,33 @@ import lombok.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Word {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "w_id")
     private Integer wId;
 
-    @Column(name = "s_id", nullable = false)
-    private Integer sId;
+    @Column(nullable = false)
+    private Integer sId; // Foreign key to Sentence
 
-    @Column(name = "idx", nullable = false)
-    private Integer idx;
+    @Column(nullable = false)
+    private Integer idx; // Order of word in sentence
 
-    @Column(name = "word", nullable = false)
-    private String word;
+    @Column(nullable = false, length = 255)
+    private String viet;
 
-    @Column(name = "similar_words", columnDefinition = "TEXT")
-    private String similarWords;
+    @Column(columnDefinition = "TEXT")
+    private String vietSimilarWords;
+
+    @Column(nullable = false, length = 255)
+    private String eng;
+
+    @Column(columnDefinition = "TEXT")
+    private String engSimilarWords;
+
+    // Optional: Relationship to Sentence
+    // @ManyToOne(fetch = FetchType.LAZY)
+    // @JoinColumn(name = "s_id", insertable = false, updatable = false)
+    // private Sentence sentence;
 }

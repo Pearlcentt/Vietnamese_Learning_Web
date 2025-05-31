@@ -36,7 +36,7 @@ CREATE TABLE `Sentence` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `Lesson` (
-  `lesson_id`     INT            NOT NULL AUTO_INCREMENT,
+  `lesson_id`     INT            NOT NULL,
   `topic_id`      INT            NOT NULL,
   `lesson_type`   ENUM(
                     'Vocab',
@@ -45,8 +45,7 @@ CREATE TABLE `Lesson` (
                     'Re_order_chars',
                     'Listen_and_fill'
                   ) NOT NULL,
-  `s_id`          TEXT,
-  PRIMARY KEY (`lesson_id`, `topic_id`),
+  PRIMARY KEY (`topic_id`, `lesson_id`),
   CONSTRAINT `fk_lesson_topic`
     FOREIGN KEY (`topic_id`)
     REFERENCES `Topic` (`topic_id`)
@@ -71,18 +70,20 @@ CREATE TABLE `Progress` (
     ON UPDATE CASCADE
     ON DELETE CASCADE,
   CONSTRAINT `fk_progress_lesson`
-    FOREIGN KEY (`lesson_id`, `topic_id`)
-	REFERENCES `Lesson` (`lesson_id`, `topic_id`)
+    FOREIGN KEY (`topic_id`, `lesson_id`)
+	REFERENCES `Lesson` (`topic_id`, `lesson_id`)
     ON UPDATE CASCADE
     ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `Word` (
-  `w_id`          INT            NOT NULL AUTO_INCREMENT,
-  `s_id`          INT            NOT NULL,
-  `idx`           INT            NOT NULL,
-  `word`          VARCHAR(255)   NOT NULL,
-  `similar_words` TEXT,
+  `w_id`               INT            NOT NULL AUTO_INCREMENT,
+  `s_id`               INT            NOT NULL,
+  `idx`                INT            NOT NULL,
+  `viet`               VARCHAR(255)   NOT NULL,
+  `viet_similar_words` TEXT,
+  `eng`                VARCHAR(255)   NOT NULL,
+  `eng_similar_words`  TEXT,
   PRIMARY KEY (`w_id`),
   UNIQUE KEY `uk_word_sentence_idx` (`s_id`, `idx`),
   INDEX (`s_id`),
@@ -92,3 +93,22 @@ CREATE TABLE `Word` (
     ON UPDATE CASCADE
     ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+CREATE TABLE `Lesson_Sentence` (
+  `topic_id`  INT NOT NULL,
+  `lesson_id` INT NOT NULL,
+  `s_id`      INT NOT NULL,
+  PRIMARY KEY (`topic_id`, `lesson_id`, `s_id`),
+  CONSTRAINT `fk_lesson_sentence_lesson`
+    FOREIGN KEY (`topic_id`, `lesson_id`)
+    REFERENCES `Lesson` (`topic_id`, `lesson_id`)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE,
+  CONSTRAINT `fk_lesson_sentence_sentence`
+    FOREIGN KEY (`s_id`)
+    REFERENCES `Sentence` (`s_id`)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+

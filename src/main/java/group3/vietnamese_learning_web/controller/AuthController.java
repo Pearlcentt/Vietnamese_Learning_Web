@@ -1,45 +1,49 @@
 package group3.vietnamese_learning_web.controller;
 
-import group3.vietnamese_learning_web.model.User;
+import group3.vietnamese_learning_web.dto.UserLoginDTO;
+import group3.vietnamese_learning_web.dto.UserRegistrationDTO;
+import group3.vietnamese_learning_web.dto.UserResponseDTO;
 import group3.vietnamese_learning_web.service.AuthService;
-import jakarta.servlet.http.HttpSession;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
+@RequiredArgsConstructor
 public class AuthController {
-
-    @Autowired
-    private AuthService authService;
+    private final AuthService authService;
 
     @GetMapping("/login")
-    public String showLoginForm() {
-        return "login"; // View: templates/login.html
+    public String showLoginPage() {
+        return "login";
     }
 
     @PostMapping("/login")
-    public String loginUser(@RequestParam("email") String email,
-                            @RequestParam("password") String password,
-                            Model model,
-                            HttpSession session) {
-
-        return authService.authenticate(email, password)
-                .map(user -> {
-                    session.setAttribute("currentUser", user);
-                    return "redirect:/home";
-                })
-                .orElseGet(() -> {
-                    model.addAttribute("error", "Invalid email or password");
-                    return "login";
-                });
+    public String processLogin(@ModelAttribute UserLoginDTO dto, Model model) {
+        try {
+            UserResponseDTO user = authService.authenticate(dto);
+            model.addAttribute("user", user);
+            return "redirect:/dashboard";
+        } catch (RuntimeException e) {
+            model.addAttribute("error", e.getMessage());
+            return "login";
+        }
     }
 
-    @GetMapping("/logout")
-    public String logout(HttpSession session) {
-        session.invalidate();
-        return "redirect:/login";
+    @GetMapping("/register")
+    public String showRegistrationPage() {
+        return "register";
+    }
+
+    @PostMapping("/register")
+    public String processRegistration(@ModelAttribute UserRegistrationDTO dto, Model model) {
+        try {
+            authService.register(dto);
+            return "redirect:/login";
+        } catch (RuntimeException e) {
+            model.addAttribute("error", e.getMessage());
+            return "register";
+        }
     }
 }
-
