@@ -7,8 +7,10 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class LessonDTO {
+public class LessonWithProgressDTO {
     private Integer topicId;
     private Integer lessonId;
     private LessonType lessonType;
+    private String status;   // e.g. "Completed", "In Progress", "Not Started"
+    private Integer score;
 }

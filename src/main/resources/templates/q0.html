@@ -29,9 +29,10 @@
       "
       onmouseover="this.style.backgroundColor='#3cbf1f'"
       onmouseout="this.style.backgroundColor='#52f52a'"
+      onclick="window.location.href='/quiz-start'">
     >
-      Start
+      Start <span th:text="'(' + ${lessonType} + ')'">Loading...</span>
     </div>
-    <script src="../js/progress.js" defer></script>
+    <script th:src="@{/js/progress.js}" defer></script>
   </body>
 </html>

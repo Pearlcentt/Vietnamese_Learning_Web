@@ -226,6 +226,6 @@ document.addEventListener("DOMContentLoaded", () => {
     ".nav-item .logout-icon"
   ).parentElement;
   logoutNavItem.addEventListener("click", () => {
-    window.location.href = "../html/login.html";
+    window.location.href = "../html/index.html";
   });
 });

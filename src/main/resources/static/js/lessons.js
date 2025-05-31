@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   lessonBoxes.forEach((box) => {
     box.addEventListener("click", () => {
       const lessonId = box.id; // Lấy id của lesson-box được click
-      window.location.href = `../html/q0.html?lessonId=${lessonId}`;
+      window.location.href = `../html/q0.html?lessonId=${lessonId}&topicId=${topicId}`;
     });
   });
   const homeNavItem = document.getElementById("home-button");

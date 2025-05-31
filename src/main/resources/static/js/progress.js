@@ -160,9 +160,15 @@ function goToNextQuestion() {
     if (progressFill) {
       progressFill.style.width = "100%";
     }
+
     const doneButton = document.querySelector(".notify-done");
     if (doneButton) {
       doneButton.classList.add("enabled");
+    }
+
+    const topicId = new URLSearchParams(window.location.search).get("topicId");
+    if (topicId && lessonId) {
+      saveLessonProgress(topicId, lessonId);
     }
   }
 }
@@ -175,3 +181,13 @@ function resetProgress() {
     progressFill.style.width = "0%";
   }
 }
+
+function saveLessonProgress(topicId, lessonId) {
+  fetch(`/api/progress/complete?topicId=${topicId}&lessonId=${lessonId}`, {
+    method: "POST"
+  })
+      .then(res => res.text())
+      .then(msg => console.log("Progress Saved:", msg))
+      .catch(err => console.error("Failed to save progress", err));
+}
+

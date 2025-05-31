@@ -1,0 +1,22 @@
+USE vietnamese_web;
+
+SET FOREIGN_KEY_CHECKS = 0;
+
+TRUNCATE TABLE `Progress`;
+TRUNCATE TABLE `Word`;
+TRUNCATE TABLE `Lesson`;
+TRUNCATE TABLE `Sentence`;
+TRUNCATE TABLE `Topic`;
+TRUNCATE TABLE `User`;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+SHOW VARIABLES LIKE 'secure_file_priv';
+
+DROP TABLE `Progress`;
+DROP TABLE `Word`;
+DROP TABLE `Lesson`;
+DROP TABLE `Sentence`;
+DROP TABLE `Topic`;
+DROP TABLE `User`;
+

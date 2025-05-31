@@ -1,56 +1,50 @@
 package group3.vietnamese_learning_web.controller;
+
 import group3.vietnamese_learning_web.dto.LessonDTO;
+import group3.vietnamese_learning_web.model.LessonType;
 import group3.vietnamese_learning_web.service.LessonService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Controller
-@RequestMapping("/lessons")
 @RequiredArgsConstructor
+@RequestMapping("/lessons")
 public class LessonController {
     private final LessonService lessonService;
 
+    // 1. List all lessons in a topic
     @GetMapping
-    public String listLessons(Model model) {
-        model.addAttribute("lessons", lessonService.findAll());
-        return "lesson/list";
+    public String getLessonsByTopic(@RequestParam Integer topicId, Model model) {
+        List<LessonDTO> lessons = lessonService.getLessonsByTopicId(topicId);
+        model.addAttribute("lessons", lessons);
+        return "lessons";
     }
 
-    @GetMapping("/{id}")
-    public String detailLesson(@PathVariable Long id, Model model) {
-        model.addAttribute("lesson", lessonService.findById(id));
-        return "lesson/detail";
+    // 2. Get lesson detail (for question/answer view)
+    @GetMapping("/{topicId}/{lessonId}")
+    public String getLesson(@PathVariable Integer topicId, @PathVariable Integer lessonId, Model model) {
+        LessonDTO lesson = lessonService.getLesson(topicId, lessonId);
+        model.addAttribute("lesson", lesson);
+        return "lesson-detail";
     }
 
-    @GetMapping("/create")
-    public String createForm(Model model) {
-        model.addAttribute("lesson", new LessonDTO());
-        return "lesson/create";
+    // 3. List lessons by type in topic (for filtering)
+    @GetMapping("/by-type")
+    public String getLessonsByTypeInTopic(@RequestParam Integer topicId, @RequestParam LessonType lessonType, Model model) {
+        List<LessonDTO> lessons = lessonService.getLessonsByTypeInTopic(topicId, lessonType);
+        model.addAttribute("lessons", lessons);
+        return "lessons";
     }
 
-    @PostMapping
-    public String createLesson(@ModelAttribute LessonDTO dto) {
-        lessonService.createLesson(dto);
-        return "redirect:/lessons";
-    }
+    @GetMapping("/lessons/progress")
+    public String getLessonsWithProgress(@RequestParam Integer topicId, @RequestParam Integer userId, Model model) {
+        List<LessonWithProgressDTO> lessons = lessonService.getLessonsWithProgress(topicId, userId);
+        model.addAttribute("lessons", lessons);
+        return "lessons";
+}
 
-    @GetMapping("/edit/{id}")
-    public String editForm(@PathVariable Long id, Model model) {
-        model.addAttribute("lesson", lessonService.findById(id));
-        return "lesson/edit";
-    }
-
-    @PostMapping("/update/{id}")
-    public String updateLesson(@PathVariable Long id, @ModelAttribute LessonDTO dto) {
-        lessonService.updateLesson(id, dto);
-        return "redirect:/lessons";
-    }
-
-    @PostMapping("/delete/{id}")
-    public String deleteLesson(@PathVariable Long id) {
-        lessonService.deleteLesson(id);
-        return "redirect:/lessons";
-    }
 }

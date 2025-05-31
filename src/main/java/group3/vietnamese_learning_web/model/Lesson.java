@@ -3,24 +3,22 @@ package group3.vietnamese_learning_web.model;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
-
 @Entity
+@Table(name = "Lesson")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Lesson {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @EmbeddedId
+    private LessonId id;
 
-    private String title;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private LessonType lessonType;
 
-    @Column(length = 5000)
-    private String content;
-
-    private LocalDateTime createdAt;
-
-    private LocalDateTime updatedAt;
+    // Optional: Fetch topic data in code if needed
+    // @ManyToOne(fetch = FetchType.LAZY)
+    // @JoinColumn(name = "topic_id", insertable = false, updatable = false)
+    // private Topic topic;
 }
