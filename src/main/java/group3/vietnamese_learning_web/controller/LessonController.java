@@ -1,6 +1,7 @@
 package group3.vietnamese_learning_web.controller;
 
 import group3.vietnamese_learning_web.dto.LessonDTO;
+import group3.vietnamese_learning_web.dto.LessonWithProgressDTO;
 import group3.vietnamese_learning_web.model.LessonType;
 import group3.vietnamese_learning_web.service.LessonService;
 import lombok.RequiredArgsConstructor;

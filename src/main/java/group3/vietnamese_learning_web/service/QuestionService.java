@@ -22,13 +22,13 @@ public class QuestionService {
     // Example: Get all questions for a lesson (by sentence IDs)
     public List<QuestionDTO> getQuestionsForLesson(List<Integer> sentenceIds) {
         List<QuestionDTO> questions = new ArrayList<>();
-        for (Integer sId : sentenceIds) {
-            Sentence sentence = sentenceRepository.findById(sId).orElseThrow(() -> new RuntimeException("Sentence not found"));
-            List<Word> words = wordRepository.findBySIdOrderByIdxAsc(sId);
+        for (Integer sid : sentenceIds) {
+            Sentence sentence = sentenceRepository.findById(sid).orElseThrow(() -> new RuntimeException("Sentence not found"));
+            List<Word> words = wordRepository.findBySidOrderByIdxAsc(sid);
             List<String> wordList = words.stream().map(Word::getEng).collect(Collectors.toList());
             // Shuffle or apply your own logic for question type
             questions.add(QuestionDTO.builder()
-                    .sId(sentence.getSId())
+                    .sId(sentence.getSid())
                     .eng(sentence.getEng())
                     .viet(sentence.getViet())
                     .words(wordList)

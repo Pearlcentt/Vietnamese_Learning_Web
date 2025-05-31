@@ -13,7 +13,7 @@ public class Sentence {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "s_id")
-    private Integer sId;
+    private Integer sid;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String eng;

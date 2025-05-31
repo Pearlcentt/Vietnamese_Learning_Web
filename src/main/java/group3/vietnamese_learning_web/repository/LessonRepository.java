@@ -22,7 +22,7 @@ public interface LessonRepository extends JpaRepository<Lesson, LessonId> {
     @Query("SELECT l.id.topicId AS topicId, l.id.lessonId AS lessonId, l.lessonType AS lessonType, " +
         "COALESCE(p.status, 'Not Started') AS status, p.score AS score " +
         "FROM Lesson l LEFT JOIN Progress p " +
-        "ON l.id.topicId = p.id.topicId AND l.id.lessonId = p.id.lessonId AND p.id.uId = :userId " +
+        "ON l.id.topicId = p.id.topicId AND l.id.lessonId = p.id.lessonId AND p.id.uid = :userId " +
         "WHERE l.id.topicId = :topicId")
     List<LessonWithProgressProjection> findAllWithProgressByTopicIdAndUserId(@Param("topicId") Integer topicId, @Param("userId") Integer userId);
 }

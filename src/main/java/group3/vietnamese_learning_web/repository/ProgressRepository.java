@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ProgressRepository extends JpaRepository<Progress, ProgressId> {
-    List<Progress> findByIdUId(Integer uId);
-    List<Progress> findByIdUIdAndIdTopicId(Integer uId, Integer topicId);
-    Optional<Progress> findByIdUIdAndIdTopicIdAndIdLessonId(Integer uId, Integer topicId, Integer lessonId);
-    long countByIdUIdAndStatus(Integer uId, ProgressStatus status);
-    long countByIdUIdAndIdTopicIdAndStatus(Integer uId, Integer topicId, ProgressStatus status);
+    List<Progress> findByIdUid(Integer uid);
+    List<Progress> findByIdUidAndIdTopicId(Integer uid, Integer topicId);
+    Optional<Progress> findByIdUidAndIdTopicIdAndIdLessonId(Integer uid, Integer topicId, Integer lessonId);
+    long countByIdUidAndStatus(Integer uid, ProgressStatus status);
+    long countByIdUidAndIdTopicIdAndStatus(Integer uid, Integer topicId, ProgressStatus status);
 }

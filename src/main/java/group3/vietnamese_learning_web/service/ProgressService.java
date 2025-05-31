@@ -16,26 +16,26 @@ import java.util.stream.Collectors;
 public class ProgressService {
     private final ProgressRepository progressRepository;
 
-    public List<ProgressDTO> getProgressByUser(Integer uId) {
-        return progressRepository.findByIdUId(uId)
+    public List<ProgressDTO> getProgressByUser(Integer uid) {
+        return progressRepository.findByIdUid(uid)
                 .stream().map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
-    public List<ProgressDTO> getProgressByUserAndTopic(Integer uId, Integer topicId) {
-        return progressRepository.findByIdUIdAndIdTopicId(uId, topicId)
+    public List<ProgressDTO> getProgressByUserAndTopic(Integer uid, Integer topicId) {
+        return progressRepository.findByIdUidAndIdTopicId(uid, topicId)
                 .stream().map(this::toDTO)
                 .collect(Collectors.toList());
     }
 
-    public ProgressDTO getProgress(Integer uId, Integer topicId, Integer lessonId) {
-        return progressRepository.findByIdUIdAndIdTopicIdAndIdLessonId(uId, topicId, lessonId)
+    public ProgressDTO getProgress(Integer uid, Integer topicId, Integer lessonId) {
+        return progressRepository.findByIdUidAndIdTopicIdAndIdLessonId(uid, topicId, lessonId)
                 .map(this::toDTO)
                 .orElse(null);
     }
 
-    public ProgressDTO updateProgress(Integer uId, Integer topicId, Integer lessonId, Integer score, ProgressStatus status) {
-        ProgressId id = new ProgressId(uId, topicId, lessonId);
+    public ProgressDTO updateProgress(Integer uid, Integer topicId, Integer lessonId, Integer score, ProgressStatus status) {
+        ProgressId id = new ProgressId(uid, topicId, lessonId);
         Progress progress = progressRepository.findById(id).orElse(
                 Progress.builder().id(id).build()
         );
@@ -47,7 +47,7 @@ public class ProgressService {
 
     private ProgressDTO toDTO(Progress progress) {
         return ProgressDTO.builder()
-                .uId(progress.getId().getUId())
+                .uid(progress.getId().getUid())
                 .topicId(progress.getId().getTopicId())
                 .lessonId(progress.getId().getLessonId())
                 .score(progress.getScore())

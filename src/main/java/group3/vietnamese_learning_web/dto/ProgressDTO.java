@@ -8,7 +8,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class ProgressDTO {
-    private Integer uId;
+    private Integer uid;
     private Integer topicId;
     private Integer lessonId;
     private Integer score;

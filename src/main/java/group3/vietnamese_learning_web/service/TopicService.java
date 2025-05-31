@@ -38,7 +38,7 @@ public class TopicService {
         List<Topic> topics = topicRepository.findAll();
         return topics.stream().map(topic -> {
             int total = (int) lessonRepository.countByIdTopicId(topic.getTopicId());
-            int completed = (int) progressRepository.countByIdUIdAndIdTopicIdAndStatus(uId, topic.getTopicId(), com.vietnamese_learning_web.model.ProgressStatus.Completed);
+            int completed = (int) progressRepository.countByIdUidAndIdTopicIdAndStatus(uId, topic.getTopicId(), group3.vietnamese_learning_web.model.ProgressStatus.Completed);
             return TopicProgressDTO.builder()
                     .topicId(topic.getTopicId())
                     .topicName(topic.getTopicName())

@@ -16,7 +16,7 @@ public class Word {
     private Integer wId;
 
     @Column(nullable = false)
-    private Integer sId; // Foreign key to Sentence
+    private Integer sid; // Foreign key to Sentence
 
     @Column(nullable = false)
     private Integer idx; // Order of word in sentence

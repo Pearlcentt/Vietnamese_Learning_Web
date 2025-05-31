@@ -9,7 +9,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProgressId implements Serializable {
-    private Integer uId;
+    private Integer uid;
     private Integer topicId;
     private Integer lessonId;
 }
