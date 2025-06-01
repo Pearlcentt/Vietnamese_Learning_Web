@@ -12,39 +12,50 @@
   <!-- Left Sidebar -->
   <div class="sidebar">
     <div class="logo">
-      <h1>vietlingo</h1>
+      <h1>VietLingo</h1>
     </div>
     <div class="nav-items">
-      <div class="nav-item active">
+      <!-- LEARN -->
+      <a th:href="@{/dashboard}" class="nav-item active">
         <div class="nav-icon home-icon">
           <img th:src="@{/images/play-button.png}" alt="Learn" />
         </div>
         <span class="nav-text">LEARN</span>
-      </div>
-      <div class="nav-item">
+      </a>
+
+      <!-- LEADERBOARDS -->
+      <a th:href="@{/leaderboard}" class="nav-item">
         <div class="nav-icon">
           <img th:src="@{/images/businessman-with-target.png}" alt="Leaderboards" />
         </div>
         <span class="nav-text">LEADERBOARDS</span>
-      </div>
-      <div class="nav-item">
+      </a>
+
+      <!-- QUESTS -->
+      <a th:href="@{/q0}" class="nav-item">
         <div class="nav-icon">
           <img th:src="@{/images/treasure-chest.png}" alt="Quests" />
         </div>
         <span class="nav-text">QUESTS</span>
-      </div>
-      <div class="nav-item">
+      </a>
+
+      <!-- PROFILE -->
+      <a th:href="@{/profile_add_friend}" class="nav-item">
         <div class="nav-icon">
           <img th:src="@{/images/person.png}" alt="Profile" />
         </div>
         <span class="nav-text">PROFILE</span>
-      </div>
-      <div class="nav-item" onclick="logout()">
-        <div class="nav-icon logout-icon">
-          <img th:src="@{/images/log_out.png}" alt="log_out" />
-        </div>
-        <span class="nav-text">LOGOUT</span>
-      </div>
+      </a>
+
+      <!-- LOGOUT (should POST for security, see below) -->
+      <form th:action="@{/logout}" method="post" class="nav-item" style="margin:0; padding:0; background:none; border:none;">
+        <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center;">
+          <div class="nav-icon logout-icon">
+            <img th:src="@{/images/log_out.png}" alt="log_out" />
+          </div>
+          <span class="nav-text">LOGOUT</span>
+        </button>
+      </form>
     </div>
   </div>
 
@@ -116,11 +127,11 @@
         </div>
         <div class="stat-item gems">
           <img th:src="@{/images/gem.png}" alt="Gems" />
-          <div class="count" th:text="${user?.gems != null ? user.gems : '505'}">505</div>
+          <div class="count" th:text="${user?.gems}">gems</div>
         </div>
         <div class="stat-item hearts">
           <img th:src="@{/images/heart.png}" alt="Hearts" />
-          <div class="count" th:text="${user?.hearts != null ? user.hearts : '4'}">4</div>
+          <div class="count">4</div>
         </div>
       </div>
     </div>

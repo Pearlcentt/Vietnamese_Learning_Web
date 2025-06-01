@@ -16,4 +16,6 @@ public class UserResponseDTO {
     private String name;
     private LocalDate dob;
     private Gender gender;
+    private int streak;
+    private int gems;
 }

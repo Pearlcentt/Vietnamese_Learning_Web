@@ -1,6 +1,7 @@
 package group3.vietnamese_learning_web.service;
 
 import group3.vietnamese_learning_web.model.User;
+import group3.vietnamese_learning_web.repository.ProgressRepository;
 import group3.vietnamese_learning_web.repository.UserRepository;
 import group3.vietnamese_learning_web.dto.UserRegistrationDTO;
 import group3.vietnamese_learning_web.dto.UserLoginDTO;
@@ -13,7 +14,14 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
+
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +29,7 @@ public class AuthService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ProgressRepository progressRepository;
 
     public UserResponseDTO register(UserRegistrationDTO dto) {
         if (userRepository.findByEmail(dto.getEmail()).isPresent() ||
@@ -77,17 +86,40 @@ public class AuthService implements UserDetailsService {
                 .name(user.get().getName())
                 .dob(user.get().getDob())
                 .gender(user.get().getGender())
+                .gems(306)
                 .build();
     }
 
-    private UserResponseDTO toResponseDTO(User user) {
-        return UserResponseDTO.builder()
+    public int calculateStreak(Integer uid) {
+        List<Timestamp> progressDates = progressRepository.findDistinctProgressDatesByUid(uid);
+        Set<LocalDate> daysWithProgress = progressDates.stream()
+                .map(ts -> ts.toLocalDateTime().toLocalDate())
+                .collect(Collectors.toSet());
+
+        LocalDate today = LocalDate.now();
+        int streak = 0;
+
+        // Count backward from today until you find a day with no progress
+        while (daysWithProgress.contains(today.minusDays(streak))) {
+            streak++;
+        }
+        return streak;
+    }
+
+    public UserResponseDTO toResponseDTO(User user) {
+        UserResponseDTO dto = UserResponseDTO.builder()
                 .uId(user.getUId())
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .name(user.getName())
                 .dob(user.getDob())
                 .gender(user.getGender())
+                .gems(306)
                 .build();
+
+        // Set streak
+        int streak = calculateStreak(user.getUId());
+        dto.setStreak(streak);
+        return dto;
     }
 }

@@ -24,7 +24,6 @@ public class HomeController {
     private final AuthService authService;
 
 
-    // Show dashboard with user topic progress
     @GetMapping("/dashboard")
     public String dashboard(@RequestParam(required = false) Integer uId,
                             Model model, HttpSession session) {
@@ -45,26 +44,20 @@ public class HomeController {
         }
 
 
-
-//        UserResponseDTO user = userService.findByUsername(username);
-//        Integer userId = user.getUId();
-
-//        UserResponseDTO user_dto = authService.getUserByUsername(authentication.getName());
-//
-//        System.out.println(user_dto);
         String username = authentication.getName();
         UserResponseDTO user = authService.getUserByUsername(username);
         Integer userId = user.getUId();
 
         if (userId == null) {
-            // User not logged in, redirect to log in
             return "redirect:/login";
         }
 
         try {
+            int streak = authService.calculateStreak(userId);
+            user.setStreak(streak);
             List<TopicProgressDTO> topics = topicService.getTopicProgressByUser(userId);
             model.addAttribute("topics", topics);
-            model.addAttribute("user", user != null ? user : new UserResponseDTO()); // Provide user info to template
+            model.addAttribute("user", user); // Provide user info to template
 
             return "dashboard"; // Your main dashboard template (the one with the HTML you provided)
         } catch (Exception e) {
@@ -76,9 +69,10 @@ public class HomeController {
     // Handle root path
     @GetMapping("/")
     public String home(HttpSession session) {
-        UserResponseDTO user = (UserResponseDTO) session.getAttribute("user");
-        if (user != null) {
-            return "dashboard";
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()
+                && !"anonymousUser".equals(authentication.getPrincipal())) {
+            return "redirect:/dashboard";
         }
         return "redirect:/login";
     }

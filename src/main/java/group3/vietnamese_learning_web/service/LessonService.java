@@ -8,6 +8,7 @@ import group3.vietnamese_learning_web.repository.LessonRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -60,5 +61,12 @@ public class LessonService {
                 .score(p.getScore())
                 .build())
             .collect(Collectors.toList());
+    }
+
+    public List<LessonWithProgressDTO> getLessonsWithProgressByType(Integer topicId, Integer userId, LessonType lessonType) {
+        return getLessonsWithProgress(topicId, userId)
+                .stream()
+                .filter(lesson -> lesson.getLessonType() == lessonType)
+                .collect(Collectors.toList());
     }
 }
