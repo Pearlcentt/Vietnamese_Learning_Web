@@ -21,9 +21,7 @@ public class LeaderboardService {
 
     private final UserRepository userRepository;
     private final ProgressRepository progressRepository;
-    private final AuthService authService;
-
-    public List<UserResponseDTO> getTopUsers(int limit) {
+    private final AuthService authService;    public List<UserResponseDTO> getTopUsers(int limit) {
         // Get users with their progress scores instead of points
         List<Object[]> userScores = progressRepository.sumScoresGroupByUserId();
         Map<Integer, Integer> userScoreMap = new HashMap<>();
@@ -34,8 +32,17 @@ public class LeaderboardService {
             userScoreMap.put(userId, totalScore);
         }
 
-        // Get all users and sort by their progress scores
+        // Update user points in database to match calculated Progress scores
         List<User> allUsers = userRepository.findAll();
+        for (User user : allUsers) {
+            Integer progressScore = userScoreMap.getOrDefault(user.getUId(), 0);
+            if (!progressScore.equals(user.getPoints())) {
+                user.setPoints(progressScore);
+                userRepository.save(user);
+            }
+        }
+
+        // Get all users and sort by their progress scores
         return allUsers.stream()
                 .sorted((u1, u2) -> {
                     Integer score1 = userScoreMap.getOrDefault(u1.getUId(), 0);
@@ -50,22 +57,61 @@ public class LeaderboardService {
                     return dto;
                 })
                 .collect(Collectors.toList());
-    }
-
-    public void addPoints(User user, int points) {
+    }    public void addPoints(User user, int points) {
         // This method is now deprecated as we calculate points from Progress table
         // Keep for backward compatibility but don't actually modify user points
         // Points are now calculated dynamically from Progress scores
+        // Instead, trigger a sync of points from Progress table
+        syncUserPointsFromProgress(user.getUId());
     }
 
     public void addPoints(Integer userId, int points) {
-        // This method is now deprecated as we calculate points from Progress table
+        // This method is now deprecated as we calculate points from Progress table  
         // Keep for backward compatibility but don't actually modify user points
         // Points are now calculated dynamically from Progress scores
+        // Instead, trigger a sync of points from Progress table
+        syncUserPointsFromProgress(userId);
     }
 
     public int getUserProgressScore(Integer userId) {
         return progressRepository.sumScoresByUserId(userId);
+    }
+
+    /**
+     * Synchronizes user's points field with their calculated Progress scores
+     */
+    public void syncUserPointsFromProgress(Integer userId) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user != null) {
+            Integer progressScore = getUserProgressScore(userId);
+            if (!progressScore.equals(user.getPoints())) {
+                user.setPoints(progressScore);
+                userRepository.save(user);
+            }
+        }
+    }
+
+    /**
+     * Synchronizes all users' points fields with their calculated Progress scores
+     */
+    public void syncAllUserPointsFromProgress() {
+        List<Object[]> userScores = progressRepository.sumScoresGroupByUserId();
+        Map<Integer, Integer> userScoreMap = new HashMap<>();
+
+        for (Object[] row : userScores) {
+            Integer userId = (Integer) row[0];
+            Integer totalScore = ((Number) row[1]).intValue();
+            userScoreMap.put(userId, totalScore);
+        }
+
+        List<User> allUsers = userRepository.findAll();
+        for (User user : allUsers) {
+            Integer progressScore = userScoreMap.getOrDefault(user.getUId(), 0);
+            if (!progressScore.equals(user.getPoints())) {
+                user.setPoints(progressScore);
+                userRepository.save(user);
+            }
+        }
     }
 
     public int getUserRank(User user) {

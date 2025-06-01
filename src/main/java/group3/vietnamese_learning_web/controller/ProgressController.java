@@ -50,8 +50,7 @@ public class ProgressController {
             @RequestParam Integer score,
             @RequestParam ProgressStatus status) {
         return progressService.updateProgress(uid, topicId, lessonId, score, status);
-    } // Complete lesson endpoint called from frontend @PostMapping("/complete")
-
+    } // Complete lesson endpoint called from frontend    @PostMapping("/complete")
     public ResponseEntity<String> completeLesson(
             @RequestParam Integer topicId,
             @RequestParam Integer lessonId,
@@ -64,11 +63,14 @@ public class ProgressController {
             // Check if lesson was already completed
             ProgressDTO existingProgress = progressService.getProgress(userId, topicId, lessonId);
             boolean wasAlreadyCompleted = existingProgress != null &&
-                    existingProgress.getStatus() == ProgressStatus.Completed; // Mark lesson as completed with max score
+                    existingProgress.getStatus() == ProgressStatus.Completed; 
+            
+            // Mark lesson as completed with max score
             progressService.updateProgress(userId, topicId, lessonId, 100, ProgressStatus.Completed);
 
-            // Points are now calculated dynamically from Progress table scores
-            // No need to manually add points - they're calculated from progress scores
+            // Sync user points with updated Progress scores
+            leaderboardService.syncUserPointsFromProgress(userId);
+
             if (!wasAlreadyCompleted) {
                 return ResponseEntity.ok("Lesson completed successfully! Your score has been updated!");
             } else {
