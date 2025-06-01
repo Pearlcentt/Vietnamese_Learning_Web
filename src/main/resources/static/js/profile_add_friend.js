@@ -1,4 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- Access server-provided data (from the <script th:inline="javascript"> block) ---
+    const currentUserData = window.serverData.currentUser;
+    const sampleAvatars = window.serverData.sampleAvatars;
+    const defaultAvatarUrl = window.serverData.defaultAvatarUrl;
+    const csrfToken = window.serverData.csrfToken;
+    const csrfHeaderName = window.serverData.csrfHeaderName;
+    const backendUrls = window.serverData.urls;
+
     // --- Main Views ---
     const profileView = document.getElementById('profileView');
     const editProfileView = document.getElementById('editProfileView');
@@ -22,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const editAvatarPreview = document.getElementById('editAvatarPreview');
     const selectedAvatarUrlInput = document.getElementById('selectedAvatarUrlInput');
     const editNameInput = document.getElementById('editNameInput');
-    const editUsernameInput = document.getElementById('editUsernameInput');
+    const editUsernameInput = document.getElementById('editUsernameInput'); // Username is usually read-only
     const editEmailInput = document.getElementById('editEmailInput');
     const editCurrentPasswordInput = document.getElementById('editCurrentPasswordInput');
     const editNewPasswordInput = document.getElementById('editNewPasswordInput');
@@ -55,54 +63,57 @@ document.addEventListener('DOMContentLoaded', () => {
     const sentRequestCountBadge = document.getElementById('sentRequestCountBadge');
     const friendRequestsListUiReceived = document.getElementById('friendRequestsListUiReceived');
     const friendRequestsListUiSent = document.getElementById('friendRequestsListUiSent');
-    const noFriendRequestsMessage = document.getElementById('noFriendRequestsMessage'); // Chung cho cả 2 tab
+    const noFriendRequestsMessage = document.getElementById('noFriendRequestsMessage');
 
     const friendListUi = document.getElementById('friendListUi');
     const noFriendsMessage = document.getElementById('noFriendsMessage');
 
+    let currentSelectedAvatarInModal = currentUserData ? currentUserData.avatarUrl : defaultAvatarUrl;
 
-    // --- Mock Data (Thay thế bằng API calls) ---
-    let currentUserData = {
-        displayName: "bhuy",
-        username: "bhuy690413",
-        joinedDate: "March 2025",
-        followingCount: 5,
-        followersCount: 10,
-        dayStreak: 1,
-        totalXP: 14,
-        currentLeague: "None",
-        top3Finishes: 0,
-        email: "buivanhuy0701@gmail.com",
-        avatarUrl: "../html/images/default_avatar.png",
-        languageLearning: { // Dữ liệu cho sidebar badges
-            name: "VIETNAMESE",
-            flag: "../html/images/vietnam.png", // Cần có ảnh này
-            streak: 32, // Có thể khác dayStreak chính
-            gems: 505
-        },
-        friends: [
-            { id: 1, name: "Lisa", avatar: "../html/images/avatar1.png" },
-            { id: 2, name: "Mark", avatar: "../html/images/avatar2.png" }
-        ],
-        friendRequests: {
-            received: [
-                { id: 101, name: "John", avatar: "../html/images/avatar3.png" },
-                { id: 102, name: "David", avatar: "../html/images/avatar4.png" }
-            ],
-            sent: [
-                { id: 201, name: "Rice", avatar: "../html/images/avatar5.png" }
-            ]
+    // --- Helper function for AJAX calls ---
+    async function makeApiCall(url, method = 'GET', body = null, isFormData = false) {
+        const headers = {};
+        if (csrfToken && csrfHeaderName) {
+            headers[csrfHeaderName] = csrfToken;
         }
-    };
 
-    const sampleAvatars = [ // Đường dẫn đến các avatar mẫu
-        "../html/images/avatar1.png", "../html/images/avatar2.png", "../html/images/avatar3.png", "../html/images/avatar4.png",
-        "../html/images/avatar7.png", "../html/images/avatar5.png", "../html/images/avatar6.png"
-    ];
-    let currentSelectedAvatarInModal = currentUserData.avatarUrl;
+        const options = {
+            method: method,
+            headers: headers
+        };
+
+        if (body) {
+            if (isFormData) {
+                options.body = body; // body is already FormData
+            } else {
+                headers['Content-Type'] = 'application/json';
+                options.body = JSON.stringify(body);
+            }
+        }
+
+        try {
+            const response = await fetch(url, options);
+            if (!response.ok) {
+                const errorData = await response.text(); // Or response.json() if your backend sends JSON errors
+                console.error('API Error:', response.status, errorData);
+                throw new Error(`HTTP error! status: ${response.status}, message: ${errorData}`);
+            }
+            if (response.headers.get("content-type")?.includes("application/json")) {
+                return await response.json();
+            }
+            return await response.text(); // Or handle other content types
+        } catch (error) {
+            console.error('Fetch error:', error);
+            alert('An error occurred. Please try again.');
+            throw error;
+        }
+    }
+
 
     // --- Functions ---
     function loadProfileDisplayData() {
+        if (!currentUserData) return;
+
         displayNameEl.textContent = currentUserData.displayName;
         usernameEl.textContent = currentUserData.username;
         joinedDateEl.textContent = currentUserData.joinedDate;
@@ -112,38 +123,43 @@ document.addEventListener('DOMContentLoaded', () => {
         totalXPEl.textContent = currentUserData.totalXP;
         currentLeagueEl.textContent = currentUserData.currentLeague;
         top3FinishesEl.textContent = currentUserData.top3Finishes;
-        profileAvatarDisplay.src = currentUserData.avatarUrl;
+        profileAvatarDisplay.src = currentUserData.avatarUrl || defaultAvatarUrl;
     }
 
     function loadEditFormData() {
+        if (!currentUserData) return;
+
         editNameInput.value = currentUserData.displayName;
-        editUsernameInput.value = currentUserData.username;
+        editUsernameInput.value = currentUserData.username; // Usually not editable
         editEmailInput.value = currentUserData.email;
-        editAvatarPreview.src = currentUserData.avatarUrl;
-        selectedAvatarUrlInput.value = currentUserData.avatarUrl;
+        editAvatarPreview.src = currentUserData.avatarUrl || defaultAvatarUrl;
+        selectedAvatarUrlInput.value = currentUserData.avatarUrl || defaultAvatarUrl;
         editCurrentPasswordInput.value = "";
         editNewPasswordInput.value = "";
     }
 
     function loadSidebarBadges() {
-        if (currentUserData.languageLearning) {
-            userFlagSidebar.src = currentUserData.languageLearning.flag;
-            userLanguageSidebar.textContent = currentUserData.languageLearning.name.toUpperCase();
-            userStreakSidebar.textContent = currentUserData.languageLearning.streak;
-            userGemsSidebar.textContent = currentUserData.languageLearning.gems;
-        }
+        if (!currentUserData || !currentUserData.languageLearning) return;
+
+        const lang = currentUserData.languageLearning;
+        if (userFlagSidebar) userFlagSidebar.src = lang.flag || defaultAvatarUrl; // Use a default flag image
+        if (userLanguageSidebar) userLanguageSidebar.textContent = lang.name ? lang.name.toUpperCase() : 'LANGUAGE';
+        if (userStreakSidebar) userStreakSidebar.textContent = lang.streak || 0;
+        if (userGemsSidebar) userGemsSidebar.textContent = lang.gems || 0;
     }
 
     function renderFriendList() {
         friendListUi.innerHTML = '';
-        if (currentUserData.friends.length === 0) {
-            noFriendsMessage.style.display = 'block';
+        const friends = currentUserData && currentUserData.friends ? currentUserData.friends : [];
+
+        if (friends.length === 0) {
+            if (noFriendsMessage) noFriendsMessage.style.display = 'block';
         } else {
-            noFriendsMessage.style.display = 'none';
-            currentUserData.friends.forEach(friend => {
+            if (noFriendsMessage) noFriendsMessage.style.display = 'none';
+            friends.forEach(friend => {
                 const li = document.createElement('li');
                 li.innerHTML = `
-                    <img src="${friend.avatar || '../html/images/default_avatar.png'}" alt="${friend.name} Avatar">
+                    <img src="${friend.avatar || defaultAvatarUrl}" alt="${friend.name} Avatar">
                     <span>${friend.name}</span>
                     <button class="unfriend-btn" data-friend-id="${friend.id}" title="Unfriend"><i class="fas fa-user-minus"></i></button>
                 `;
@@ -154,25 +170,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderFriendRequests(type = 'received') {
         const listUi = type === 'received' ? friendRequestsListUiReceived : friendRequestsListUiSent;
-        const requests = currentUserData.friendRequests[type] || [];
+        if (!listUi) return;
+
+        const requests = currentUserData && currentUserData.friendRequests && currentUserData.friendRequests[type] ? currentUserData.friendRequests[type] : [];
 
         listUi.innerHTML = '';
-        receivedRequestCountBadge.textContent = currentUserData.friendRequests.received.length;
-        sentRequestCountBadge.textContent = currentUserData.friendRequests.sent.length;
+        if (receivedRequestCountBadge) receivedRequestCountBadge.textContent = (currentUserData?.friendRequests?.received?.length || 0).toString();
+        if (sentRequestCountBadge) sentRequestCountBadge.textContent = (currentUserData?.friendRequests?.sent?.length || 0).toString();
 
-        // Hiển thị/ẩn list tương ứng
         friendRequestsListUiReceived.style.display = type === 'received' ? 'block' : 'none';
         friendRequestsListUiSent.style.display = type === 'sent' ? 'block' : 'none';
 
+        const activeListVisible = (type === 'received' && friendRequestsListUiReceived.style.display === 'block') ||
+            (type === 'sent' && friendRequestsListUiSent.style.display === 'block');
 
         if (requests.length === 0) {
-            // Chỉ hiển thị "no requests" nếu tab hiện tại không có request
-            if ((type === 'received' && friendRequestsListUiReceived.style.display === 'block') ||
-                (type === 'sent' && friendRequestsListUiSent.style.display === 'block')) {
+            if (noFriendRequestsMessage && activeListVisible) {
                 noFriendRequestsMessage.style.display = 'block';
             }
         } else {
-            noFriendRequestsMessage.style.display = 'none';
+            if (noFriendRequestsMessage) noFriendRequestsMessage.style.display = 'none';
             requests.forEach(request => {
                 const li = document.createElement('li');
                 let actionsHtml = '';
@@ -187,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     `;
                 }
                 li.innerHTML = `
-                    <img src="${request.avatar || '../html/images/default_avatar.png'}" alt="${request.name} Avatar">
+                    <img src="${request.avatar || defaultAvatarUrl}" alt="${request.name} Avatar">
                     <span class="fr-info-name">${request.name}</span>
                     <div class="fr-actions-btns">${actionsHtml}</div>
                 `;
@@ -200,13 +217,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Avatar Modal Logic ---
     function populateAvatarSelectionGrid() {
         avatarSelectionGrid.innerHTML = '';
-        sampleAvatars.forEach(avatarSrc => {
+        (sampleAvatars || []).forEach(avatarSrc => {
             const img = document.createElement('img');
-            img.src = avatarSrc;
+            img.src = avatarSrc; 
             img.alt = "Avatar option";
             img.classList.add('avatar-option');
             img.dataset.src = avatarSrc;
-            if (avatarSrc === currentSelectedAvatarInModal) { // Sử dụng biến tạm để theo dõi lựa chọn trong modal
+            if (avatarSrc === currentSelectedAvatarInModal) {
                 img.classList.add('selected');
             }
             img.addEventListener('click', () => {
@@ -219,7 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function openAvatarModal() {
-        currentSelectedAvatarInModal = currentUserData.avatarUrl; // Reset lựa chọn trong modal về avatar hiện tại
+        currentSelectedAvatarInModal = currentUserData ? currentUserData.avatarUrl : defaultAvatarUrl;
         populateAvatarSelectionGrid();
         avatarModal.style.display = 'block';
     }
@@ -236,36 +253,48 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (confirmAvatarSelectionBtn) {
-        confirmAvatarSelectionBtn.addEventListener('click', () => {
-            if (currentSelectedAvatarInModal) {
+        confirmAvatarSelectionBtn.addEventListener('click', async () => {
+            if (currentSelectedAvatarInModal && currentUserData) {
+                // Optimistic update
                 currentUserData.avatarUrl = currentSelectedAvatarInModal;
-                profileAvatarDisplay.src = currentSelectedAvatarInModal;
-                editAvatarPreview.src = currentSelectedAvatarInModal;
-                selectedAvatarUrlInput.value = currentSelectedAvatarInModal;
+                if (profileAvatarDisplay) profileAvatarDisplay.src = currentSelectedAvatarInModal;
+                if (editAvatarPreview) editAvatarPreview.src = currentSelectedAvatarInModal;
+                if (selectedAvatarUrlInput) selectedAvatarUrlInput.value = currentSelectedAvatarInModal;
+
                 console.log("Avatar selected (from list):", currentSelectedAvatarInModal);
-                // **BACKEND INTEGRATION POINT**: Gửi `currentUserData.avatarUrl` lên server
+                // **BACKEND INTEGRATION POINT**: Send selectedAvatarUrlInput.value with the main profile update form
+                // Or, if you want to update avatar immediately:
+                // try {
+                //    await makeApiCall(backendUrls.updateProfile, 'POST', { avatarUrl: currentSelectedAvatarInModal });
+                //    alert('Avatar updated!');
+                // } catch (e) { /* handle error, revert optimistic update if needed */ }
             }
             closeAvatarModal();
         });
     }
 
     if (avatarUploadInput) {
-        avatarUploadInput.addEventListener('change', function (event) {
+        avatarUploadInput.addEventListener('change', async function (event) {
             if (event.target.files && event.target.files[0]) {
                 const file = event.target.files[0];
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    const uploadedImageUrl = e.target.result;
-                    currentUserData.avatarUrl = uploadedImageUrl;
-                    profileAvatarDisplay.src = uploadedImageUrl;
-                    editAvatarPreview.src = uploadedImageUrl;
-                    selectedAvatarUrlInput.value = uploadedImageUrl;
-                    console.log("Avatar uploaded (client preview):", uploadedImageUrl);
-                    // **BACKEND INTEGRATION POINT**: Upload `file` lên server
-                    // Sau khi server trả về URL đã lưu, cập nhật lại currentUserData.avatarUrl
+                const formData = new FormData();
+                formData.append('avatarFile', file);
+
+                try {
+                    const response = await makeApiCall(backendUrls.uploadAvatar, 'POST', formData, true);
+                    const uploadedImageUrl = typeof response === 'string' ? response : response.avatarUrl; // Adjust based on server response
+
+                    if (currentUserData) currentUserData.avatarUrl = uploadedImageUrl;
+                    if (profileAvatarDisplay) profileAvatarDisplay.src = uploadedImageUrl;
+                    if (editAvatarPreview) editAvatarPreview.src = uploadedImageUrl;
+                    if (selectedAvatarUrlInput) selectedAvatarUrlInput.value = uploadedImageUrl;
+
+                    console.log("Avatar uploaded and URL received:", uploadedImageUrl);
+                    alert('Avatar uploaded successfully!');
                     closeAvatarModal();
+                } catch (e) {
+                    alert('Avatar upload failed.');
                 }
-                reader.readAsDataURL(file);
             }
         });
     }
@@ -273,41 +302,48 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Event Listeners ---
     if (editProfileBtn) {
         editProfileBtn.addEventListener('click', () => {
-            profileView.style.display = 'none';
-            profileView.classList.remove('profile-view-active');
-            editProfileView.style.display = 'block';
+            if (profileView) profileView.style.display = 'none';
+            if (profileView) profileView.classList.remove('profile-view-active');
+            if (editProfileView) editProfileView.style.display = 'block';
             loadEditFormData();
         });
     }
 
     if (cancelEditProfileBtn) {
         cancelEditProfileBtn.addEventListener('click', () => {
-            editProfileView.style.display = 'none';
-            profileView.style.display = 'block'; // Hoặc 'block' tùy theo CSS của bạn
-            profileView.classList.add('profile-view-active');
+            if (editProfileView) editProfileView.style.display = 'none';
+            if (profileView) profileView.style.display = 'block';
+            if (profileView) profileView.classList.add('profile-view-active');
         });
     }
 
     if (editProfileForm) {
-        editProfileForm.addEventListener('submit', (e) => {
+        editProfileForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            currentUserData.displayName = editNameInput.value;
-            currentUserData.email = editEmailInput.value;
-            // currentUserData.avatarUrl đã được cập nhật qua modal hoặc selectedAvatarUrlInput
-            // Logic xử lý password cần thêm (kiểm tra current, hash new)
-            console.log("Saving profile:", {
-                name: currentUserData.displayName,
-                email: currentUserData.email,
-                avatarUrl: currentUserData.avatarUrl,
-                currentPassword: editCurrentPasswordInput.value, // Chỉ để log, cần xử lý thực tế
-                newPassword: editNewPasswordInput.value       // Chỉ để log
-            });
-            // **BACKEND INTEGRATION POINT**: Gửi dữ liệu lên server
-            alert('Hồ sơ đã được cập nhật (demo)!');
-            loadProfileDisplayData(); // Cập nhật lại view chính
-            editProfileView.style.display = 'none';
-            profileView.style.display = 'block';
-            profileView.classList.add('profile-view-active');
+            const formData = {
+                displayName: editNameInput.value,
+                email: editEmailInput.value,
+                selectedAvatarUrl: selectedAvatarUrlInput.value, // This should be the URL of the chosen avatar
+                currentPassword: editCurrentPasswordInput.value,
+                newPassword: editNewPasswordInput.value
+            };
+
+            try {
+                const updatedUser = await makeApiCall(backendUrls.updateProfile, 'POST', formData);
+                // Assuming server returns the updated user object or relevant parts
+                if (currentUserData && updatedUser) { // Merge or replace currentUserData
+                    Object.assign(currentUserData, updatedUser); // Simple merge, adjust as needed
+                }
+
+                alert('Profile updated successfully!');
+                loadProfileDisplayData(); // Refresh main view
+                if (editProfileView) editProfileView.style.display = 'none';
+                if (profileView) profileView.style.display = 'block';
+                if (profileView) profileView.classList.add('profile-view-active');
+
+            } catch (error) {
+                alert('Failed to update profile. Please check the details and try again.');
+            }
         });
     }
 
@@ -332,36 +368,47 @@ document.addEventListener('DOMContentLoaded', () => {
             const passwordInput = this.previousElementSibling;
             const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
             passwordInput.setAttribute('type', type);
-            this.classList.toggle('fa-eye-slash');
-            this.classList.toggle('fa-eye', type === 'password');
+            this.classList.toggle('fa-eye-slash'); // Show slash when text
+            this.classList.toggle('fa-eye', type === 'password'); // Show eye when password
         });
     });
 
     if (searchFriendBtn && findFriendInput) {
-        searchFriendBtn.addEventListener('click', () => {
-            const searchTerm = findFriendInput.value.trim().toLowerCase();
+        searchFriendBtn.addEventListener('click', async () => {
+            const searchTerm = findFriendInput.value.trim();
             searchResultsUi.innerHTML = '';
             if (!searchTerm) {
-                searchResultsUi.innerHTML = '<li>Enter name</li>';
+                searchResultsUi.innerHTML = '<li>Please enter a name to search.</li>';
                 return;
             }
-            console.log("Searching for:", searchTerm);
-            // **BACKEND INTEGRATION POINT**: Gọi API tìm kiếm
-            const mockResults = [ /* ... dữ liệu mẫu ... */]
-                .filter(user => user.name.toLowerCase().includes(searchTerm));
-            // ... (render mockResults như cũ) ...
-            if (mockResults.length > 0) {
-                mockResults.forEach(user => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `
-                        <img src="${user.avatar || '../html/images/default_avatar.png'}" alt="${user.name} Avatar">
-                        <span>${user.name}</span>
-                        <button class="send-request-btn" data-user-id="${user.id}" title="Send Friend Request"><i class="fas fa-user-plus"></i></button>
-                    `;
-                    searchResultsUi.appendChild(li);
-                });
-            } else {
-                searchResultsUi.innerHTML = '<li>Can not find that user</li>';
+
+            try {
+                const results = await makeApiCall(`${backendUrls.searchFriends}?query=${encodeURIComponent(searchTerm)}`, 'GET');
+                if (results && results.length > 0) {
+                    results.forEach(user => {
+                        const li = document.createElement('li');
+                        // Check if already friends or request sent
+                        const isFriend = currentUserData.friends.some(f => f.id === user.id);
+                        const isRequestSent = currentUserData.friendRequests.sent.some(r => r.id === user.id);
+                        let buttonHtml = `<button class="send-request-btn" data-user-id="${user.id}" title="Send Friend Request"><i class="fas fa-user-plus"></i></button>`;
+                        if (isFriend) {
+                            buttonHtml = `<button disabled class="send-request-btn"><i class="fas fa-users"></i></button>`; // Already friends
+                        } else if (isRequestSent) {
+                            buttonHtml = `<button disabled class="send-request-btn"><i class="fas fa-check"></i></button>`; // Request sent
+                        }
+
+                        li.innerHTML = `
+                            <img src="${user.avatar || defaultAvatarUrl}" alt="${user.name} Avatar">
+                            <span>${user.name}</span>
+                            ${buttonHtml}
+                        `;
+                        searchResultsUi.appendChild(li);
+                    });
+                } else {
+                    searchResultsUi.innerHTML = '<li>No users found matching your search.</li>';
+                }
+            } catch (error) {
+                searchResultsUi.innerHTML = '<li>Error searching for friends.</li>';
             }
         });
     }
@@ -378,69 +425,90 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // Event delegation for dynamic buttons
-    document.body.addEventListener('click', function (event) {
+    document.body.addEventListener('click', async function (event) {
         const unfriendBtn = event.target.closest('.unfriend-btn');
         const acceptRequestBtn = event.target.closest('.accept-request-btn');
         const declineRequestBtn = event.target.closest('.decline-request-btn');
-        const cancelRequestBtn = event.target.closest('.cancel-request-btn'); // Nút mới cho sent requests
+        const cancelRequestBtn = event.target.closest('.cancel-request-btn');
         const sendRequestBtn = event.target.closest('.send-request-btn');
 
         if (unfriendBtn) {
             const friendId = unfriendBtn.dataset.friendId;
-            console.log('Unfriend user ID:', friendId);
-            // **BACKEND**: Gửi yêu cầu hủy kết bạn
-            currentUserData.friends = currentUserData.friends.filter(f => f.id != friendId);
-            renderFriendList();
-            alert(`Đã hủy kết bạn (demo)!`);
+            if (confirm(`Are you sure you want to unfriend this user?`)) {
+                try {
+                    await makeApiCall(`${backendUrls.unfriend}/${friendId}`, 'POST');
+                    currentUserData.friends = currentUserData.friends.filter(f => f.id != friendId);
+                    renderFriendList();
+                    alert(`Unfriended successfully!`);
+                } catch (e) { /* Error already handled by makeApiCall */ }
+            }
         }
         if (acceptRequestBtn) {
             const requestId = acceptRequestBtn.dataset.requestId;
-            console.log('Accept request ID:', requestId);
-            // **BACKEND**: Gửi yêu cầu chấp nhận
-            const acceptedUser = currentUserData.friendRequests.received.find(r => r.id == requestId);
-            if (acceptedUser) {
-                currentUserData.friends.push({ ...acceptedUser, id: acceptedUser.id }); // Đảm bảo id là số
-                currentUserData.friendRequests.received = currentUserData.friendRequests.received.filter(r => r.id != requestId);
-            }
-            renderFriendList();
-            renderFriendRequests('received');
-            alert(`Đã chấp nhận lời mời (demo)!`);
+            try {
+                const acceptedFriend = await makeApiCall(`${backendUrls.acceptFriendRequest}/${requestId}`, 'POST');
+                const request = currentUserData.friendRequests.received.find(r => r.id == requestId);
+                if (request) {
+                    currentUserData.friends.push({ ...request, ...acceptedFriend }); // Use data from server if available
+                    currentUserData.friendRequests.received = currentUserData.friendRequests.received.filter(r => r.id != requestId);
+                }
+                renderFriendList();
+                renderFriendRequests('received');
+                alert(`Friend request accepted!`);
+            } catch (e) { /* Error handled */ }
         }
         if (declineRequestBtn) {
             const requestId = declineRequestBtn.dataset.requestId;
-            console.log('Decline request ID:', requestId);
-            // **BACKEND**: Gửi yêu cầu từ chối
-            currentUserData.friendRequests.received = currentUserData.friendRequests.received.filter(r => r.id != requestId);
-            renderFriendRequests('received');
-            alert(`Đã từ chối lời mời (demo)!`);
+            try {
+                await makeApiCall(`${backendUrls.declineFriendRequest}/${requestId}`, 'POST');
+                currentUserData.friendRequests.received = currentUserData.friendRequests.received.filter(r => r.id != requestId);
+                renderFriendRequests('received');
+                alert(`Friend request declined.`);
+            } catch (e) { /* Error handled */ }
         }
-        if (cancelRequestBtn) { // Xử lý nút cancel cho sent request
+        if (cancelRequestBtn) {
             const requestId = cancelRequestBtn.dataset.requestId;
-            console.log('Cancel sent request ID:', requestId);
-            // **BACKEND**: Gửi yêu cầu hủy lời mời đã gửi
-            currentUserData.friendRequests.sent = currentUserData.friendRequests.sent.filter(r => r.id != requestId);
-            renderFriendRequests('sent');
-            alert(`Đã hủy lời mời đã gửi (demo)!`);
+            try {
+                await makeApiCall(`${backendUrls.cancelFriendRequest}/${requestId}`, 'POST');
+                currentUserData.friendRequests.sent = currentUserData.friendRequests.sent.filter(r => r.id != requestId);
+                renderFriendRequests('sent');
+                alert(`Friend request cancelled.`);
+            } catch (e) { /* Error handled */ }
         }
-        if (sendRequestBtn) {
+        if (sendRequestBtn && !sendRequestBtn.disabled) {
             const userId = sendRequestBtn.dataset.userId;
-            console.log('Send friend request to user ID:', userId);
-            // **BACKEND**: Gửi lời mời kết bạn
-            alert(`Đã gửi lời mời kết bạn (demo)!`);
-            sendRequestBtn.disabled = true;
-            sendRequestBtn.innerHTML = '<i class="fas fa-check"></i>';
+            try {
+                await makeApiCall(`${backendUrls.sendFriendRequest}/${userId}`, 'POST');
+                // Optimistically update UI or refetch data
+                const targetUser = { id: userId, name: sendRequestBtn.parentElement.querySelector('span').textContent, avatar: sendRequestBtn.parentElement.querySelector('img').src };
+                currentUserData.friendRequests.sent.push(targetUser);
+                renderFriendRequests('sent'); // To update count and list if visible
+
+                sendRequestBtn.disabled = true;
+                sendRequestBtn.innerHTML = '<i class="fas fa-check"></i>';
+                alert(`Friend request sent!`);
+            } catch (e) { /* Error handled */ }
         }
     });
 
     // --- Initial Load ---
     function initializePage() {
+        if (!currentUserData) {
+            console.error("Current user data not available. Page cannot be initialized.");
+            // Potentially redirect to login or show an error message
+            // For now, try to make parts of the page work if possible or just return
+            // document.body.innerHTML = "<h1>Error: User data not loaded. Please try logging in again.</h1>";
+            // return;
+        }
         loadProfileDisplayData();
         loadSidebarBadges();
         renderFriendList();
-        renderFriendRequests('received'); // Mặc định hiển thị tab "Received"
-        // Đảm bảo tab "Received" được active ban đầu
-        document.querySelector('.fr-tab-btn[data-tab="received"]').classList.add('active');
-        document.querySelector('.fr-tab-btn[data-tab="sent"]').classList.remove('active');
+        renderFriendRequests('received');
+
+        const receivedTab = document.querySelector('.fr-tab-btn[data-tab="received"]');
+        const sentTab = document.querySelector('.fr-tab-btn[data-tab="sent"]');
+        if (receivedTab) receivedTab.classList.add('active');
+        if (sentTab) sentTab.classList.remove('active');
 
     }
 

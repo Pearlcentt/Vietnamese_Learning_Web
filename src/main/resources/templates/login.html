@@ -4,117 +4,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | Vietnamese Learning</title>
-    <link rel="stylesheet" th:href="@{/css/login.css}">
+    <title th:text="${pageTitle ?: 'Login - MyApp'}">Login - MyApp</title>
+    <link th:href="@{/css/login.css}" rel="stylesheet">
 </head>
 
 <body>
-<!-- Login Page -->
-<div id="login-page" class="container active">
-    <h1>Log in</h1>
+    <div class="auth-container">
+        <!-- Login Page -->
 
-    <!-- ✅ Spring-compatible login form -->
-    <form th:action="@{/login}" method="post">
-        <div class="form-group">
-            <input type="text" name="username" placeholder="Email or username" required />
-        </div>
+        <div id="login-page" class="auth-page active">
+            <div class="auth-box">
+                <button class="switch-btn" onclick="showSignup()">Sign Up</button>
+                <h1>Log in</h1>
 
-        <div class="form-group password-group">
-            <input type="password" name="password" placeholder="Password" required />
-            <a href="#" class="forgot-link">FORGOT?</a>
-        </div>
+                <!-- Success/Error Messages for Login -->
+                <div th:if="${param.logout != null and param.logout == 'success'}" class="alert alert-info">
+                    You have been logged out successfully.
+                </div>
+                <div th:if="${param.error != null and param.error == 'true'}" class="alert alert-danger">
+                    Invalid username or password.
+                </div>
+                <!-- Hiển thị thông báo thành công/lỗi chung từ controller -->
+                <div th:if="${loginMessage}"
+                    th:class="${loginMessageType == 'SUCCESS'} ? 'alert alert-success' : (${loginMessageType == 'ERROR'} ? 'alert alert-danger' : 'alert alert-info')"
+                    th:text="${loginMessage}">
+                </div>
 
-        <button class="btn btn-primary" type="submit">LOG IN</button>
 
-        <!-- ✅ Error message from controller -->
-        <p th:if="${error}" th:text="${error}" style="color: red; margin-top: 10px;"></p>
-    </form>
+                <form th:action="@{/login}" method="post">
+                    <div class="form-group">
+                        <input type="text" name="username" class="form-control" placeholder="Email or username"
+                            th:value="${lastUsername}" required>
+                    </div>
 
-    <div class="divider"><span>OR</span></div>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <input type="password" name="password" class="form-control" placeholder="Password" required>
+                            <a th:href="@{/forgot-password}" class="forgot-link">FORGOT?</a>
+                        </div>
+                    </div>
 
-    <button class="btn btn-signup" onclick="showSignup()">SIGN UP</button>
-</div>
+                    <!-- CSRF Token  -->
+                    <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
-<!-- Signup Page -->
-<div id="signup-page" class="container">
-    <h1>Create your profile</h1>
+                    <button type="submit" class="btn btn-primary">LOG IN</button>
+                </form>
 
-    <!-- ✅ Fixed registration form with proper field names -->
-    <form th:action="@{/register}" method="post">
-        <div class="form-group">
-            <input type="number" name="age" placeholder="Age" min="1" max="120" required>
-            <p class="helper-text">Please enter your age</p>
-        </div>
+                <div class="divider"><span>OR</span></div>
 
-        <div class="form-group">
-            <input type="text" name="name" placeholder="Name (optional)">
-        </div>
-
-        <div class="form-group">
-            <input type="email" name="email" placeholder="Email" required>
-        </div>
-
-        <div class="form-group">
-            <input type="text" name="username" placeholder="Username" required>
-        </div>
-
-        <div class="form-group">
-            <input type="date" name="dob" placeholder="Date of birth" required>
-        </div>
-
-        <div class="form-group">
-            <input type="text" name="gender" placeholder="Gender" required>
-        </div>
-
-        <div class="form-group">
-            <div class="password-container">
-                <input type="password" name="password" placeholder="Password" required>
-                <span class="eye-icon">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path
-                                    d="M12 4.5C7 4.5 2.73 7.61 1 12C2.73 16.39 7 19.5 12 19.5C17 19.5 21.27 16.39 23 12C21.27 7.61 17 4.5 12 4.5ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17ZM12 9C10.34 9 9 10.34 9 12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12C15 10.34 13.66 9 12 9Z"
-                                    fill="#718096" />
-                        </svg>
-                    </span>
+                <button class="btn btn-secondary" onclick="showSignup()">SIGN UP</button>
             </div>
         </div>
 
-        <button class="btn btn-primary" type="submit">CREATE ACCOUNT</button>
+        <!-- Registration Page -->
+        <div id="signup-page" class="auth-page">
+            <div class="auth-box">
+                <button class="switch-btn" onclick="showLogin()">Log in</button>
+                <h1>Sign up</h1>
 
-        <!-- ✅ Error message for registration -->
-        <p th:if="${error}" th:text="${error}" style="color: red; margin-top: 10px;"></p>
+                <!-- Success/Error Messages for Registration -->
+                <div th:if="${registrationMessage}"
+                    th:class="${registrationMessageType == 'SUCCESS'} ? 'alert alert-success' : (${registrationMessageType == 'ERROR'} ? 'alert alert-danger' : 'alert alert-info')"
+                    th:text="${registrationMessage}">
+                </div>
 
-        <p class="terms-text">By creating an account, you agree to our Terms of Service</p>
-    </form>
+                <!-- Đảm bảo userRegistrationDto luôn được cung cấp từ controller -->
+                <form th:action="@{/register}" method="post" th:object="${userRegistrationDto}">
+                    <div class="form-group">
+                        <input type="number" th:field="*{age}" class="form-control"
+                            th:classappend="${#fields.hasErrors('age')} ? 'is-invalid' : ''" placeholder="Age" min="1"
+                            max="120" required>
+                        <div th:if="${#fields.hasErrors('age')}" th:errors="*{age}" class="field-error"></div>
+                    </div>
 
-    <div style="margin-top: 20px;">
-        <button class="btn btn-secondary" onclick="showLogin()">Back to Login</button>
+                    <div class="form-group">
+                        <input type="text" th:field="*{name}" class="form-control"
+                            th:classappend="${#fields.hasErrors('name')} ? 'is-invalid' : ''"
+                            placeholder="Name (optional)">
+                        <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="field-error"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <input type="email" th:field="*{email}" class="form-control"
+                            th:classappend="${#fields.hasErrors('email')} ? 'is-invalid' : ''" placeholder="Email"
+                            required>
+                        <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="field-error"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="input-group">
+                            <input type="password" th:field="*{password}" class="form-control"
+                                th:classappend="${#fields.hasErrors('password')} ? 'is-invalid' : ''"
+                                placeholder="Password" id="password" required minlength="6">
+                            <span class="eye-icon" onclick="togglePassword('password')">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                    <path
+                                        d="M12 4.5C7 4.5 2.73 7.61 1 12C2.73 16.39 7 19.5 12 19.5C17 19.5 21.27 16.39 23 12C21.27 7.61 17 4.5 12 4.5ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17ZM12 9C10.34 9 9 10.34 9 12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12C15 10.34 13.66 9 12 9Z"
+                                        fill="currentColor" />
+                                </svg>
+                            </span>
+                        </div>
+                        <div th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="field-error"></div>
+                        <p class="helper-text">Password must be at least 6 characters</p>
+                    </div>
+
+                    <!-- CSRF Token -->
+                    <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                    <button type="submit" class="btn btn-primary">CREATE ACCOUNT</button>
+                </form>
+
+                <p class="terms-text">
+                    By creating an account, you agree to our
+                    <a th:href="@{/terms}" target="_blank">Terms of Service</a> and
+                    <a th:href="@{/privacy}" target="_blank">Privacy Policy</a>.
+                </p>
+            </div>
+        </div>
     </div>
-</div>
 
-<script>
-    function showLogin() {
-        document.getElementById('login-page').classList.add('active');
-        document.getElementById('signup-page').classList.remove('active');
-    }
-
-    function showSignup() {
-        document.getElementById('signup-page').classList.add('active');
-        document.getElementById('login-page').classList.remove('active');
-    }
-
-    // Toggle password visibility
-    document.querySelectorAll('.eye-icon').forEach(icon => {
-        icon.addEventListener('click', function () {
-            const input = this.previousElementSibling;
-            if (input.type === 'password') {
-                input.type = 'text';
-            } else {
-                input.type = 'password';
-            }
-        });
-    });
-</script>
+    <script th:src="@{/js/login.js}"></script>
 </body>
 
 </html>

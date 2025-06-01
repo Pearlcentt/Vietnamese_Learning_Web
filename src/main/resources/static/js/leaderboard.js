@@ -17,101 +17,78 @@ document.addEventListener('DOMContentLoaded', function () {
     const profileCurrentLeagueEl = document.getElementById('profile-current-league');
     const profileAchievementsListEl = document.getElementById('profile-achievements-list');
 
-    // --- MOCK DATA ---
-    let currentUser = {
-        username: "Christa",
-        avatar: "images/christa_avatar.png",
-        totalXp: 1560,
-        currentLeague: "Pearl League", // Sẽ được cập nhật từ leagueSettings nếu cần
-        streak: 32, // Ví dụ streak
-        gems: 1364,
-        languageLearning: "VIETNAMESE",
-        flagSrc: "../html/images/vietnam.png", // Đường dẫn cờ
-        achievements: [
-            { name: "Streak Champion", iconClass: "fas fa-fire-alt", details: "30 Day Streak" },
-            { name: "XP Magnet", iconClass: "fas fa-star", details: "10,000 XP Earned" },
-            { name: "Perfect Lesson", iconClass: "fas fa-check-circle", details: "Completed a lesson with no mistakes" }
-        ],
-        // XP trong giải đấu hiện tại (có thể khác totalXp)
-        currentLeagueXp: 10 // Sẽ được cập nhật từ leaderboardData
-    };
+    // --- LẤY DỮ LIỆU TỪ SERVER (THYMELEAF INLINED) ---
+    const currentUser = window.serverData.currentUser;
+    const leagueSettings = window.serverData.leagueSettings;
+    let globalLeaderboardData = window.serverData.globalLeaderboard || []; 
+    let friendsLeaderboardData = window.serverData.friendsLeaderboard || []; 
+    const defaultAvatarUrl = window.serverData.defaultAvatarUrl;
+    const medalImageUrls = window.serverData.medalImageUrls;
+    // --- END LẤY DỮ LIỆU ---
 
-    const globalLeaderboardData = [
-        { username: "Dominik_S", xp: 128 },
-        { username: "DuoUserX", xp: 95 },
-        { username: "Elena", xp: 83 },
-        { username: "Luis Fonsi", xp: 30 },
-        { username: "Alex", xp: 18 },
-        { username: "Sophia", xp: 14 },
-        { username: "Mike", xp: 13 },
-        { username: "Sara The Leader", xp: 13 },
-        { username: "Markus Stark", xp: 12 },
-        { username: currentUser.username, xp: 10 }, // XP của người dùng hiện tại trong giải này
-        { username: "User11", xp: 9 },
-        { username: "User12", xp: 8 },
-    ];
-
-    const friendsLeaderboardData = [
-        { username: currentUser.username, xp: 120 },
-        { username: "FriendAnna", xp: 115 },
-        { username: "BestBuddyBen", xp: 90 },
-        { username: "StudyPalSam", xp: 75 },
-    ];
-    // --- END MOCK DATA ---
-
-    // --- LEADERBOARD SETTINGS ---
-    const leagueSettings = {
-        name: "Pearl League",
-        promotionCount: 7,
-        daysLeft: 4,
-    };
-    // --- END LEADERBOARD SETTINGS ---
 
     function updateCurrentUserProfile() {
-        if (!currentUser) return;
+        if (!currentUser || !userFlagEl) return; 
 
-        userFlagEl.src = currentUser.flagSrc;
-        userLanguageEl.textContent = currentUser.languageLearning.toUpperCase();
-        userStreakEl.textContent = currentUser.streak;
-        userGemsEl.textContent = currentUser.gems;
+        if (userFlagEl) userFlagEl.src = currentUser.flagSrc || '/images/default-flag.png'; 
+        if (userLanguageEl) userLanguageEl.textContent = currentUser.languageLearning ? currentUser.languageLearning.toUpperCase() : 'LANGUAGE';
+        if (userStreakEl) userStreakEl.textContent = currentUser.streak || 0;
+        if (userGemsEl) userGemsEl.textContent = currentUser.gems || 0;
 
-        profileAvatarEl.src = currentUser.avatar;
-        profileUsernameEl.textContent = currentUser.username;
-        profileTotalXpEl.textContent = currentUser.totalXp;
-        profileCurrentLeagueEl.textContent = currentUser.currentLeague;
+        if (profileAvatarEl) profileAvatarEl.src = currentUser.avatar || defaultAvatarUrl;
+        if (profileUsernameEl) profileUsernameEl.textContent = currentUser.username || 'Username';
+        if (profileTotalXpEl) profileTotalXpEl.textContent = currentUser.totalXp || 0;
+        if (profileCurrentLeagueEl) profileCurrentLeagueEl.textContent = currentUser.currentLeague || 'N/A';
 
-        profileAchievementsListEl.innerHTML = ''; // Clear old achievements
-        currentUser.achievements.forEach(ach => {
-            const li = document.createElement('li');
-            li.innerHTML = `<i class="${ach.iconClass}"></i> ${ach.name} - <small>${ach.details}</small>`;
-            profileAchievementsListEl.appendChild(li);
-        });
+        if (profileAchievementsListEl) {
+            profileAchievementsListEl.innerHTML = ''; // Clear old achievements
+            if (currentUser.achievements && currentUser.achievements.length > 0) {
+                currentUser.achievements.forEach(ach => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<i class="${ach.iconClass || 'fas fa-trophy'}"></i> ${ach.name || 'Achievement'} - <small>${ach.details || ''}</small>`;
+                    profileAchievementsListEl.appendChild(li);
+                });
+            } else {
+                const li = document.createElement('li');
+                li.textContent = 'No achievements yet.';
+                profileAchievementsListEl.appendChild(li);
+            }
+        }
     }
 
     function updateLeaderboardHeader() {
-        document.querySelector('.leaderboard-header h1').textContent = leagueSettings.name;
-        promotionCountEl.textContent = leagueSettings.promotionCount;
-        daysLeftEl.textContent = leagueSettings.daysLeft;
+        if (!leagueSettings || !document.querySelector('.leaderboard-header h1')) return;
+
+        document.querySelector('.leaderboard-header h1').textContent = leagueSettings.name || 'Current League';
+        if (promotionCountEl) promotionCountEl.textContent = leagueSettings.promotionCount || 0;
+        if (daysLeftEl) daysLeftEl.textContent = leagueSettings.daysLeft || 0;
     }
 
     function renderLeaderboard(data, promotionZoneAfterRank) {
+        if (!leaderboardListContainer) return;
         leaderboardListContainer.innerHTML = '';
 
-        // Cập nhật XP của người dùng hiện tại trong giải đấu từ data (nếu có)
-        const currentUserDataInList = data.find(user => user.username === currentUser.username);
-        if (currentUserDataInList) {
-            currentUser.currentLeagueXp = currentUserDataInList.xp;
+        // Đảm bảo data là một mảng
+        const leaderboardData = Array.isArray(data) ? data : [];
+
+        // Cập nhật XP của người dùng hiện tại trong giải đấu từ data (nếu có và currentUser tồn tại)
+        if (currentUser) {
+            const currentUserDataInList = leaderboardData.find(user => user.username === currentUser.username);
+            if (currentUserDataInList) {
+                currentUser.currentLeagueXp = currentUserDataInList.xp;
+            }
         }
 
+
         // Sắp xếp lại data theo XP giảm dần để xác định rank
-        const sortedData = [...data].sort((a, b) => b.xp - a.xp);
+        const sortedData = [...leaderboardData].sort((a, b) => b.xp - a.xp);
 
         sortedData.forEach((user, index) => {
             const actualRank = index + 1;
 
             const item = document.createElement('div');
             item.classList.add('leaderboard-item');
-            if (user.username === currentUser.username) {
+            if (currentUser && user.username === currentUser.username) {
                 item.classList.add('current-user-highlight');
             }
 
@@ -119,13 +96,13 @@ document.addEventListener('DOMContentLoaded', function () {
             let rankSpecificClass = '';
 
             if (actualRank === 1) {
-                rankContentHtml = '<img src="../html/images/gold.png" alt="Gold Medal" class="rank-medal-image">';
+                rankContentHtml = `<img src="${medalImageUrls.gold}" alt="Gold Medal" class="rank-medal-image">`;
                 rankSpecificClass = 'rank-has-medal';
             } else if (actualRank === 2) {
-                rankContentHtml = '<img src="../html/images/silver.png" alt="Silver Medal" class="rank-medal-image">';
+                rankContentHtml = `<img src="${medalImageUrls.silver}" alt="Silver Medal" class="rank-medal-image">`;
                 rankSpecificClass = 'rank-has-medal';
             } else if (actualRank === 3) {
-                rankContentHtml = '<img src="../html/images/bronze.png" alt="Bronze Medal" class="rank-medal-image">';
+                rankContentHtml = `<img src="${medalImageUrls.bronze}" alt="Bronze Medal" class="rank-medal-image">`;
                 rankSpecificClass = 'rank-has-medal';
             } else {
                 rankContentHtml = actualRank;
@@ -133,8 +110,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
             item.innerHTML = `
                 <div class="rank ${rankSpecificClass}">${rankContentHtml}</div>
-                <div class="username-leaderboard">${user.username}</div>
-                <div class="xp">${user.xp} XP</div>
+                <div class="username-leaderboard">${user.username || 'Unknown User'}</div>
+                <div class="xp">${user.xp || 0} XP</div>
             `;
             leaderboardListContainer.appendChild(item);
         });
@@ -146,9 +123,9 @@ document.addEventListener('DOMContentLoaded', function () {
             tab.classList.add('active');
             const tabType = tab.getAttribute('data-tab');
             if (tabType === 'global') {
-                renderLeaderboard(globalLeaderboardData, leagueSettings.promotionCount);
+                renderLeaderboard(globalLeaderboardData, leagueSettings ? leagueSettings.promotionCount : 0);
             } else if (tabType === 'friends') {
-                renderLeaderboard(friendsLeaderboardData, 0);
+                renderLeaderboard(friendsLeaderboardData, 0); // Friends tab might not have promotion zones
             }
         });
     });
@@ -156,35 +133,43 @@ document.addEventListener('DOMContentLoaded', function () {
     // Initial setup
     updateLeaderboardHeader();
     updateCurrentUserProfile();
-    // Load global leaderboard by default
-    document.querySelector('.tab-button[data-tab="global"]').click();
+
+    // Load global leaderboard by default if the button exists
+    const globalTabButton = document.querySelector('.tab-button[data-tab="global"]');
+    if (globalTabButton) {
+        globalTabButton.click();
+    }
 
 
     // Hàm ví dụ để test việc tăng XP (gọi từ console: addCurrentUserXpToLeague(5))
     window.addCurrentUserXpToLeague = function (amount) {
+        if (!currentUser) {
+            console.warn("Cannot add XP: currentUser is not defined.");
+            return;
+        }
+
         let userInGlobal = globalLeaderboardData.find(u => u.username === currentUser.username);
         if (userInGlobal) {
             userInGlobal.xp += amount;
-        } else { // Nếu người dùng chưa có trong list, thêm vào (hiếm khi xảy ra nếu data ban đầu đúng)
-            globalLeaderboardData.push({ username: currentUser.username, xp: amount });
+        } else {
+            globalLeaderboardData.push({ username: currentUser.username, xp: amount, avatar: currentUser.avatar });
         }
 
         let userInFriends = friendsLeaderboardData.find(u => u.username === currentUser.username);
         if (userInFriends) {
             userInFriends.xp += amount;
         } else {
-            friendsLeaderboardData.push({ username: currentUser.username, xp: amount });
+            friendsLeaderboardData.push({ username: currentUser.username, xp: amount, avatar: currentUser.avatar });
         }
 
-        currentUser.currentLeagueXp += amount; // Cập nhật XP giải đấu của người dùng
-        // currentUser.totalXp += amount; // Cân nhắc có cập nhật totalXp ở đây không, hay chỉ khi hoàn thành bài học thực sự
+        currentUser.currentLeagueXp = (currentUser.currentLeagueXp || 0) + amount;
 
-        // Re-render the currently active tab
         const activeTab = document.querySelector('.tab-button.active');
         if (activeTab) {
             activeTab.click();
         }
-        // updateCurrentUserProfile(); // Cập nhật profile nếu totalXp thay đổi
-        console.log(`${currentUser.username} now has ${currentUser.currentLeagueXp} XP in this league.`);
+        // updateCurrentUserProfile(); // Chỉ cập nhật nếu totalXp thay đổi thực sự từ backend
+        console.log(`${currentUser.username} now has ${currentUser.currentLeagueXp} XP in this league (client-side demo).`);
+      
     }
 });

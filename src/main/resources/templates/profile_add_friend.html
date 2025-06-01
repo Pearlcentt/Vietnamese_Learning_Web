@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile and Add Friend</title>
-    <link rel="stylesheet" href="../css/profile_add_friend.css"> <!-- Đổi đường dẫn nếu cần -->
+    <title th:text="${userDto != null ? userDto.displayName + ' - Profile' : 'Profile and Add Friend'}">Profile and Add
+        Friend</title>
+    <link rel="stylesheet" th:href="@{/css/profile_add_friend.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 
@@ -13,7 +14,7 @@
     <div class="app-layout-container"> <!-- Container chính cho layout 3 cột -->
         <!-- Sidebar Trái -->
         <aside class="left-sidebar-profile">
-            <a href="/homepage" class="back-to-home-btn-profile">
+            <a th:href="@{/homepage}" class="back-to-home-btn-profile">
                 <i class="fas fa-arrow-left"></i> Homepage
             </a>
         </aside>
@@ -24,22 +25,25 @@
                 <div class="profile-main">
                     <div class="profile-header">
                         <div class="avatar-container">
-                            <img src="img/default-avatar.svg" alt="Avatar" id="profileAvatarDisplay"
-                                class="avatar-placeholder">
+                            <img th:src="${userDto != null ? userDto.avatarUrl : '/images/default-avatar.svg'}"
+                                alt="Avatar" id="profileAvatarDisplay" class="avatar-placeholder">
                             <button class="edit-avatar-btn" id="openAvatarModalBtnMain" title="Change Avatar"><i
                                     class="fas fa-pencil-alt"></i></button>
                         </div>
                     </div>
 
                     <div class="user-info">
-                        <h1 id="displayName">bhuy</h1>
+                        <h1 id="displayName" th:text="${userDto?.displayName ?: 'User Name'}">bhuy</h1>
                         <p class="username-joined">
-                            <span id="username">bhuy690413</span> -
-                            Joined <span id="joinedDate">March 2025</span>
+                            <span id="username" th:text="${userDto?.username ?: 'username123'}">bhuy690413</span> -
+                            Joined <span id="joinedDate" th:text="${userDto?.joinedDate ?: 'Unknown Date'}">March
+                                2025</span>
                         </p>
                         <div class="follow-stats">
-                            <a href="#" id="followingCountLink"><span id="followingCount">0</span> Following</a>
-                            <a href="#" id="followersCountLink"><span id="followersCount">0</span> Followers</a>
+                            <a href="#" id="followingCountLink"><span id="followingCount"
+                                    th:text="${userDto?.followingCount ?: 0}">0</span> Following</a>
+                            <a href="#" id="followersCountLink"><span id="followersCount"
+                                    th:text="${userDto?.followersCount ?: 0}">0</span> Followers</a>
                         </div>
                         <button id="editProfileBtn" class="action-btn"><i class="fas fa-user-edit"></i> Edit
                             profile</button>
@@ -50,22 +54,23 @@
                         <div class="stats-grid">
                             <div class="stat-box">
                                 <i class="fas fa-fire stat-icon"></i>
-                                <p><strong id="dayStreak">0</strong></p>
+                                <p><strong id="dayStreak" th:text="${userDto?.dayStreak ?: 0}">0</strong></p>
                                 <p>Day streak</p>
                             </div>
                             <div class="stat-box">
                                 <i class="fas fa-star stat-icon"></i>
-                                <p><strong id="totalXP">14</strong></p>
+                                <p><strong id="totalXP" th:text="${userDto?.totalXP ?: 0}">14</strong></p>
                                 <p>Total XP</p>
                             </div>
                             <div class="stat-box">
                                 <i class="fas fa-shield-alt stat-icon"></i>
-                                <p><strong id="currentLeague">None</strong></p>
+                                <p><strong id="currentLeague"
+                                        th:text="${userDto?.currentLeague ?: 'None'}">None</strong></p>
                                 <p>Current league</p>
                             </div>
                             <div class="stat-box">
                                 <i class="fas fa-trophy stat-icon"></i>
-                                <p><strong id="top3Finishes">0</strong></p>
+                                <p><strong id="top3Finishes" th:text="${userDto?.top3Finishes ?: 0}">0</strong></p>
                                 <p>Top 3 finishes</p>
                             </div>
                         </div>
@@ -75,41 +80,45 @@
 
             <div id="editProfileView" class="edit-profile-container" style="display: none;">
                 <h2><i class="fas fa-user-cog"></i> Edit profile</h2>
-                <form id="editProfileForm">
+                <form id="editProfileForm" th:action="@{/profile/update}" method="post"
+                    th:object="${userEditForm != null ? userEditForm : new java.util.HashMap()}">
+                    <!-- Replace HashMap with your form-backing object -->
                     <div class="form-group avatar-edit-group">
                         <label>Avatar</label>
-                        <img src="img/default-avatar.svg" alt="Current Avatar" id="editAvatarPreview"
-                            class="avatar-preview">
+                        <img th:src="${userDto != null ? userDto.avatarUrl : '/images/default-avatar.svg'}"
+                            alt="Current Avatar" id="editAvatarPreview" class="avatar-preview">
                         <button type="button" class="edit-avatar-icon-btn" id="openAvatarModalBtnEdit"
                             title="Change Avatar">
                             <i class="fas fa-pencil-alt"></i>
                         </button>
-                        <input type="hidden" id="selectedAvatarUrlInput" name="selectedAvatarUrl">
+                        <input type="hidden" id="selectedAvatarUrlInput" name="selectedAvatarUrl"
+                            th:field="*{selectedAvatarUrl}" />
                     </div>
 
                     <div class="form-group">
                         <label for="editNameInput">Name</label>
-                        <input type="text" id="editNameInput" value="bhuy">
+                        <input type="text" id="editNameInput" th:field="*{displayName}"
+                            th:value="${userDto?.displayName}">
                     </div>
                     <div class="form-group">
                         <label for="editUsernameInput">Username</label>
-                        <input type="text" id="editUsernameInput" value="bhuy690413" readonly>
+                        <input type="text" id="editUsernameInput" th:value="${userDto?.username}" readonly>
                     </div>
                     <div class="form-group">
                         <label for="editEmailInput">Email</label>
-                        <input type="email" id="editEmailInput" value="buivanhuy0701@gmail.com">
+                        <input type="email" id="editEmailInput" th:field="*{email}" th:value="${userDto?.email}">
                     </div>
                     <div class="form-group">
                         <label for="editCurrentPasswordInput">Current password</label>
                         <div class="password-wrapper">
-                            <input type="password" id="editCurrentPasswordInput">
+                            <input type="password" id="editCurrentPasswordInput" th:field="*{currentPassword}">
                             <i class="fas fa-eye toggle-password"></i>
                         </div>
                     </div>
                     <div class="form-group">
                         <label for="editNewPasswordInput">New password</label>
                         <div class="password-wrapper">
-                            <input type="password" id="editNewPasswordInput">
+                            <input type="password" id="editNewPasswordInput" th:field="*{newPassword}">
                             <i class="fas fa-eye toggle-password"></i>
                         </div>
                     </div>
@@ -125,17 +134,21 @@
         <!-- Sidebar Phải -->
         <aside class="profile-sidebar">
             <!-- Phần cờ và badges -->
-            <div class="sidebar-user-stats card">
+            <div class="sidebar-user-stats card" th:if="${userDto?.languageLearning != null}">
                 <div class="language-info-group-sidebar">
-                    <img src="../html/images/vietnam.png" alt="Vietnamese Flag" id="userFlagSidebar">
-                    <span id="userLanguageSidebar">VIETNAMESE</span>
+                    <img th:src="@{${userDto.languageLearning.flag ?: '/images/default-flag.png'}}" alt="Language Flag"
+                        id="userFlagSidebar">
+                    <span id="userLanguageSidebar"
+                        th:text="${userDto.languageLearning.name?.toUpperCase() ?: 'LANGUAGE'}">VIETNAMESE</span>
                 </div>
                 <div class="stats-badges-group-sidebar">
                     <div class="stat-item-sidebar">
-                        <i class="fas fa-fire"></i> <span id="userStreakSidebar">0</span>
+                        <i class="fas fa-fire"></i> <span id="userStreakSidebar"
+                            th:text="${userDto.languageLearning.streak ?: 0}">0</span>
                     </div>
                     <div class="stat-item-sidebar">
-                        <i class="fas fa-gem"></i> <span id="userGemsSidebar">0</span>
+                        <i class="fas fa-gem"></i> <span id="userGemsSidebar"
+                            th:text="${userDto.languageLearning.gems ?: 0}">0</span>
                     </div>
                 </div>
             </div>
@@ -143,8 +156,12 @@
             <!-- Các phần còn lại của sidebar phải -->
             <div class="friend-list-container card">
                 <h3><i class="fas fa-users"></i> Friend List</h3>
-                <ul id="friendListUi"></ul>
-                <p id="noFriendsMessage" class="empty-message">You have no friend. Let's connect with other people.</p>
+                <ul id="friendListUi">
+                    <!-- Friend list items will be populated by JavaScript using data from the model -->
+                </ul>
+                <p id="noFriendsMessage" class="empty-message"
+                    th:if="${userDto == null || userDto.friends == null || userDto.friends.isEmpty()}">You have no
+                    friend. Let's connect with other people.</p>
             </div>
 
             <div class="add-friends-section card">
@@ -168,17 +185,22 @@
                 <div id="friendRequestsContent" class="collapsible-content">
                     <div class="friend-request-tabs">
                         <button class="fr-tab-btn active" data-tab="received">Received (<span
-                                id="receivedRequestCountBadge">0</span>)</button>
-                        <button class="fr-tab-btn" data-tab="sent">Sent (<span
-                                id="sentRequestCountBadge">0</span>)</button>
+                                id="receivedRequestCountBadge"
+                                th:text="${userDto?.friendRequests?.received?.size() ?: 0}">0</span>)</button>
+                        <button class="fr-tab-btn" data-tab="sent">Sent (<span id="sentRequestCountBadge"
+                                th:text="${userDto?.friendRequests?.sent?.size() ?: 0}">0</span>)</button>
                     </div>
-                    <ul id="friendRequestsListUiReceived" class="friend-requests-list-display active"></ul>
-                    <ul id="friendRequestsListUiSent" class="friend-requests-list-display" style="display:none;"></ul>
+                    <ul id="friendRequestsListUiReceived" class="friend-requests-list-display active">
+                        <!-- Received friend requests will be populated by JavaScript -->
+                    </ul>
+                    <ul id="friendRequestsListUiSent" class="friend-requests-list-display" style="display:none;">
+                        <!-- Sent friend requests will be populated by JavaScript -->
+                    </ul>
                     <p id="noFriendRequestsMessage" class="empty-message" style="display: none;">No request</p>
                 </div>
             </div>
             <div class="sidebar-promo card">
-                <img src="../html/images/promo_image.png" alt="Promo image" class="promo-image">
+                <img th:src="@{/images/promo_image.png}" alt="Promo image" class="promo-image">
                 <p>Learning is more fun and effective when you connect with others.</p>
             </div>
         </aside>
@@ -193,13 +215,35 @@
             <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
 
             <div class="avatar-selection-grid" id="avatarSelectionGrid">
-                <!-- Các avatar mẫu sẽ được chèn vào đây bằng JavaScript -->
+                <!-- Avatar options will be populated by JavaScript using sampleAvatars from the model -->
             </div>
             <button id="confirmAvatarSelectionBtn" class="action-btn primary">Confirm</button>
         </div>
     </div>
 
-    <script src="../js/profile_add_friend.js"></script> <!-- Đổi đường dẫn nếu cần -->
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        var serverData = {
+            currentUser: /*[[${userDto}]]*/ null, // UserDto should be serializable to JSON
+            sampleAvatars: /*[[${sampleAvatars}]]*/[], // List of avatar image paths
+            defaultAvatarUrl: /*[[@{/images/default-avatar.svg}]]*/ '/images/default-avatar.svg',
+            csrfToken: /*[[${_csrf != null ? _csrf.token : ''}]]*/ '', // For Spring Security CSRF
+            csrfHeaderName: /*[[${_csrf != null ? _csrf.headerName : ''}]]*/ '', // For Spring Security CSRF
+            // Define backend URLs
+            urls: {
+                updateProfile: /*[[@{/profile/update}]]*/ '/profile/update',
+                uploadAvatar: /*[[@{/profile/avatar/upload}]]*/ '/profile/avatar/upload',
+                searchFriends: /*[[@{/friends/search}]]*/ '/friends/search',
+                sendFriendRequest: /*[[@{/friends/request/send}]]*/ '/friends/request/send',
+                acceptFriendRequest: /*[[@{/friends/request/accept}]]*/ '/friends/request/accept',
+                declineFriendRequest: /*[[@{/friends/request/decline}]]*/ '/friends/request/decline',
+                cancelFriendRequest: /*[[@{/friends/request/cancel}]]*/ '/friends/request/cancel',
+                unfriend: /*[[@{/friends/unfriend}]]*/ '/friends/unfriend'
+            }
+        };
+        /*]]>*/
+    </script>
+    <script th:src="@{/js/profile_add_friend.js}"></script>
 </body>
 
 </html>

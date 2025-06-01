@@ -11,7 +11,6 @@
     --duo-red: #ff4b4b;
     --pearl-color: #f7b9d0;
     --light-green-button: #c8e6c9;
-    /* Màu xanh lá cây nhạt cho nút back */
     --light-green-button-hover: #b9d8ba;
 }
 
@@ -25,7 +24,6 @@ body {
     background-color: #f0f2f5;
     color: var(--duo-text-dark);
     overflow: hidden;
-    /* Ngăn cuộn ở body, để các phần con tự quản lý cuộn */
 }
 
 .app-container {
@@ -39,17 +37,14 @@ body {
 /* Left Navigation Sidebar */
 .left-nav-sidebar {
     width: 200px;
-    /* Độ rộng cố định cho sidebar trái */
     min-width: 180px;
     padding: 20px;
     background-color: #f8f9fa;
-    /* Màu nền nhẹ cho sidebar trái */
     border-right: 1px solid var(--duo-border);
     display: flex;
     flex-direction: column;
-    /* Sắp xếp các item con theo chiều dọc */
     align-items: flex-start;
-    /* Căn các item con về bên trái */
+
 }
 
 .back-to-home-button {
@@ -63,10 +58,9 @@ body {
     font-weight: bold;
     transition: background-color 0.2s;
     width: calc(100% - 30px);
-    /* Chiếm gần hết chiều rộng sidebar, trừ padding */
     box-sizing: border-box;
     justify-content: center;
-    /* Căn giữa nội dung nút */
+
 }
 
 .back-to-home-button i {
@@ -84,20 +78,19 @@ body {
     padding: 20px 30px;
     background-color: #fff;
     overflow-y: auto;
-    /* Cho phép cuộn nếu nội dung dài */
+
 }
 
 /* Ẩn thanh trượt cho .main-content */
 .main-content::-webkit-scrollbar {
     display: none;
-    /* WebKit (Chrome, Safari, new Edge, Opera) */
+
 }
 
 .main-content {
     -ms-overflow-style: none;
-    /* IE and Edge (old) */
     scrollbar-width: none;
-    /* Firefox */
+
 }
 
 
@@ -286,10 +279,10 @@ body {
     display: flex;
     flex-direction: column;
     overflow-y: auto;
-    /* Cho phép cuộn nếu nội dung profile dài */
+
 }
 
-/* Ẩn thanh trượt cho .right-sidebar */
+
 .right-sidebar::-webkit-scrollbar {
     display: none;
 }
@@ -302,28 +295,24 @@ body {
 
 .user-language-stats {
     display: flex;
-    /* Cho phép các group con nằm trên 1 dòng */
     align-items: center;
-    /* Căn giữa theo chiều dọc */
     justify-content: space-between;
-    /* Phân bố không gian giữa language group và stats group */
     padding-bottom: 15px;
     margin-bottom: 20px;
     border-bottom: 1px solid var(--duo-border);
     flex-wrap: wrap;
-    /* Cho phép xuống dòng nếu không đủ không gian */
+
 }
 
 .language-info-group {
     display: flex;
     align-items: center;
     margin-right: 15px;
-    /* Khoảng cách với group badges nếu trên cùng 1 dòng */
+
 }
 
 .language-info-group img {
     height: 24px;
-    /* Điều chỉnh kích thước cờ */
     width: auto;
     margin-right: 8px;
     border-radius: 3px;

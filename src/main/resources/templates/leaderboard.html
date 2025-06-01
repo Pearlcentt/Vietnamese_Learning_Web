@@ -1,36 +1,44 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Duolingo Leaderboard</title>
-    <link rel="stylesheet" href="../css/leaderboard.css">
+    <title th:text="${leagueSettingsDto != null ? leagueSettingsDto.name + ' - Leaderboard' : 'Duolingo Leaderboard'}">
+        Duolingo Leaderboard</title>
+    <link rel="stylesheet" th:href="@{/css/leaderboard.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 
 <body>
     <div class="app-container">
         <aside class="left-nav-sidebar">
-            <a href="/dashboard" class="back-to-home-button">
+            <a th:href="@{/homepage}" class="back-to-home-button">
                 <i class="fas fa-arrow-left"></i> Homepage
             </a>
         </aside>
 
         <main class="main-content">
-            <!-- Phần top-navigation cũ đã được chuyển thành left-nav-sidebar -->
             <header class="leaderboard-header">
                 <div class="league-icons">
-                    <span class="league-icon ruby"></span>
-                    <span class="league-icon emerald"></span>
-                    <span class="league-icon amethyst"></span>
-                    <span class="league-icon pearl active-league"></span>
-                    <span class="league-icon obsidian-locked"></span>
-                    <span class="league-icon diamond-locked"></span>
+                    <!-- Logic hiển thị league icons có thể phức tạp hơn, tùy thuộc vào cách bạn quản lý các giải đấu -->
+                    <!-- Ví dụ đơn giản: -->
+                    <span class="league-icon ruby"
+                        th:classappend="${leagueSettingsDto?.name == 'Ruby League' ? 'active-league' : ''}"></span>
+                    <span class="league-icon emerald"
+                        th:classappend="${leagueSettingsDto?.name == 'Emerald League' ? 'active-league' : ''}"></span>
+                    <span class="league-icon amethyst"
+                        th:classappend="${leagueSettingsDto?.name == 'Amethyst League' ? 'active-league' : ''}"></span>
+                    <span class="league-icon pearl"
+                        th:classappend="${leagueSettingsDto?.name == 'Pearl League' ? 'active-league' : ''}"></span>
+                    <span class="league-icon obsidian-locked"></span> <!-- Cần logic để mở khóa -->
+                    <span class="league-icon diamond-locked"></span> <!-- Cần logic để mở khóa -->
                 </div>
-                <h1>Pearl League</h1>
-                <p class="promotion-info">Top <span id="promotion-count">7</span> advance to the next league</p>
-                <p class="time-left"><span id="days-left">4</span> days</p>
+                <h1 th:text="${leagueSettingsDto?.name ?: 'Current League'}">Pearl League</h1>
+                <p class="promotion-info">Top <span id="promotion-count"
+                        th:text="${leagueSettingsDto?.promotionCount ?: 0}">7</span> advance to the next league</p>
+                <p class="time-left"><span id="days-left" th:text="${leagueSettingsDto?.daysLeft ?: 0}">4</span> days
+                </p>
             </header>
 
             <div class="tabs">
@@ -39,42 +47,70 @@
             </div>
 
             <div id="leaderboard-list-container">
-                <!-- Leaderboard items will be injected here by JavaScript -->
+                <!-- Leaderboard items will be injected here by JavaScript using data from the model -->
             </div>
         </main>
 
-        <aside class="right-sidebar">
+        <aside class="right-sidebar" th:if="${currentUserDto != null}">
             <div class="user-language-stats">
                 <div class="language-info-group">
-                    <img src="../html/images/vietnam.png" alt="Vietnamese Flag" id="user-flag">
-                    <span id="user-language">VIETNAMESE</span>
+                    <img th:src="${currentUserDto.flagSrc ?: '/images/default-flag.png'}" alt="User Flag"
+                        id="user-flag">
+                    <span id="user-language"
+                        th:text="${currentUserDto.languageLearning?.toUpperCase() ?: 'LANGUAGE'}">VIETNAMESE</span>
                 </div>
                 <div class="stats-badges-group">
                     <div class="stat-item">
-                        <i class="fas fa-fire"></i> <span id="user-streak">0</span>
+                        <i class="fas fa-fire"></i> <span id="user-streak"
+                            th:text="${currentUserDto.streak ?: 0}">0</span>
                     </div>
                     <div class="stat-item">
-                        <i class="fas fa-gem"></i> <span id="user-gems">0</span>
+                        <i class="fas fa-gem"></i> <span id="user-gems" th:text="${currentUserDto.gems ?: 0}">0</span>
                     </div>
-                    <!-- Thêm các huy hiệu khác nếu cần -->
                 </div>
             </div>
 
             <div class="user-profile-section">
-                <img src="../static/images/christa_avatar.png" alt="User Avatar" id="profile-avatar" class="profile-avatar-main">
-                <h3 id="profile-username">Username</h3>
-                <p>Total XP: <span id="profile-total-xp">0</span></p>
-                <p>Current League: <span id="profile-current-league">N/A</span></p>
+                <img th:src="${currentUserDto.avatar ?: '/images/default-avatar.svg'}" alt="User Avatar"
+                    id="profile-avatar" class="profile-avatar-main">
+                <h3 id="profile-username" th:text="${currentUserDto.username ?: 'Username'}">Username</h3>
+                <p>Total XP: <span id="profile-total-xp" th:text="${currentUserDto.totalXp ?: 0}">0</span></p>
+                <p>Current League: <span id="profile-current-league"
+                        th:text="${currentUserDto.currentLeague ?: 'N/A'}">N/A</span></p>
 
                 <h4>Achievements:</h4>
                 <ul id="profile-achievements-list">
-                    <li><i class="fas fa-star"></i> Early Bird</li>
+                    <li th:if="${currentUserDto.achievements == null or #lists.isEmpty(currentUserDto.achievements)}">
+                        No achievements yet.
+                    </li>
+                    <li th:each="ach : ${currentUserDto.achievements}">
+                        <i th:class="${ach.iconClass ?: 'fas fa-trophy'}"></i>
+                        <span th:text="${ach.name}">Achievement Name</span> - <small
+                            th:text="${ach.details}">Details</small>
+                    </li>
                 </ul>
             </div>
         </aside>
     </div>
 
-    <script src="../js/leaderboard.js"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        var serverData = {
+            currentUser: /*[[${currentUserDto}]]*/ null,
+            leagueSettings: /*[[${leagueSettingsDto}]]*/ null,
+            globalLeaderboard: /*[[${globalLeaderboardData}]]*/[],
+            friendsLeaderboard: /*[[${friendsLeaderboardData}]]*/[],
+            defaultAvatarUrl: /*[[@{/images/default-avatar.svg}]]*/ '/images/default-avatar.svg',
+            medalImageUrls: { // Để JS có thể truy cập đường dẫn ảnh huy chương
+                gold: /*[[@{/images/gold.png}]]*/ '/images/gold.png',
+                silver: /*[[@{/images/silver.png}]]*/ '/images/silver.png',
+                bronze: /*[[@{/images/bronze.png}]]*/ '/images/bronze.png'
+            }
+
+        };
+        /*]]>*/
+    </script>
+    <script th:src="@{/js/leaderboard.js}"></script>
 </body>
 
 </html>
