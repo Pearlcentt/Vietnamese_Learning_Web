@@ -1,4 +1,4 @@
-package group3.vietnamese_learning_web.projection;
+package group3.vietnamese_learning_web.dto;
 
 import group3.vietnamese_learning_web.model.LessonType;
 

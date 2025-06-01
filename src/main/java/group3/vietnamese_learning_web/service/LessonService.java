@@ -2,10 +2,10 @@ package group3.vietnamese_learning_web.service;
 
 import group3.vietnamese_learning_web.dto.LessonDTO;
 import group3.vietnamese_learning_web.dto.LessonWithProgressDTO;
+import group3.vietnamese_learning_web.dto.LessonWithProgressProjection;
 import group3.vietnamese_learning_web.model.Lesson;
 import group3.vietnamese_learning_web.model.LessonType;
 import group3.vietnamese_learning_web.repository.LessonRepository;
-import group3.vietnamese_learning_web.projection.LessonWithProgressProjection;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

@@ -1,5 +1,5 @@
 package group3.vietnamese_learning_web.repository;
-import group3.vietnamese_learning_web.projection.LessonWithProgressProjection;
+import group3.vietnamese_learning_web.dto.LessonWithProgressProjection;
 
 
 import group3.vietnamese_learning_web.model.Lesson;
