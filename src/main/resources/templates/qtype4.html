@@ -15,17 +15,17 @@
     </div>
   </div>
   <div class="col-bot">
-    <div class="col-mid">
-      <div class="main-question">
-        <div class="Guidance">Rearrange to make sense!</div>
+    <div class="col-mid">      <div class="main-question">
+        <div class="Guidance">Rearrange the words to make sense!</div>
         <div class="cartoon-telling">
           <div class="cartoon-image"><img th:src="@{/images/fill.png}" /></div>
           <div class="line-order"><span class="line-answer"></span></div>
-        </div>
-        <div class="line-wait">
+        </div>        <div class="line-wait">
           <div class="tokenizer-parts">
-            <div id="first-line" class="char-container"></div>
-            <div id="second-line" class="char-container"></div>
+            <div id="first-line" class="word-container">
+              <div class="word-token" th:each="word : ${questions[0].words}" th:text="${word}">Word</div>
+            </div>
+            <div id="second-line" class="word-container"></div>
           </div>
         </div>
       </div>
@@ -36,9 +36,13 @@
         <p class="result-message">Correct!</p>
         <div class="Check">Check</div>
       </div>
-    </div>
-  </div>
+    </div>  </div>
 </div>
+<script th:inline="javascript">
+  window.questionData = {
+    answer: /*[[${questions[0].answer}]]*/ 'defaultAnswer'
+  };
+</script>
 <script th:src="@{/js/choose-4.js}" defer></script>
 <script th:src="@{/js/answer.js}" defer></script>
 <script th:src="@{/js/progress.js}" defer></script>

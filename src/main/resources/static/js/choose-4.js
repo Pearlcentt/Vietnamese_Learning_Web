@@ -4,12 +4,13 @@ document.addEventListener("DOMContentLoaded", function () {
   const resultMessage = document.querySelector(".result-message");
   const tickIcon = document.querySelector(".tick-icon");
   const errorIcon = document.querySelector(".error-icon");
-
   const tokenCont = document.querySelector(".line-wait");
   const firstContainer = document.getElementById("first-line");
   const secondContainer = document.getElementById("second-line");
   const lineUnder = document.querySelector(".line-answer");
-  const word = "Bành trướng lãnh địa";
+  
+  // Get the word from window.questionData or fallback to hardcoded value
+  const word = (window.questionData && window.questionData.answer) ? window.questionData.answer : "Bành trướng lãnh địa";
   const text = word.split(" ");
   let selectedChars = []; // Lưu {char, slotIndex} để theo dõi vị trí
   let correctOrder = word.split(" ");

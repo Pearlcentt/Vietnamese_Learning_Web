@@ -15,20 +15,17 @@
     </div>
   </div>
   <div class="col-bot">
-    <div class="col-mid">
-      <div class="main-question">
-        <div class="Guidance">Find a proper word!</div>
+    <div class="col-mid">      <div class="main-question">
+        <div class="Guidance">Fill in the blank!</div>
         <div class="cartoon-telling">
           <div class="cartoon-image"><img th:src="@{/images/fill.png}" /></div>
           <div class="sentence-box">
-            <span class="sentence-part1" th:text="${sentences[0].eng.split(' ')[0]} + ' '"></span>
-            <span class="sentence-part2" id="blank"></span>
-            <span class="sentence-part3">...</span>
+            <span th:text="${questions[0].question}">Sentence with blank</span>
           </div>
         </div>
         <div class="Fills">
-          <div class="Fill-box" th:each="w : ${words}">
-            <div class="Fill-word" th:text="${w.word}">Word</div>
+          <div class="Fill-box" th:each="choice : ${questions[0].choices}">
+            <div class="Fill-word" th:text="${choice}">Word</div>
           </div>
         </div>
       </div>
@@ -39,9 +36,13 @@
         <p class="result-message">Correct!</p>
         <div class="Check">Check</div>
       </div>
-    </div>
-  </div>
+    </div>  </div>
 </div>
+<script th:inline="javascript">
+  window.questionData = {
+    answer: /*[[${questions[0].answer}]]*/ 'defaultAnswer'
+  };
+</script>
 <script th:src="@{/js/choose-2.js}" defer></script>
 <script th:src="@{/js/answer.js}" defer></script>
 <script th:src="@{/js/progress.js}" defer></script>

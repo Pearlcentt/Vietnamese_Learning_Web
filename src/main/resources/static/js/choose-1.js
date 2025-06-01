@@ -1,7 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
   console.log("choose-1.js loaded");
 
-  const correctAnswer = "two";
+  // Get the correct answer from the server data
+  const correctAnswer = window.questionData && window.questionData.answer ? window.questionData.answer : "default";
   const ignoreDiv = document.querySelector(".Ignore");
   const buttons = document.querySelectorAll(".choice-box");
   const checkButton = document.querySelector(".Check");

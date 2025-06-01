@@ -15,20 +15,19 @@
     </div>
   </div>
   <div class="col-bot">
-    <div class="col-mid">
-      <div class="main-question">
+    <div class="col-mid">      <div class="main-question">
         <div class="Guidance">Choose the correct word!</div>
         <div class="cartoon-telling">
           <div class="cartoon-image">
             <img th:src="@{/images/think.png}" />
           </div>
           <div class="word-box">
-            <p th:text="${sentences[0].eng}">Word</p>
+            <p th:text="${questions[0].question}">English Word</p>
           </div>
         </div>
         <div class="Choices">
-          <div class="choice-box" th:each="w : ${words}">
-            <div class="choice-word" th:text="${w.word}">Option</div>
+          <div class="choice-box" th:each="choice : ${questions[0].choices}">
+            <div class="choice-word" th:text="${choice}">Choice</div>
           </div>
         </div>
       </div>
@@ -39,9 +38,13 @@
         <p class="result-message">Correct!</p>
         <div class="Check">Check</div>
       </div>
-    </div>
-  </div>
+    </div>  </div>
 </div>
+<script th:inline="javascript">
+  window.questionData = {
+    answer: /*[[${questions[0].answer}]]*/ 'defaultAnswer'
+  };
+</script>
 <script th:src="@{/js/choose-1.js}" defer></script>
 <script th:src="@{/js/answer.js}" defer></script>
 <script th:src="@{/js/progress.js}" defer></script>

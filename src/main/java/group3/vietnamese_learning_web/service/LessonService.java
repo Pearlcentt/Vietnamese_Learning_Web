@@ -49,30 +49,36 @@ public class LessonService {
                 .lessonId(lesson.getId().getLessonId())
                 .lessonType(lesson.getLessonType())
                 .build();
-    }    public List<LessonWithProgressDTO> getLessonsWithProgress(Integer topicId, Integer userId) {
-        List<LessonWithProgressProjection> projections = lessonRepository.findAllWithProgressByTopicIdAndUserId(topicId, userId);
-        
-        return projections.stream()
-            .map(p -> {
-                // Determine if lesson should be locked
-                String actualStatus = determineActualStatus(p, projections);
-                
-                return LessonWithProgressDTO.builder()
-                    .topicId(p.getTopicId())
-                    .lessonId(p.getLessonId())
-                    .lessonType(p.getLessonType())
-                    .status(actualStatus)
-                    .score(p.getScore())
-                    .build();
-            })
-            .collect(Collectors.toList());
     }
-      private String determineActualStatus(LessonWithProgressProjection current, List<LessonWithProgressProjection> allLessons) {
+
+    public List<LessonWithProgressDTO> getLessonsWithProgress(Integer topicId, Integer userId) {
+        List<LessonWithProgressProjection> projections = lessonRepository.findAllWithProgressByTopicIdAndUserId(topicId,
+                userId);
+
+        return projections.stream()
+                .map(p -> {
+                    // Determine if lesson should be locked
+                    String actualStatus = determineActualStatus(p, projections);
+
+                    return LessonWithProgressDTO.builder()
+                            .topicId(p.getTopicId())
+                            .lessonId(p.getLessonId())
+                            .lessonType(p.getLessonType())
+                            .status(actualStatus)
+                            .score(p.getScore())
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
+
+    private String determineActualStatus(LessonWithProgressProjection current,
+            List<LessonWithProgressProjection> allLessons) {
         // All lessons are now unlocked to allow free access to any lesson
         return current.getStatus() != null ? current.getStatus() : "Not_Started";
     }
 
-    public List<LessonWithProgressDTO> getLessonsWithProgressByType(Integer topicId, Integer userId, LessonType lessonType) {
+    public List<LessonWithProgressDTO> getLessonsWithProgressByType(Integer topicId, Integer userId,
+            LessonType lessonType) {
         return getLessonsWithProgress(topicId, userId)
                 .stream()
                 .filter(lesson -> lesson.getLessonType() == lessonType)

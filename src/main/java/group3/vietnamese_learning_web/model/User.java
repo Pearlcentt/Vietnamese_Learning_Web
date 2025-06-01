@@ -2,6 +2,7 @@ package group3.vietnamese_learning_web.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import group3.vietnamese_learning_web.converter.GenderConverter;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 
@@ -31,10 +32,9 @@ public class User {
 
     @Column(nullable = false)
     private LocalDate dob;
-
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = GenderConverter.class)
     @Column(nullable = false, length = 10)
-    private Gender gender; // enum Gender { Male, Female, Other }
+    private Gender gender;
 
     @Column(name = "date_created", nullable = false, updatable = false, insertable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private Timestamp dateCreated;

@@ -22,5 +22,6 @@ public class QuestionDTO {
     private java.util.List<String> words;
     private java.util.List<String> correctOrder;
 
-    private java.util.List<String> chars;    private java.util.List<String> charOrder;
+    private java.util.List<String> chars;
+    private java.util.List<String> charOrder;
 }
