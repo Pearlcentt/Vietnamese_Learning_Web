@@ -6,6 +6,7 @@ import group3.vietnamese_learning_web.repository.UserRepository;
 import group3.vietnamese_learning_web.dto.UserRegistrationDTO;
 import group3.vietnamese_learning_web.dto.UserLoginDTO;
 import group3.vietnamese_learning_web.dto.UserResponseDTO;
+import group3.vietnamese_learning_web.dto.UserEditForm;
 import group3.vietnamese_learning_web.model.Gender;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -90,7 +91,9 @@ public class AuthService implements UserDetailsService {
                 .gems(306)
                 .points(user.getPoints() != null ? user.getPoints() : 0)
                 .build();
-    }    public int calculateStreak(Integer uid) {
+    }
+
+    public int calculateStreak(Integer uid) {
         try {
             List<Date> progressDates = progressRepository.findDistinctProgressDatesByUid(uid);
             Set<LocalDate> daysWithProgress = progressDates.stream()
@@ -109,7 +112,9 @@ public class AuthService implements UserDetailsService {
             // If there's any issue with streak calculation, return 0
             return 0;
         }
-    }public UserResponseDTO toResponseDTO(User user) {
+    }
+
+    public UserResponseDTO toResponseDTO(User user) {
         UserResponseDTO dto = UserResponseDTO.builder()
                 .uId(user.getUId())
                 .username(user.getUsername())
@@ -126,5 +131,48 @@ public class AuthService implements UserDetailsService {
         int streak = calculateStreak(user.getUId());
         dto.setStreak(streak);
         return dto;
+    }
+
+    public UserResponseDTO updateProfile(String username, UserEditForm editForm) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        // Verify current password if provided
+        if (editForm.getCurrentPassword() != null && !editForm.getCurrentPassword().isEmpty()) {
+            if (!passwordEncoder.matches(editForm.getCurrentPassword(), user.getPassword())) {
+                throw new RuntimeException("Current password is incorrect");
+            }
+        }
+
+        // Update fields if provided
+        boolean updated = false;
+        
+        if (editForm.getDisplayName() != null && !editForm.getDisplayName().trim().isEmpty()) {
+            user.setName(editForm.getDisplayName().trim());
+            updated = true;
+        }
+
+        if (editForm.getEmail() != null && !editForm.getEmail().trim().isEmpty()) {
+            // Check if email is already taken by another user
+            Optional<User> existingUser = userRepository.findByEmail(editForm.getEmail().trim());
+            if (existingUser.isPresent() && !existingUser.get().getUId().equals(user.getUId())) {
+                throw new RuntimeException("Email is already taken by another user");
+            }
+            user.setEmail(editForm.getEmail().trim());
+            updated = true;
+        }
+
+        // Update password if new password is provided and current password was verified
+        if (editForm.getNewPassword() != null && !editForm.getNewPassword().isEmpty() &&
+            editForm.getCurrentPassword() != null && !editForm.getCurrentPassword().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(editForm.getNewPassword()));
+            updated = true;
+        }
+
+        if (updated) {
+            user = userRepository.save(user);
+        }
+
+        return toResponseDTO(user);
     }
 }

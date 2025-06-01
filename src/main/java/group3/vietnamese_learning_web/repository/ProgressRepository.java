@@ -21,6 +21,8 @@ public interface ProgressRepository extends JpaRepository<Progress, ProgressId> 
 
     long countByIdUidAndStatus(Integer uid, ProgressStatus status);
 
-    long countByIdUidAndIdTopicIdAndStatus(Integer uid, Integer topicId, ProgressStatus status);    @Query(value = "SELECT DISTINCT DATE(last_updated) FROM progress WHERE u_id = :uid", nativeQuery = true)
+    long countByIdUidAndIdTopicIdAndStatus(Integer uid, Integer topicId, ProgressStatus status);
+
+    @Query(value = "SELECT DISTINCT DATE(last_updated) FROM progress WHERE u_id = :uid", nativeQuery = true)
     List<Date> findDistinctProgressDatesByUid(@Param("uid") Integer uid);
 }

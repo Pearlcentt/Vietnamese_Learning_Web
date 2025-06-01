@@ -307,41 +307,39 @@ document.addEventListener('DOMContentLoaded', () => {
             if (editProfileView) editProfileView.style.display = 'block';
             loadEditFormData();
         });
-    }
-
-    if (cancelEditProfileBtn) {
+    }    if (cancelEditProfileBtn) {
         cancelEditProfileBtn.addEventListener('click', () => {
             if (editProfileView) editProfileView.style.display = 'none';
             if (profileView) profileView.style.display = 'block';
             if (profileView) profileView.classList.add('profile-view-active');
         });
-    }
-
-    if (editProfileForm) {
+    }    if (editProfileForm) {
         editProfileForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = {
-                displayName: editNameInput.value,
-                email: editEmailInput.value,
-                selectedAvatarUrl: selectedAvatarUrlInput.value, // This should be the URL of the chosen avatar
-                currentPassword: editCurrentPasswordInput.value,
-                newPassword: editNewPasswordInput.value
-            };
-
+            e.preventDefault(); // Prevent default form submission
+            
             try {
-                const updatedUser = await makeApiCall(backendUrls.updateProfile, 'POST', formData);
-                // Assuming server returns the updated user object or relevant parts
-                if (currentUserData && updatedUser) { // Merge or replace currentUserData
-                    Object.assign(currentUserData, updatedUser); // Simple merge, adjust as needed
+                const formData = new FormData(editProfileForm);
+                const response = await makeApiCall(backendUrls.updateProfile, 'POST', formData, true);
+                
+                // Check if the response indicates success
+                if (response && response.success) {
+                    // Update current user data with the response from server
+                    if (currentUserData && response.user) { 
+                        Object.assign(currentUserData, response.user);
+                    }
+
+                    alert(response.message || 'Profile updated successfully!');
+                    loadProfileDisplayData(); // Refresh main view
+                    if (editProfileView) editProfileView.style.display = 'none';
+                    if (profileView) profileView.style.display = 'block';
+                    if (profileView) profileView.classList.add('profile-view-active');
+                } else {
+                    // Handle case where success is false
+                    alert(response.message || 'Failed to update profile. Please try again.');
                 }
 
-                alert('Profile updated successfully!');
-                loadProfileDisplayData(); // Refresh main view
-                if (editProfileView) editProfileView.style.display = 'none';
-                if (profileView) profileView.style.display = 'block';
-                if (profileView) profileView.classList.add('profile-view-active');
-
             } catch (error) {
+                console.error('Profile update error:', error);
                 alert('Failed to update profile. Please check the details and try again.');
             }
         });

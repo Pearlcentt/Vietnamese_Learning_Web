@@ -19,6 +19,8 @@ public class UserResponseDTO {
     private Gender gender;
     private int streak;
     private int gems;
+    private Integer points;
+    private String avatar; // Added for user avatar
     private LocalDate dateCreated; // Added to match template
     private List<UserResponseDTO> friends; // Added for friend list
     private List<UserResponseDTO> receivedFriendRequests; // Added for friend requests
@@ -26,4 +28,3 @@ public class UserResponseDTO {
     private String currentLeague; // Added, can be null if not implemented
     private int top3Finishes; // Added, default to 0 if not implemented
 }
-

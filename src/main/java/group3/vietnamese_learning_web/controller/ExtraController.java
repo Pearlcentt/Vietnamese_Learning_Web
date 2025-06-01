@@ -10,8 +10,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequiredArgsConstructor
@@ -97,6 +101,69 @@ public class ExtraController {
         model.addAttribute("user", user);
         // For now, redirect to dashboard since shop isn't implemented
         return "redirect:/dashboard";
+    }    @PostMapping("/profile/update")
+    public String updateProfile(
+            @ModelAttribute("userEditForm") UserEditForm userEditForm,
+            Model model) {
+        try {
+            // Get current user
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String username = authentication.getName();            // Update the profile
+            authService.updateProfile(username, userEditForm);
+
+            // Redirect to profile page with success message
+            return "redirect:/profile_add_friend?success=true";
+
+        } catch (RuntimeException e) {
+            // Handle error
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String username = authentication.getName();
+            UserResponseDTO user = authService.getUserByUsername(username);
+
+            // Re-populate the form with user data
+            UserEditForm newForm = new UserEditForm();
+            newForm.setDisplayName(user.getName());
+            newForm.setEmail(user.getEmail());
+
+            model.addAttribute("userDto", user);
+            model.addAttribute("userEditForm", newForm);
+            model.addAttribute("errorMessage", e.getMessage());
+            
+            // Return to the profile page with error
+            return "profile_add_friend";
+        }
+    }
+
+    // REST API endpoint for AJAX profile updates
+    @PostMapping("/api/profile/update")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> updateProfileApi(
+            @ModelAttribute("userEditForm") UserEditForm userEditForm) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            // Get current user
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            String username = authentication.getName();
+            
+            // Update the profile
+            authService.updateProfile(username, userEditForm);
+            
+            // Get updated user data
+            UserResponseDTO updatedUser = authService.getUserByUsername(username);
+            
+            response.put("success", true);
+            response.put("message", "Profile updated successfully!");
+            response.put("user", updatedUser);
+            
+            return ResponseEntity.ok(response);
+
+        } catch (RuntimeException e) {
+            response.put("success", false);
+            response.put("message", "Failed to update profile: " + e.getMessage());
+            
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
     }
 
     // Simple DTO for league settings

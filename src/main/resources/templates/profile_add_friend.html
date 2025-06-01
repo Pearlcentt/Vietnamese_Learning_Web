@@ -66,10 +66,19 @@
                     </div>
                 </div>
             </div>
-        </div>
-
-        <div id="editProfileView" class="edit-profile-container" style="display: none;">
+        </div>        <div id="editProfileView" class="edit-profile-container" style="display: none;">
             <h2><i class="fas fa-user-cog"></i> Edit profile</h2>
+            
+            <!-- Success Message -->
+            <div th:if="${param.success}" class="alert alert-success">
+                <i class="fas fa-check-circle"></i> Profile updated successfully!
+            </div>
+            
+            <!-- Error Message -->
+            <div th:if="${errorMessage}" class="alert alert-error">
+                <i class="fas fa-exclamation-circle"></i> <span th:text="${errorMessage}">Error message</span>
+            </div>
+            
             <div th:if="${userEditForm != null}">
                 <form id="editProfileForm" th:action="@{/profile/update}" method="post" th:object="${userEditForm}">
                     <div class="form-group">
@@ -165,9 +174,8 @@
     var serverData = {
         currentUser: /*[[${userDto}]]*/ null,
         csrfToken: /*[[${_csrf?.token}]]*/ '',
-        csrfHeaderName: /*[[${_csrf?.headerName}]]*/ '',
-        urls: {
-            updateProfile: /*[[@{/profile/update}]]*/ '/profile/update',
+        csrfHeaderName: /*[[${_csrf?.headerName}]]*/ '',        urls: {
+            updateProfile: /*[[@{/api/profile/update}]]*/ '/api/profile/update',
             searchFriends: /*[[@{/friends/search}]]*/ '/friends/search',
             sendFriendRequest: /*[[@{/friends/request/send}]]*/ '/friends/request/send',
             acceptFriendRequest: /*[[@{/friends/request/accept}]]*/ '/friends/request/accept',

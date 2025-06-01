@@ -50,9 +50,7 @@ public class ProgressController {
             @RequestParam Integer score,
             @RequestParam ProgressStatus status) {
         return progressService.updateProgress(uid, topicId, lessonId, score, status);
-    } // Complete lesson endpoint called from frontend
-
-    @PostMapping("/complete")
+    } // Complete lesson endpoint called from frontend    @PostMapping("/complete")
     public ResponseEntity<String> completeLesson(
             @RequestParam Integer topicId,
             @RequestParam Integer lessonId,
@@ -62,13 +60,21 @@ public class ProgressController {
             UserResponseDTO user = authService.getUserByUsername(username);
             Integer userId = user.getUId();
 
+            // Check if lesson was already completed
+            ProgressDTO existingProgress = progressService.getProgress(userId, topicId, lessonId);
+            boolean wasAlreadyCompleted = existingProgress != null && 
+                                        existingProgress.getStatus() == ProgressStatus.Completed;
+
             // Mark lesson as completed with max score
             progressService.updateProgress(userId, topicId, lessonId, 100, ProgressStatus.Completed);
 
-            // Award points for completing the lesson (10 points per lesson)
-            leaderboardService.addPoints(userId, 10);
-
-            return ResponseEntity.ok("Lesson completed successfully! You earned 10 points!");
+            // Award points only if lesson wasn't already completed (10 points per lesson)
+            if (!wasAlreadyCompleted) {
+                leaderboardService.addPoints(userId, 10);
+                return ResponseEntity.ok("Lesson completed successfully! You earned 10 points!");
+            } else {
+                return ResponseEntity.ok("Lesson completed! (No additional points - already completed before)");
+            }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Failed to save progress: " + e.getMessage());
