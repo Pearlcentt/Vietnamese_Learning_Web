@@ -72,20 +72,19 @@ public class AuthService implements UserDetailsService {
                 .password(user.getPassword())     // must be encoded
                 .roles("USER")                    // or user.getRole() if present
                 .build();
-    }
-
-    public UserResponseDTO getUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<User> user = userRepository.findByUsername(username);
-        if (user == null) {
+    }    public UserResponseDTO getUserByUsername(String username) throws UsernameNotFoundException {
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        if (!userOpt.isPresent()) {
             throw new UsernameNotFoundException("User not found");
         }
+        User user = userOpt.get();
         return UserResponseDTO.builder()
-                .uId(user.get().getUId())
-                .username(user.get().getUsername())
-                .email(user.get().getEmail())
-                .name(user.get().getName())
-                .dob(user.get().getDob())
-                .gender(user.get().getGender())
+                .uId(user.getUId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .name(user.getName())
+                .dob(user.getDob())
+                .gender(user.getGender())
                 .gems(306)
                 .build();
     }

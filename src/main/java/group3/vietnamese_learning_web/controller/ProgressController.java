@@ -1,9 +1,14 @@
 package group3.vietnamese_learning_web.controller;
 
 import group3.vietnamese_learning_web.dto.ProgressDTO;
+import group3.vietnamese_learning_web.dto.UserResponseDTO;
 import group3.vietnamese_learning_web.model.ProgressStatus;
 import group3.vietnamese_learning_web.service.ProgressService;
+import group3.vietnamese_learning_web.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,6 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProgressController {
     private final ProgressService progressService;
+    private final AuthService authService;
 
     // Get all progress for a user
     @GetMapping("/user/{uid}")
@@ -42,5 +48,27 @@ public class ProgressController {
             @RequestParam ProgressStatus status
     ) {
         return progressService.updateProgress(uid, topicId, lessonId, score, status);
+    }
+
+    // Complete lesson endpoint called from frontend
+    @PostMapping("/complete")
+    public ResponseEntity<String> completeLesson(
+            @RequestParam Integer topicId,
+            @RequestParam Integer lessonId,
+            Authentication authentication
+    ) {
+        try {
+            String username = authentication.getName();
+            UserResponseDTO user = authService.getUserByUsername(username);
+            Integer userId = user.getUId();
+            
+            // Mark lesson as completed with max score
+            progressService.updateProgress(userId, topicId, lessonId, 100, ProgressStatus.Completed);
+            
+            return ResponseEntity.ok("Lesson completed successfully!");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to save progress: " + e.getMessage());
+        }
     }
 }

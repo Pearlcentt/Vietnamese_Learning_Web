@@ -19,8 +19,9 @@ public class Sentence {
     private String eng;
 
     @Column(name = "viet", nullable = false, columnDefinition = "TEXT")
-    private String viet;
-
-    @Column(name = "topic_name", nullable = false)
+    private String viet;    @Column(name = "topic_name", nullable = false)
     private String topicName;
+
+    @Column(name = "audio_url")
+    private String audioUrl;
 }

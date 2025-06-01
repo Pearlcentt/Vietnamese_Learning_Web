@@ -5,6 +5,7 @@ import group3.vietnamese_learning_web.dto.LessonWithProgressDTO;
 import group3.vietnamese_learning_web.model.Lesson;
 import group3.vietnamese_learning_web.model.LessonType;
 import group3.vietnamese_learning_web.repository.LessonRepository;
+import group3.vietnamese_learning_web.projection.LessonWithProgressProjection;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -48,19 +49,43 @@ public class LessonService {
                 .lessonId(lesson.getId().getLessonId())
                 .lessonType(lesson.getLessonType())
                 .build();
-    }
-
-    public List<LessonWithProgressDTO> getLessonsWithProgress(Integer topicId, Integer userId) {
-        return lessonRepository.findAllWithProgressByTopicIdAndUserId(topicId, userId)
-            .stream()
-            .map(p -> LessonWithProgressDTO.builder()
-                .topicId(p.getTopicId())
-                .lessonId(p.getLessonId())
-                .lessonType(p.getLessonType())
-                .status(p.getStatus())
-                .score(p.getScore())
-                .build())
+    }    public List<LessonWithProgressDTO> getLessonsWithProgress(Integer topicId, Integer userId) {
+        List<LessonWithProgressProjection> projections = lessonRepository.findAllWithProgressByTopicIdAndUserId(topicId, userId);
+        
+        return projections.stream()
+            .map(p -> {
+                // Determine if lesson should be locked
+                String actualStatus = determineActualStatus(p, projections);
+                
+                return LessonWithProgressDTO.builder()
+                    .topicId(p.getTopicId())
+                    .lessonId(p.getLessonId())
+                    .lessonType(p.getLessonType())
+                    .status(actualStatus)
+                    .score(p.getScore())
+                    .build();
+            })
             .collect(Collectors.toList());
+    }
+    
+    private String determineActualStatus(LessonWithProgressProjection current, List<LessonWithProgressProjection> allLessons) {
+        // First lesson is always unlocked
+        if (current.getLessonId() == 1) {
+            return current.getStatus() != null ? current.getStatus() : "Not_Started";
+        }
+        
+        // Check if previous lesson is completed
+        boolean previousCompleted = allLessons.stream()
+            .anyMatch(lesson -> 
+                lesson.getLessonId().equals(current.getLessonId() - 1) && 
+                "Completed".equals(lesson.getStatus())
+            );
+            
+        if (!previousCompleted) {
+            return "Locked";
+        }
+        
+        return current.getStatus() != null ? current.getStatus() : "Not_Started";
     }
 
     public List<LessonWithProgressDTO> getLessonsWithProgressByType(Integer topicId, Integer userId, LessonType lessonType) {

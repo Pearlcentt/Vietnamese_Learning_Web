@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -14,8 +14,7 @@
       margin: 0;
       background-color: #f6f7dc;
     "
-  >
-    <div
+  >    <div
       class="start-box"
       style="
         background-color: #52f52a;
@@ -29,8 +28,7 @@
       "
       onmouseover="this.style.backgroundColor='#3cbf1f'"
       onmouseout="this.style.backgroundColor='#52f52a'"
-      onclick="window.location.href='/quiz-start'">
-    >
+      >
       Start <span th:text="'(' + ${lessonType} + ')'">Loading...</span>
     </div>
     <script th:src="@{/js/progress.js}" defer></script>
