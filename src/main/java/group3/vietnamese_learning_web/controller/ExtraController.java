@@ -1,5 +1,6 @@
 package group3.vietnamese_learning_web.controller;
 
+import group3.vietnamese_learning_web.dto.UserEditForm;
 import group3.vietnamese_learning_web.dto.UserResponseDTO;
 import group3.vietnamese_learning_web.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -27,13 +28,7 @@ public class ExtraController {
 
     @GetMapping("/profile")
     public String profile(Model model) {
-        // Get current user
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-        UserResponseDTO user = authService.getUserByUsername(username);
-        
-        model.addAttribute("user", user);
-        return "profile_add_friend";
+        return profileAddFriend(model); // Delegate to profileAddFriend for consistency
     }
 
     @GetMapping("/profile_add_friend")
@@ -42,8 +37,18 @@ public class ExtraController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         UserResponseDTO user = authService.getUserByUsername(username);
-        
-        model.addAttribute("user", user);
+
+        // Create edit form
+        UserEditForm userEditForm = new UserEditForm();
+        if (user != null) {
+            userEditForm.setDisplayName(user.getName());
+            userEditForm.setEmail(user.getEmail());
+        }
+
+        // Add attributes to model
+        model.addAttribute("userDto", user);
+        model.addAttribute("userEditForm", userEditForm);
+
         return "profile_add_friend";
     }
 
