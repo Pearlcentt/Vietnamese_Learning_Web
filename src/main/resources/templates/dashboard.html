@@ -105,6 +105,7 @@
                     class="topic-item"
                     th:data-topic-id="${topic.topicId}"
                     th:data-title="${topic.topicName}"
+                    th:data-description="${topic.description}"
                     th:classappend="${iterStat.index % 4 == 1} ? 'left-position' : (${iterStat.index % 4 == 3} ? 'right-position' : '')"
                   >
                     <div class="progress-ring"></div>
@@ -121,6 +122,7 @@
                           Topic
                         </div>
                         <h2 th:text="${topic.topicName}">Topic Name</h2>
+                        <h3 th:text="${topic.description}">Topic Description</h3>
                       </div>
                       <div class="progress-container">
                         <div class="progress-bar-wrapper">
