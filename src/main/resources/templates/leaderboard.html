@@ -49,58 +49,56 @@
             <div id="leaderboard-list-container">
                 <!-- Leaderboard items will be injected here by JavaScript using data from the model -->
             </div>
-        </main>
-
-        <aside class="right-sidebar" th:if="${currentUserDto != null}">
+        </main>        <aside class="right-sidebar">
             <div class="user-language-stats">
                 <div class="language-info-group">
-                    <img th:src="${currentUserDto.flagSrc ?: '/images/default-flag.png'}" alt="User Flag"
-                        id="user-flag">
-                    <span id="user-language"
-                        th:text="${currentUserDto.languageLearning?.toUpperCase() ?: 'LANGUAGE'}">VIETNAMESE</span>
+                    <img th:src="@{/images/vietnam.png}" alt="User Flag" id="user-flag">
+                    <span id="user-language">VIETNAMESE</span>
                 </div>
                 <div class="stats-badges-group">
                     <div class="stat-item">
-                        <i class="fas fa-fire"></i> <span id="user-streak"
-                            th:text="${currentUserDto.streak ?: 0}">0</span>
+                        <i class="fas fa-fire"></i> <span id="user-streak" th:text="${user.streak ?: 0}">0</span>
                     </div>
                     <div class="stat-item">
-                        <i class="fas fa-gem"></i> <span id="user-gems" th:text="${currentUserDto.gems ?: 0}">0</span>
+                        <i class="fas fa-gem"></i> <span id="user-gems" th:text="${user.gems ?: 0}">0</span>
                     </div>
                 </div>
             </div>
 
             <div class="user-profile-section">
-                <img th:src="${currentUserDto.avatar ?: '/images/default-avatar.svg'}" alt="User Avatar"
+                <img th:src="${user.avatar ?: '/images/default-avatar.png'}" alt="User Avatar"
                     id="profile-avatar" class="profile-avatar-main">
-                <h3 id="profile-username" th:text="${currentUserDto.username ?: 'Username'}">Username</h3>
-                <p>Total XP: <span id="profile-total-xp" th:text="${currentUserDto.totalXp ?: 0}">0</span></p>
+                <h3 id="profile-username" th:text="${user.username ?: 'Username'}">Username</h3>
+                <p>Total Points: <span id="profile-total-xp" th:text="${user.points ?: 0}">0</span></p>
                 <p>Current League: <span id="profile-current-league"
-                        th:text="${currentUserDto.currentLeague ?: 'N/A'}">N/A</span></p>
+                        th:text="${leagueSettingsDto?.name ?: 'Bronze League'}">Bronze League</span></p>
 
                 <h4>Achievements:</h4>
                 <ul id="profile-achievements-list">
-                    <li th:if="${currentUserDto.achievements == null or #lists.isEmpty(currentUserDto.achievements)}">
-                        No achievements yet.
-                    </li>
-                    <li th:each="ach : ${currentUserDto.achievements}">
-                        <i th:class="${ach.iconClass ?: 'fas fa-trophy'}"></i>
-                        <span th:text="${ach.name}">Achievement Name</span> - <small
-                            th:text="${ach.details}">Details</small>
-                    </li>
+                    <li>No achievements yet.</li>
                 </ul>
             </div>
         </aside>
-    </div>
-
-    <script th:inline="javascript">
+    </div>    <script th:inline="javascript">
         /*<![CDATA[*/
         var serverData = {
-            currentUser: /*[[${currentUserDto}]]*/ null,
+            currentUser: {
+                username: /*[[${user.username}]]*/ 'Guest',
+                avatar: /*[[${user.avatar}]]*/ '/images/default-avatar.png',
+                streak: /*[[${user.streak}]]*/ 0,
+                gems: /*[[${user.gems}]]*/ 0,
+                points: /*[[${user.points}]]*/ 0,
+                totalXp: /*[[${user.points}]]*/ 0,
+                currentLeagueXp: /*[[${user.points}]]*/ 0,
+                currentLeague: /*[[${leagueSettingsDto?.name}]]*/ 'Bronze League',
+                languageLearning: 'Vietnamese',
+                flagSrc: '/images/vietnam.png',
+                achievements: []
+            },
             leagueSettings: /*[[${leagueSettingsDto}]]*/ null,
             globalLeaderboard: /*[[${globalLeaderboardData}]]*/[],
             friendsLeaderboard: /*[[${friendsLeaderboardData}]]*/[],
-            defaultAvatarUrl: /*[[@{/images/default-avatar.svg}]]*/ '/images/default-avatar.svg',
+            defaultAvatarUrl: /*[[@{/images/default-avatar.png}]]*/ '/images/default-avatar.png',
             medalImageUrls: { // Để JS có thể truy cập đường dẫn ảnh huy chương
                 gold: /*[[@{/images/gold.png}]]*/ '/images/gold.png',
                 silver: /*[[@{/images/silver.png}]]*/ '/images/silver.png',
@@ -108,6 +106,23 @@
             }
 
         };
+        
+        // Convert points to XP format for leaderboard display
+        if (serverData.globalLeaderboard) {
+            serverData.globalLeaderboard = serverData.globalLeaderboard.map(user => ({
+                username: user.username,
+                xp: user.points || 0,
+                avatar: user.avatar || serverData.defaultAvatarUrl
+            }));
+        }
+        
+        if (serverData.friendsLeaderboard) {
+            serverData.friendsLeaderboard = serverData.friendsLeaderboard.map(user => ({
+                username: user.username,
+                xp: user.points || 0,
+                avatar: user.avatar || serverData.defaultAvatarUrl
+            }));
+        }
         /*]]>*/
     </script>
     <script th:src="@{/js/leaderboard.js}"></script>

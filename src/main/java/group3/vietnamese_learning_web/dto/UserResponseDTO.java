@@ -18,4 +18,6 @@ public class UserResponseDTO {
     private Gender gender;
     private int streak;
     private int gems;
+    private Integer points;
+    private String avatar;
 }

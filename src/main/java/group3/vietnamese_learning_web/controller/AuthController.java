@@ -5,7 +5,6 @@ import group3.vietnamese_learning_web.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpSession;
@@ -30,16 +29,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public String processRegistration(@ModelAttribute UserRegistrationDTO dto,
-            BindingResult bindingResult,
-            Model model) {
-        // Check for binding errors (like the gender conversion issue)
-        if (bindingResult.hasErrors()) {
-            model.addAttribute("error", "Please check your input and try again.");
-            model.addAttribute("userRegistrationDto", dto); // Keep the form data
-            return "login"; // Return to login page (signup section) with error
-        }
-
+    public String processRegistration(@ModelAttribute UserRegistrationDTO dto, Model model) {
         try {
             authService.register(dto);
             model.addAttribute("success", "Registration successful! Please log in.");

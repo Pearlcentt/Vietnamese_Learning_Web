@@ -14,10 +14,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional
 public class LeaderboardService {
-    
+
     private final UserRepository userRepository;
     private final AuthService authService;
-    
+
     public List<UserResponseDTO> getTopUsers(int limit) {
         List<User> topUsers = userRepository.findTop10ByOrderByPointsDesc();
         return topUsers.stream()
@@ -25,7 +25,7 @@ public class LeaderboardService {
                 .map(authService::toResponseDTO)
                 .collect(Collectors.toList());
     }
-    
+
     public void addPoints(User user, int points) {
         if (user.getPoints() == null) {
             user.setPoints(0);
@@ -33,13 +33,13 @@ public class LeaderboardService {
         user.setPoints(user.getPoints() + points);
         userRepository.save(user);
     }
-    
+
     public void addPoints(Integer userId, int points) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         addPoints(user, points);
     }
-    
+
     public int getUserRank(User user) {
         List<User> allUsers = userRepository.findAllByOrderByPointsDesc();
         for (int i = 0; i < allUsers.size(); i++) {

@@ -5,6 +5,7 @@ import group3.vietnamese_learning_web.dto.UserResponseDTO;
 import group3.vietnamese_learning_web.model.ProgressStatus;
 import group3.vietnamese_learning_web.service.ProgressService;
 import group3.vietnamese_learning_web.service.AuthService;
+import group3.vietnamese_learning_web.service.LeaderboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import java.util.List;
 public class ProgressController {
     private final ProgressService progressService;
     private final AuthService authService;
+    private final LeaderboardService leaderboardService;
 
     // Get all progress for a user
     @GetMapping("/user/{uid}")
@@ -34,7 +36,8 @@ public class ProgressController {
 
     // Get progress for a single lesson
     @GetMapping("/user/{uid}/topic/{topicId}/lesson/{lessonId}")
-    public ProgressDTO getProgress(@PathVariable Integer uid, @PathVariable Integer topicId, @PathVariable Integer lessonId) {
+    public ProgressDTO getProgress(@PathVariable Integer uid, @PathVariable Integer topicId,
+            @PathVariable Integer lessonId) {
         return progressService.getProgress(uid, topicId, lessonId);
     }
 
@@ -45,27 +48,27 @@ public class ProgressController {
             @RequestParam Integer topicId,
             @RequestParam Integer lessonId,
             @RequestParam Integer score,
-            @RequestParam ProgressStatus status
-    ) {
+            @RequestParam ProgressStatus status) {
         return progressService.updateProgress(uid, topicId, lessonId, score, status);
-    }
+    } // Complete lesson endpoint called from frontend
 
-    // Complete lesson endpoint called from frontend
     @PostMapping("/complete")
     public ResponseEntity<String> completeLesson(
             @RequestParam Integer topicId,
             @RequestParam Integer lessonId,
-            Authentication authentication
-    ) {
+            Authentication authentication) {
         try {
             String username = authentication.getName();
             UserResponseDTO user = authService.getUserByUsername(username);
             Integer userId = user.getUId();
-            
+
             // Mark lesson as completed with max score
             progressService.updateProgress(userId, topicId, lessonId, 100, ProgressStatus.Completed);
-            
-            return ResponseEntity.ok("Lesson completed successfully!");
+
+            // Award points for completing the lesson (10 points per lesson)
+            leaderboardService.addPoints(userId, 10);
+
+            return ResponseEntity.ok("Lesson completed successfully! You earned 10 points!");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Failed to save progress: " + e.getMessage());
