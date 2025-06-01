@@ -17,11 +17,14 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class QuestionService {
     private final SentenceRepository sentenceRepository;
-    private final WordRepository wordRepository;
-
-    public List<QuestionDTO> getQuestionsForLesson(List<Integer> sentenceIds, int lessonType) {
+    private final WordRepository wordRepository;    public List<QuestionDTO> getQuestionsForLesson(List<Integer> sentenceIds, int lessonType) {
         List<QuestionDTO> questions = new ArrayList<>();
-        for (Integer sid : sentenceIds) {
+        
+        // Limit to 2 sentences per lesson as requested
+        int maxSentences = Math.min(2, sentenceIds.size());
+        
+        for (int i = 0; i < maxSentences; i++) {
+            Integer sid = sentenceIds.get(i);
             Sentence sentence = sentenceRepository.findById(sid)
                 .orElseThrow(() -> new RuntimeException("Sentence not found"));
             List<Word> words = wordRepository.findBySidOrderByIdxAsc(sid);
@@ -162,11 +165,9 @@ public class QuestionService {
                 .build();
     }    // Lesson 5: Listen and Fill
     private QuestionDTO buildListenAndFillQuestion(Sentence sentence) {
-        return QuestionDTO.builder()
-                .sId(sentence.getSId())
+        return QuestionDTO.builder()                .sId(sentence.getSId())
                 .eng(sentence.getEng())
                 .viet(sentence.getViet())
-                .audioUrl(sentence.getAudioUrl())
                 .answer(sentence.getViet())
                 .type(5)
                 .build();

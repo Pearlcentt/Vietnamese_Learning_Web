@@ -7,7 +7,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const lineUnder = document.querySelector(".line-answer");
   const speakerImage = document.getElementById("speaker-image");
 
-  const word = "Thành đi ỉa".toLowerCase();
+  // Get the word from window.questionData or fallback to hardcoded value
+  const word = (window.questionData && window.questionData.viet ? window.questionData.viet : "Thành đi ỉa").toLowerCase();
 
   const wordParts = word.split(" ");
   const text = word.replace(/\s+/g, "").split(""); // Tách thành ký
@@ -173,8 +174,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       lineUnder.appendChild(wordContainer);
     });
-  }
-  async function playWord() {
+  }  async function playWord() {
     try {
       const apiKey = "mpNlGxwzJLYQegaUVHJtTWfSwSU1Vfeu";
       const response = await fetch("https://api.fpt.ai/hmi/tts/v5", {
@@ -184,7 +184,7 @@ document.addEventListener("DOMContentLoaded", function () {
           "api-key": apiKey,
           voice: "banmai",
         },
-        body: JSON.stringify({ ListenAndFill: word }),
+        body: JSON.stringify({ text: word }),
       });
 
       if (!response.ok) {

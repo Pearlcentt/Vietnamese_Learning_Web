@@ -30,9 +30,16 @@
         <p class="result-message">Correct!</p>
         <div class="Check">Check</div>
       </div>
-    </div>
-  </div>
+    </div>  </div>
 </div>
+<script th:inline="javascript">
+  // Pass data from controller to JavaScript
+  window.questionData = {
+    viet: /*[[${sentences[0].viet}]]*/ 'Thành đi ỉa',
+    eng: /*[[${sentences[0].eng}]]*/ 'He goes to the toilet',
+    answer: /*[[${sentences[0].answer}]]*/ 'Thành đi ỉa'
+  };
+</script>
 <script th:src="@{/js/choose-5.js}" defer></script>
 <script th:src="@{/js/answer.js}" defer></script>
 <script th:src="@{/js/progress.js}" defer></script>

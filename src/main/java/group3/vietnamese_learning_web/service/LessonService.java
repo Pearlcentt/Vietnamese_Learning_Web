@@ -67,24 +67,8 @@ public class LessonService {
             })
             .collect(Collectors.toList());
     }
-    
-    private String determineActualStatus(LessonWithProgressProjection current, List<LessonWithProgressProjection> allLessons) {
-        // First lesson is always unlocked
-        if (current.getLessonId() == 1) {
-            return current.getStatus() != null ? current.getStatus() : "Not_Started";
-        }
-        
-        // Check if previous lesson is completed
-        boolean previousCompleted = allLessons.stream()
-            .anyMatch(lesson -> 
-                lesson.getLessonId().equals(current.getLessonId() - 1) && 
-                "Completed".equals(lesson.getStatus())
-            );
-            
-        if (!previousCompleted) {
-            return "Locked";
-        }
-        
+      private String determineActualStatus(LessonWithProgressProjection current, List<LessonWithProgressProjection> allLessons) {
+        // All lessons are now unlocked to allow free access to any lesson
         return current.getStatus() != null ? current.getStatus() : "Not_Started";
     }
 

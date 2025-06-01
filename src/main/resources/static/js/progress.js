@@ -1,4 +1,4 @@
-const totalQuestions = 5;
+const totalQuestions = 2;
 
 // Initialize question files
 let questionFiles = [

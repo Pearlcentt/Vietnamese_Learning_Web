@@ -102,16 +102,10 @@ public class QuestionController {
                     model.addAttribute("wordsToOrder", firstQuestion.getWords());
                     model.addAttribute("correctOrder", firstQuestion.getCorrectOrder());
                 }
-                
-                // For qtype4 (reorder chars) - add character lists  
+                  // For qtype4 (reorder chars) - add character lists  
                 if (actualLessonType == 4) {
                     model.addAttribute("charsToOrder", firstQuestion.getChars());
                     model.addAttribute("correctCharOrder", firstQuestion.getCharOrder());
-                }
-                
-                // For qtype5 (listen and fill) - add audio URL
-                if (actualLessonType == 5) {
-                    model.addAttribute("audioUrl", firstQuestion.getAudioUrl());
                 }
             }
             
