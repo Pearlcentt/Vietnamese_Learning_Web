@@ -331,8 +331,6 @@ body {
 /* Rock container and rock images */
 
 .rock-item {
-  /* margin-top: 20px; */
-  /* margin-bottom: 20px; */
   height: auto;
   display: flex;
   flex-direction: column;
@@ -345,9 +343,7 @@ body {
 .rock-item img {
   width: 30px;
   height: 30px;
-  /* border-radius: 50%; */
   object-fit: contain;
-  /* position: absolute; */
   margin-top: 15px;
   margin-bottom: 15px;
 }
