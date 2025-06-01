@@ -2,8 +2,6 @@ package group3.vietnamese_learning_web.controller;
 
 import group3.vietnamese_learning_web.dto.TopicProgressDTO;
 import group3.vietnamese_learning_web.dto.UserResponseDTO;
-import group3.vietnamese_learning_web.model.User;
-import group3.vietnamese_learning_web.repository.UserRepository;
 import group3.vietnamese_learning_web.service.TopicService;
 import group3.vietnamese_learning_web.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
-import java.util.Enumeration;
 
 @Controller
 @RequiredArgsConstructor
@@ -23,26 +20,24 @@ public class HomeController {
     private final TopicService topicService;
     private final AuthService authService;
 
-
     @GetMapping("/dashboard")
     public String dashboard(@RequestParam(required = false) Integer uId,
-                            Model model, HttpSession session) {
+            Model model, HttpSession session) {
 
         // Get user from session or use provided uId
-//        Enumeration<String> attributeNames = session.getAttributeNames();
-//        while (attributeNames.hasMoreElements()) {
-//            String name = attributeNames.nextElement();
-//            Object value = session.getAttribute(name);
-//            System.out.println("Session attribute: " + name + " = " + value);
-//        }
+        // Enumeration<String> attributeNames = session.getAttributeNames();
+        // while (attributeNames.hasMoreElements()) {
+        // String name = attributeNames.nextElement();
+        // Object value = session.getAttribute(name);
+        // System.out.println("Session attribute: " + name + " = " + value);
+        // }
 
-//        UserResponseDTO user = (UserResponseDTO) session.getAttribute("username")
+        // UserResponseDTO user = (UserResponseDTO) session.getAttribute("username")
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null) {
             System.out.println("Current logged-in user: " + authentication.getPrincipal().toString());
         }
-
 
         String username = authentication.getName();
         UserResponseDTO user = authService.getUserByUsername(username);

@@ -1,7 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
   console.log("choose-2.js loaded");
 
-  const correctAnswer = "eyes";
+  // Get the correct answer from window.questionData or fallback to hardcoded value
+  const correctAnswer = (window.questionData && window.questionData.answer) ? window.questionData.answer : "eyes";
   const ignoreDiv = document.querySelector(".Ignore");
   const chosenButtons = document.querySelectorAll(".Fill-box");
   const blankButton = document.querySelector(".sentence-part2");

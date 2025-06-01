@@ -32,9 +32,9 @@ public class QuestionController {
     @ResponseBody
     public List<QuestionDTO> getQuestionsForLesson(
             @RequestParam List<Integer> sentenceIds,
-            @RequestParam int lessonType
-    ) {
-        return questionService.getQuestionsForLesson(sentenceIds, lessonType);    }
+            @RequestParam int lessonType) {
+        return questionService.getQuestionsForLesson(sentenceIds, lessonType);
+    }
 
     // Main question page controller that displays the appropriate template
     @GetMapping("/{topicId}/{lessonId}")
@@ -43,39 +43,41 @@ public class QuestionController {
             @PathVariable Integer lessonId,
             @RequestParam(required = false) Integer lessonType,
             Model model) {
-        
+
         // Get current user
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         UserResponseDTO user = authService.getUserByUsername(username);
-        
+
         // Get lesson details to determine the correct lesson type
         try {
             LessonDTO lesson = lessonService.getLesson(topicId, lessonId);
-            
+
             // Use lesson type from database, or from parameter if provided
             int actualLessonType = lessonType != null ? lessonType : lesson.getLessonType().ordinal() + 1;
-              // Get sentences for this lesson
+            // Get sentences for this lesson
             List<LessonSentence> lessonSentences = lessonSentenceRepository
                     .findByIdTopicIdAndIdLessonId(topicId, lessonId);
-            
-            System.out.println("DEBUG: Looking for lesson sentences with topicId=" + topicId + ", lessonId=" + lessonId);
+
+            System.out
+                    .println("DEBUG: Looking for lesson sentences with topicId=" + topicId + ", lessonId=" + lessonId);
             System.out.println("DEBUG: Found " + lessonSentences.size() + " lesson sentences");
-            
+
             if (lessonSentences.isEmpty()) {
                 System.out.println("DEBUG: No lesson sentences found, returning error");
-                model.addAttribute("error", "No questions found for this lesson. TopicId=" + topicId + ", LessonId=" + lessonId);
+                model.addAttribute("error",
+                        "No questions found for this lesson. TopicId=" + topicId + ", LessonId=" + lessonId);
                 return "error";
             }
-            
+
             // Get sentence IDs
             List<Integer> sentenceIds = lessonSentences.stream()
                     .map(ls -> ls.getId().getSId())
                     .collect(Collectors.toList());
-            
+
             // Generate questions based on actual lesson type
             List<QuestionDTO> questions = questionService.getQuestionsForLesson(sentenceIds, actualLessonType);
-            
+
             // Add data to model
             model.addAttribute("questions", questions);
             model.addAttribute("sentences", questions); // For backward compatibility with templates
@@ -84,11 +86,11 @@ public class QuestionController {
             model.addAttribute("lessonId", lessonId);
             model.addAttribute("lessonType", actualLessonType);
             model.addAttribute("lesson", lesson);
-            
+
             // Add type-specific data to templates
             if (!questions.isEmpty()) {
                 QuestionDTO firstQuestion = questions.get(0);
-                
+
                 // For qtype1 (vocab) and qtype2 (fill in blank) - need choice words
                 if ((actualLessonType == 1 || actualLessonType == 2) && firstQuestion.getChoices() != null) {
                     List<WordChoice> words = firstQuestion.getChoices().stream()
@@ -96,68 +98,68 @@ public class QuestionController {
                             .collect(Collectors.toList());
                     model.addAttribute("words", words);
                 }
-                
+
                 // For qtype3 (reorder words) - add word lists
                 if (actualLessonType == 3) {
                     model.addAttribute("wordsToOrder", firstQuestion.getWords());
                     model.addAttribute("correctOrder", firstQuestion.getCorrectOrder());
                 }
-                  // For qtype4 (reorder chars) - add character lists  
+                // For qtype4 (reorder chars) - add character lists
                 if (actualLessonType == 4) {
                     model.addAttribute("charsToOrder", firstQuestion.getChars());
                     model.addAttribute("correctCharOrder", firstQuestion.getCharOrder());
                 }
             }
-            
+
             // Return appropriate template based on lesson type
             return "qtype" + actualLessonType;
-            
+
         } catch (Exception e) {
             model.addAttribute("error", "Failed to load lesson: " + e.getMessage());
             return "error";
         }
     }
-    
+
     // Lesson start page (q0.html equivalent)
     @GetMapping("/start/{topicId}/{lessonId}")
     public String startLesson(
             @PathVariable Integer topicId,
             @PathVariable Integer lessonId,
             Model model) {
-        
+
         // Get current user
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         UserResponseDTO user = authService.getUserByUsername(username);
-        
+
         try {
             LessonDTO lesson = lessonService.getLesson(topicId, lessonId);
-            
+
             model.addAttribute("lesson", lesson);
             model.addAttribute("user", user);
             model.addAttribute("topicId", topicId);
             model.addAttribute("lessonId", lessonId);
             model.addAttribute("lessonType", lesson.getLessonType().name());
-            
+
             return "q0"; // lesson start template
         } catch (Exception e) {
             model.addAttribute("error", "Failed to load lesson: " + e.getMessage());
             return "error";
         }
     }
-    
+
     // Helper class for template compatibility
     public static class WordChoice {
         private String word;
-        
+
         public WordChoice(String word) {
             this.word = word;
         }
-        
+
         public String getWord() {
             return word;
         }
-        
+
         public void setWord(String word) {
             this.word = word;
         }

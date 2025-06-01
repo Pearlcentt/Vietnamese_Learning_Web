@@ -12,7 +12,9 @@ import jakarta.servlet.http.HttpSession;
 @Controller
 @RequiredArgsConstructor
 public class AuthController {
-    private final AuthService authService;    @GetMapping("/login")
+    private final AuthService authService;
+
+    @GetMapping("/login")
     public String login(@RequestParam(value = "error", required = false) String error, Model model) {
         if (error != null) {
             model.addAttribute("error", "Invalid username or password.");
@@ -24,7 +26,9 @@ public class AuthController {
     @GetMapping("/register")
     public String showRegistrationPage() {
         return "register";
-    }    @PostMapping("/register")
+    }
+
+    @PostMapping("/register")
     public String processRegistration(@ModelAttribute UserRegistrationDTO dto, Model model) {
         try {
             authService.register(dto);

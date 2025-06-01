@@ -14,7 +14,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.sql.Timestamp;
+import java.sql.Date;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -69,10 +69,12 @@ public class AuthService implements UserDetailsService {
         // If you use roles/authorities, add here!
         return org.springframework.security.core.userdetails.User
                 .withUsername(user.getUsername()) // username used for session
-                .password(user.getPassword())     // must be encoded
-                .roles("USER")                    // or user.getRole() if present
+                .password(user.getPassword()) // must be encoded
+                .roles("USER") // or user.getRole() if present
                 .build();
-    }    public UserResponseDTO getUserByUsername(String username) throws UsernameNotFoundException {
+    }
+
+    public UserResponseDTO getUserByUsername(String username) throws UsernameNotFoundException {
         Optional<User> userOpt = userRepository.findByUsername(username);
         if (!userOpt.isPresent()) {
             throw new UsernameNotFoundException("User not found");
@@ -86,26 +88,28 @@ public class AuthService implements UserDetailsService {
                 .dob(user.getDob())
                 .gender(user.getGender())
                 .gems(306)
+                .points(user.getPoints() != null ? user.getPoints() : 0)
                 .build();
-    }
+    }    public int calculateStreak(Integer uid) {
+        try {
+            List<Date> progressDates = progressRepository.findDistinctProgressDatesByUid(uid);
+            Set<LocalDate> daysWithProgress = progressDates.stream()
+                    .map(sqlDate -> sqlDate.toLocalDate())
+                    .collect(Collectors.toSet());
 
-    public int calculateStreak(Integer uid) {
-        List<Timestamp> progressDates = progressRepository.findDistinctProgressDatesByUid(uid);
-        Set<LocalDate> daysWithProgress = progressDates.stream()
-                .map(ts -> ts.toLocalDateTime().toLocalDate())
-                .collect(Collectors.toSet());
+            LocalDate today = LocalDate.now();
+            int streak = 0;
 
-        LocalDate today = LocalDate.now();
-        int streak = 0;
-
-        // Count backward from today until you find a day with no progress
-        while (daysWithProgress.contains(today.minusDays(streak))) {
-            streak++;
+            // Count backward from today until you find a day with no progress
+            while (daysWithProgress.contains(today.minusDays(streak))) {
+                streak++;
+            }
+            return streak;
+        } catch (Exception e) {
+            // If there's any issue with streak calculation, return 0
+            return 0;
         }
-        return streak;
-    }
-
-    public UserResponseDTO toResponseDTO(User user) {
+    }public UserResponseDTO toResponseDTO(User user) {
         UserResponseDTO dto = UserResponseDTO.builder()
                 .uId(user.getUId())
                 .username(user.getUsername())
@@ -114,6 +118,8 @@ public class AuthService implements UserDetailsService {
                 .dob(user.getDob())
                 .gender(user.getGender())
                 .gems(306)
+                .points(user.getPoints() != null ? user.getPoints() : 0)
+                .avatar("/images/default_avatar.png")
                 .build();
 
         // Set streak

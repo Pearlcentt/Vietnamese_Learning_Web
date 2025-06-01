@@ -26,3 +26,4 @@ public class UserResponseDTO {
     private String currentLeague; // Added, can be null if not implemented
     private int top3Finishes; // Added, default to 0 if not implemented
 }
+

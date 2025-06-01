@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,16 +18,30 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class QuestionService {
     private final SentenceRepository sentenceRepository;
-    private final WordRepository wordRepository;    public List<QuestionDTO> getQuestionsForLesson(List<Integer> sentenceIds, int lessonType) {
+    private final WordRepository wordRepository;
+
+    public List<QuestionDTO> getQuestionsForLesson(List<Integer> sentenceIds, int lessonType) {
         List<QuestionDTO> questions = new ArrayList<>();
-        
+
         // Limit to 2 sentences per lesson as requested
         int maxSentences = Math.min(2, sentenceIds.size());
-        
-        for (int i = 0; i < maxSentences; i++) {
-            Integer sid = sentenceIds.get(i);
+
+        // Ensure we use different sentences by taking different indices
+        List<Integer> selectedSentenceIds = new ArrayList<>();
+        if (sentenceIds.size() >= 2) {
+            // Use first and second sentence if available
+            selectedSentenceIds.add(sentenceIds.get(0));
+            selectedSentenceIds.add(sentenceIds.get(1));
+        } else if (sentenceIds.size() == 1) {
+            // If only one sentence, use it twice (fallback)
+            selectedSentenceIds.add(sentenceIds.get(0));
+            selectedSentenceIds.add(sentenceIds.get(0));
+        }
+
+        for (int i = 0; i < maxSentences && i < selectedSentenceIds.size(); i++) {
+            Integer sid = selectedSentenceIds.get(i);
             Sentence sentence = sentenceRepository.findById(sid)
-                .orElseThrow(() -> new RuntimeException("Sentence not found"));
+                    .orElseThrow(() -> new RuntimeException("Sentence not found"));
             List<Word> words = wordRepository.findBySidOrderByIdxAsc(sid);
 
             switch (lessonType) {
@@ -53,124 +68,150 @@ public class QuestionService {
         return questions;
     }
 
-    // --- Individual builders for each lesson type ---    // Lesson 1: Vocab
+    // --- Individual builders for each lesson type --- // Lesson 1: Vocab - English
+    // word as question, Vietnamese word as answer
     private QuestionDTO buildVocabQuestion(Sentence sentence, List<Word> words) {
-        // Use the Vietnamese translation and similar words from your word structure
-        List<String> vietList = words.stream().map(Word::getViet).collect(Collectors.toList());
-        List<String> similar = new ArrayList<>();
-        for (Word w : words) {
-            similar.addAll(w.getVietSimilarWordsList());
+        // For lesson 1, pick one word from the sentence
+        if (words.isEmpty()) {
+            // Fallback: use full sentence if no words available
+            return QuestionDTO.builder()
+                    .sId(sentence.getSId())
+                    .question(sentence.getEng())
+                    .answer(sentence.getViet())
+                    .choices(List.of(sentence.getViet()))
+                    .type(1)
+                    .build();
         }
-        
-        // If we have similar words, use them as choices
+
+        // Pick the first word (or randomly pick one)
+        Word targetWord = words.get(0);
+
+        // Create choices: correct answer + similar words
         List<String> choices = new ArrayList<>();
-        if (!similar.isEmpty()) {
-            choices.addAll(similar);
-            // Add the correct answer
-            choices.add(sentence.getViet());
-            Collections.shuffle(choices);
-        } else {
-            // Fallback: use words from the sentence as choices
-            choices.addAll(vietList);
-            if (choices.size() < 4) {
-                choices.add(sentence.getViet());
-            }
+        choices.add(targetWord.getViet()); // Correct answer
+
+        // Add similar words as wrong choices
+        List<String> similarWords = targetWord.getVietSimilarWordsList();
+        choices.addAll(similarWords);
+
+        // Ensure we have at least 4 choices
+        while (choices.size() < 4) {
+            choices.add("lựa chọn " + choices.size());
         }
-        
+
+        // Limit to 4 choices and shuffle
+        if (choices.size() > 4) {
+            choices = choices.subList(0, 4);
+        }
+        Collections.shuffle(choices);
+
         return QuestionDTO.builder()
                 .sId(sentence.getSId())
-                .eng(sentence.getEng())
-                .viet(sentence.getViet())
-                .vietList(vietList)
-                .vietSimilarWords(similar)
-                .answer(sentence.getViet())
+                .question(targetWord.getEng()) // English word as question
+                .answer(targetWord.getViet()) // Vietnamese word as answer
                 .choices(choices)
                 .type(1)
                 .build();
-    }// Lesson 2: Fill in the blank
+    } // Lesson 2: Fill in the blank - Vietnamese sentence with one word blanked out
+
     private QuestionDTO buildFillInBlankQuestion(Sentence sentence, List<Word> words) {
-        // Randomly pick a word to blank
-        if (words.isEmpty()) return buildVocabQuestion(sentence, words);
-        Word target = words.get((int)(Math.random() * words.size()));
+        if (words.isEmpty()) {
+            // Fallback: use full sentence if no words available
+            return QuestionDTO.builder()
+                    .sId(sentence.getSId())
+                    .question(sentence.getViet())
+                    .answer(sentence.getViet())
+                    .choices(List.of(sentence.getViet()))
+                    .type(2)
+                    .build();
+        }
+
+        // Pick one word to blank out
+        Word targetWord = words.get(0);
         String originalSentence = sentence.getViet();
-        String blankedSentence = originalSentence.replaceFirst("\\b" + target.getViet() + "\\b", "_____");
-        
-        // Create choices including the correct answer and similar words
+        String blankedSentence = originalSentence.replaceFirst("\\b" + targetWord.getViet() + "\\b", "_____");
+
+        // Create choices: correct answer + similar words
         List<String> choices = new ArrayList<>();
-        choices.add(target.getViet());
-        
-        // Add similar words if available
-        List<String> similarWords = target.getVietSimilarWordsList();
-        if (!similarWords.isEmpty()) {
-            choices.addAll(similarWords);
-        } else {
-            // If no similar words, add some random words from other words in the sentence
-            words.stream()
-                .filter(w -> !w.getViet().equals(target.getViet()))
-                .limit(3)
-                .forEach(w -> choices.add(w.getViet()));
-        }
-        
-        // Ensure we have at least 4 choices, pad with placeholder if needed
+        choices.add(targetWord.getViet()); // Correct answer
+
+        // Add similar words as wrong choices
+        List<String> similarWords = targetWord.getVietSimilarWordsList();
+        choices.addAll(similarWords);
+
+        // Ensure we have at least 4 choices
         while (choices.size() < 4) {
-            choices.add("option" + choices.size());
+            choices.add("từ " + choices.size());
         }
-        
+
+        // Limit to 4 choices and shuffle
+        if (choices.size() > 4) {
+            choices = choices.subList(0, 4);
+        }
         Collections.shuffle(choices);
+
         return QuestionDTO.builder()
                 .sId(sentence.getSId())
-                .eng(sentence.getEng())
-                .viet(sentence.getViet())
-                .question(blankedSentence)
-                .answer(target.getViet())
+                .question(blankedSentence) // Vietnamese sentence with blank
+                .answer(targetWord.getViet()) // The word that should fill the blank
                 .choices(choices)
                 .type(2)
                 .build();
-    }    // Lesson 3: Reorder Words
+    } // Lesson 3: Reorder Chars - Vietnamese word split into characters and shuffled
+
     private QuestionDTO buildReorderWordQuestion(Sentence sentence, List<Word> words) {
-        List<String> wordList = words.stream().map(Word::getViet).collect(Collectors.toList());
-        List<String> shuffled = new ArrayList<>(wordList);
-        Collections.shuffle(shuffled);
-        
+        // Use the first word from the sentence, or fallback to first word in sentence
+        String targetWord;
+        if (!words.isEmpty()) {
+            targetWord = words.get(0).getViet();
+        } else {
+            // Fallback: use first word of the sentence
+            String[] sentenceWords = sentence.getViet().split("\\s+");
+            targetWord = sentenceWords.length > 0 ? sentenceWords[0] : sentence.getViet();
+        }
+
+        // Split word into characters
+        List<String> charList = targetWord.chars()
+                .mapToObj(c -> String.valueOf((char) c))
+                .collect(Collectors.toList());
+        List<String> shuffledChars = new ArrayList<>(charList);
+        Collections.shuffle(shuffledChars);
+
         return QuestionDTO.builder()
                 .sId(sentence.getSId())
-                .eng(sentence.getEng())
-                .viet(sentence.getViet())
-                .question(sentence.getEng())
-                .answer(sentence.getViet())
-                .words(shuffled)
-                .correctOrder(wordList)
+                .question("Sắp xếp lại các ký tự để tạo thành từ đúng")
+                .answer(targetWord)
+                .chars(shuffledChars) // Shuffled character list
+                .charOrder(charList) // Correct character order
                 .type(3)
                 .build();
-    }    // Lesson 4: Reorder Chars
+    } // Lesson 4: Reorder Words - Vietnamese sentence split and shuffled
+
     private QuestionDTO buildReorderCharQuestion(Sentence sentence, List<Word> words) {
-        // Use the first word as target (or change as needed)
-        if (words.isEmpty()) return buildVocabQuestion(sentence, words);
-        String word = words.get(0).getViet();
-        List<String> chars = word.chars()
-            .mapToObj(c -> String.valueOf((char)c))
-            .collect(Collectors.toList());
-        List<String> shuffled = new ArrayList<>(chars);
-        Collections.shuffle(shuffled);
-        
+        String vietnameseSentence = sentence.getViet();
+
+        // Split Vietnamese sentence into words
+        List<String> wordList = Arrays.asList(vietnameseSentence.split("\\s+"));
+        List<String> shuffledWords = new ArrayList<>(wordList);
+        Collections.shuffle(shuffledWords);
+
         return QuestionDTO.builder()
                 .sId(sentence.getSId())
-                .eng(sentence.getEng())
-                .viet(sentence.getViet())
-                .question(sentence.getEng())
-                .answer(word)
-                .chars(shuffled)
-                .charOrder(chars)
+                .question("Sắp xếp lại các từ để tạo thành câu đúng")
+                .answer(vietnameseSentence)
+                .words(shuffledWords) // Shuffled word list for user to reorder
+                .correctOrder(wordList) // Correct order
                 .type(4)
                 .build();
-    }    // Lesson 5: Listen and Fill
+    } // Lesson 5: Listen and Fill - Audio of Vietnamese sentence, user types what
+      // they hear
+
     private QuestionDTO buildListenAndFillQuestion(Sentence sentence) {
-        return QuestionDTO.builder()                .sId(sentence.getSId())
-                .eng(sentence.getEng())
-                .viet(sentence.getViet())
-                .answer(sentence.getViet())
+        return QuestionDTO.builder()
+                .sId(sentence.getSId())
+                .question("Nghe và viết lại những gì bạn nghe được")
+                .answer(sentence.getViet()) // Vietnamese sentence to be spoken
                 .type(5)
                 .build();
     }
 }
-
