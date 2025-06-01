@@ -34,11 +34,11 @@ public class ProgressService {
                 .orElse(null);
     }
 
-    public ProgressDTO updateProgress(Integer uid, Integer topicId, Integer lessonId, Integer score, ProgressStatus status) {
+    public ProgressDTO updateProgress(Integer uid, Integer topicId, Integer lessonId, Integer score,
+            ProgressStatus status) {
         ProgressId id = new ProgressId(uid, topicId, lessonId);
         Progress progress = progressRepository.findById(id).orElse(
-                Progress.builder().id(id).build()
-        );
+                Progress.builder().id(id).build());
         progress.setScore(score);
         progress.setStatus(status);
         Progress saved = progressRepository.save(progress);

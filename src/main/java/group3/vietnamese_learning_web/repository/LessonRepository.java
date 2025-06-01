@@ -19,10 +19,13 @@ public interface LessonRepository extends JpaRepository<Lesson, LessonId> {
 
     List<Lesson> findByIdTopicIdAndLessonType(Integer topicId, LessonType lessonType);
 
-    long countByIdTopicId(Integer topicId);
-
-    @Query("SELECT l.id.topicId AS topicId, l.id.lessonId AS lessonId, l.lessonType AS lessonType, " +
-            "COALESCE(p.status, 'Not_Started') AS status, p.score AS score " +
+    long countByIdTopicId(Integer topicId);    @Query("SELECT l.id.topicId AS topicId, l.id.lessonId AS lessonId, l.lessonType AS lessonType, " +
+            "CASE " +
+            "WHEN p.status = 'In Progress' THEN 'In_Progress' " +
+            "WHEN p.status = 'Completed' THEN 'Completed' " +
+            "WHEN p.status = 'Not Started' THEN 'Not_Started' " +
+            "ELSE 'Not_Started' " +
+            "END AS status, p.score AS score " +
             "FROM Lesson l LEFT JOIN Progress p " +
             "ON l.id.topicId = p.id.topicId AND l.id.lessonId = p.id.lessonId AND p.id.uid = :userId " +
             "WHERE l.id.topicId = :topicId")

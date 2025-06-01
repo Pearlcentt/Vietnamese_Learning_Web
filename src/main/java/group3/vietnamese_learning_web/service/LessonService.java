@@ -5,6 +5,7 @@ import group3.vietnamese_learning_web.dto.LessonWithProgressDTO;
 import group3.vietnamese_learning_web.dto.LessonWithProgressProjection;
 import group3.vietnamese_learning_web.model.Lesson;
 import group3.vietnamese_learning_web.model.LessonType;
+import group3.vietnamese_learning_web.model.ProgressStatus;
 import group3.vietnamese_learning_web.repository.LessonRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -69,12 +70,14 @@ public class LessonService {
                             .build();
                 })
                 .collect(Collectors.toList());
-    }
-
-    private String determineActualStatus(LessonWithProgressProjection current,
+    }    private String determineActualStatus(LessonWithProgressProjection current,
             List<LessonWithProgressProjection> allLessons) {
         // All lessons are now unlocked to allow free access to any lesson
-        return current.getStatus() != null ? current.getStatus() : "Not_Started";
+        if (current.getStatus() != null) {
+            // Status is already converted by the query CASE statement
+            return current.getStatus();
+        }
+        return "Not_Started";
     }
 
     public List<LessonWithProgressDTO> getLessonsWithProgressByType(Integer topicId, Integer userId,
