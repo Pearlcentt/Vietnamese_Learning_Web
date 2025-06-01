@@ -320,19 +320,15 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const formData = new FormData(editProfileForm);
                 const response = await makeApiCall(backendUrls.updateProfile, 'POST', formData, true);
-                
-                // Check if the response indicates success
+                  // Check if the response indicates success
                 if (response && response.success) {
                     // Update current user data with the response from server
                     if (currentUserData && response.user) { 
                         Object.assign(currentUserData, response.user);
                     }
 
-                    alert(response.message || 'Profile updated successfully!');
-                    loadProfileDisplayData(); // Refresh main view
-                    if (editProfileView) editProfileView.style.display = 'none';
-                    if (profileView) profileView.style.display = 'block';
-                    if (profileView) profileView.classList.add('profile-view-active');
+                    // Show success message and redirect to refresh the page with the success param
+                    window.location.href = '/profile?success=true';
                 } else {
                     // Handle case where success is false
                     alert(response.message || 'Failed to update profile. Please try again.');

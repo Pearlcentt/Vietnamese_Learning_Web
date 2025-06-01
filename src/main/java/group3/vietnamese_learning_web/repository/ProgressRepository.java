@@ -25,4 +25,10 @@ public interface ProgressRepository extends JpaRepository<Progress, ProgressId> 
 
     @Query(value = "SELECT DISTINCT DATE(last_updated) FROM progress WHERE u_id = :uid", nativeQuery = true)
     List<Date> findDistinctProgressDatesByUid(@Param("uid") Integer uid);
+
+    @Query("SELECT COALESCE(SUM(p.score), 0) FROM Progress p WHERE p.id.uid = :uid")
+    Integer sumScoresByUserId(@Param("uid") Integer uid);
+
+    @Query("SELECT p.id.uid, COALESCE(SUM(p.score), 0) FROM Progress p GROUP BY p.id.uid")
+    List<Object[]> sumScoresGroupByUserId();
 }

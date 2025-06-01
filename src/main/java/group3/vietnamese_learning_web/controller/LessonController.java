@@ -20,7 +20,9 @@ import java.util.List;
 @RequestMapping("/lessons")
 public class LessonController {
     private final LessonService lessonService;
-    private final AuthService authService;    // 1. List all lessons in a topic with progress status (recommended as main method)
+    private final AuthService authService; // 1. List all lessons in a topic with progress status (recommended as main
+                                           // method)
+
     @GetMapping
     public String getLessonsWithProgress(@RequestParam Integer topicId, Model model) {
         // Get userId from logged-in user
@@ -47,14 +49,16 @@ public class LessonController {
 
     // 3. List lessons by type in topic (for filtering)
     @GetMapping("/by-type")
-    public String getLessonsByTypeInTopic(@RequestParam Integer topicId, @RequestParam LessonType lessonType, Model model) {
+    public String getLessonsByTypeInTopic(@RequestParam Integer topicId, @RequestParam LessonType lessonType,
+            Model model) {
         // Get userId from logged-in user if you want to include status, else keep as is
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         UserResponseDTO user = authService.getUserByUsername(username);
         Integer userId = user.getUId();
 
-        // Optional: create a version of getLessonsWithProgress that also filters by type
+        // Optional: create a version of getLessonsWithProgress that also filters by
+        // type
         List<LessonWithProgressDTO> lessons = lessonService.getLessonsWithProgressByType(topicId, userId, lessonType);
         model.addAttribute("lessons", lessons);
         model.addAttribute("user", user);
@@ -69,12 +73,15 @@ public class LessonController {
         return "lessons";
     }
 
-    // You can remove or deprecate this endpoint, since /lessons now does this with progress!
+    // You can remove or deprecate this endpoint, since /lessons now does this with
+    // progress!
     // @GetMapping("/progress")
-    // public String getLessonsWithProgressOld(@RequestParam Integer topicId, @RequestParam Integer userId, Model model) {
-    //     List<LessonWithProgressDTO> lessons = lessonService.getLessonsWithProgress(topicId, userId);
-    //     model.addAttribute("lessons", lessons);
-    //     return "lessons";
+    // public String getLessonsWithProgressOld(@RequestParam Integer topicId,
+    // @RequestParam Integer userId, Model model) {
+    // List<LessonWithProgressDTO> lessons =
+    // lessonService.getLessonsWithProgress(topicId, userId);
+    // model.addAttribute("lessons", lessons);
+    // return "lessons";
     // }
 
 }

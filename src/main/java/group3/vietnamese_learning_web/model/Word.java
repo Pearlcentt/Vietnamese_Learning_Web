@@ -16,7 +16,8 @@ public class Word {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "w_id")
-    private Integer wId;    @Column(name = "s_id", nullable = false)
+    private Integer wId;
+    @Column(name = "s_id", nullable = false)
     private Integer sid;
 
     @Column(name = "idx", nullable = false)
@@ -36,12 +37,14 @@ public class Word {
 
     // Helper to parse viet_similar_words into List
     public List<String> getVietSimilarWordsList() {
-        if (vietSimilarWords == null || vietSimilarWords.isEmpty()) return List.of();
+        if (vietSimilarWords == null || vietSimilarWords.isEmpty())
+            return List.of();
         return Arrays.asList(vietSimilarWords.split(",\\s*"));
     }
 
     public List<String> getEngSimilarWordsList() {
-        if (engSimilarWords == null || engSimilarWords.isEmpty()) return List.of();
+        if (engSimilarWords == null || engSimilarWords.isEmpty())
+            return List.of();
         return Arrays.asList(engSimilarWords.split(",\\s*"));
     }
 }

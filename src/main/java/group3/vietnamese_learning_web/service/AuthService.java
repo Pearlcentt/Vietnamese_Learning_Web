@@ -146,7 +146,7 @@ public class AuthService implements UserDetailsService {
 
         // Update fields if provided
         boolean updated = false;
-        
+
         if (editForm.getDisplayName() != null && !editForm.getDisplayName().trim().isEmpty()) {
             user.setName(editForm.getDisplayName().trim());
             updated = true;
@@ -164,7 +164,7 @@ public class AuthService implements UserDetailsService {
 
         // Update password if new password is provided and current password was verified
         if (editForm.getNewPassword() != null && !editForm.getNewPassword().isEmpty() &&
-            editForm.getCurrentPassword() != null && !editForm.getCurrentPassword().isEmpty()) {
+                editForm.getCurrentPassword() != null && !editForm.getCurrentPassword().isEmpty()) {
             user.setPassword(passwordEncoder.encode(editForm.getNewPassword()));
             updated = true;
         }

@@ -101,14 +101,16 @@ public class ExtraController {
         model.addAttribute("user", user);
         // For now, redirect to dashboard since shop isn't implemented
         return "redirect:/dashboard";
-    }    @PostMapping("/profile/update")
+    }
+
+    @PostMapping("/profile/update")
     public String updateProfile(
             @ModelAttribute("userEditForm") UserEditForm userEditForm,
             Model model) {
         try {
             // Get current user
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-            String username = authentication.getName();            // Update the profile
+            String username = authentication.getName(); // Update the profile
             authService.updateProfile(username, userEditForm);
 
             // Redirect to profile page with success message
@@ -128,7 +130,7 @@ public class ExtraController {
             model.addAttribute("userDto", user);
             model.addAttribute("userEditForm", newForm);
             model.addAttribute("errorMessage", e.getMessage());
-            
+
             // Return to the profile page with error
             return "profile_add_friend";
         }
@@ -140,28 +142,28 @@ public class ExtraController {
     public ResponseEntity<Map<String, Object>> updateProfileApi(
             @ModelAttribute("userEditForm") UserEditForm userEditForm) {
         Map<String, Object> response = new HashMap<>();
-        
+
         try {
             // Get current user
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String username = authentication.getName();
-            
+
             // Update the profile
             authService.updateProfile(username, userEditForm);
-            
+
             // Get updated user data
             UserResponseDTO updatedUser = authService.getUserByUsername(username);
-            
+
             response.put("success", true);
             response.put("message", "Profile updated successfully!");
             response.put("user", updatedUser);
-            
+
             return ResponseEntity.ok(response);
 
         } catch (RuntimeException e) {
             response.put("success", false);
             response.put("message", "Failed to update profile: " + e.getMessage());
-            
+
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }

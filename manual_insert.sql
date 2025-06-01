@@ -18,3 +18,12 @@ LINES TERMINATED BY '\n'
 IGNORE 1 ROWS
 (s_id, eng, viet, topic_name);
 
+
+INSERT INTO Progress (u_id, topic_id, lesson_id, score, status) VALUES
+-- topic_id 1
+(52, 1, 1, 1000, 'In Progress'),
+(52, 1, 2, 10000, 'Completed'),
+(52, 1, 3, 7000, 'In Progress' ),
+(52, 1, 4, 0, 'Not Started' ),
+(52, 1, 5, 9000, 'In Progress' );
+
