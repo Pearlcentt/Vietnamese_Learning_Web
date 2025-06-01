@@ -1,233 +1,224 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Learn Vietnamese - Free Online Vietnamese Lessons</title>
-  <link rel="stylesheet" th:href="@{/css/start copy.css}" />
-</head>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Learn Vietnamese - Free Online Vietnamese Lessons</title>
+    <link rel="stylesheet" th:href="@{/css/start copy.css}" />
+  </head>
 
-<body>
-<div class="container">
-  <!-- Left Sidebar -->
-  <div class="sidebar">
-    <div class="logo">
-      <h1>VietLingo</h1>
-    </div>
-    <div class="nav-items">
-      <!-- LEARN -->
-      <a th:href="@{/dashboard}" class="nav-item active">
-        <div class="nav-icon home-icon">
-          <img th:src="@{/images/play-button.png}" alt="Learn" />
+  <body>
+    <div class="container">
+      <!-- Left Sidebar -->
+      <div class="sidebar">
+        <div class="logo">
+          <h1>VietLingo</h1>
         </div>
-        <span class="nav-text">LEARN</span>
-      </a>
+        <div class="nav-items">
+          <!-- LEARN -->
+          <a th:href="@{/dashboard}" class="nav-item active">
+            <div class="nav-icon home-icon">
+              <img th:src="@{/images/play-button.png}" alt="Learn" />
+            </div>
+            <span class="nav-text">LEARN</span>
+          </a>
 
-      <!-- LEADERBOARDS -->
-      <a th:href="@{/leaderboard}" class="nav-item">
-        <div class="nav-icon">
-          <img th:src="@{/images/businessman-with-target.png}" alt="Leaderboards" />
-        </div>
-        <span class="nav-text">LEADERBOARDS</span>
-      </a>
+          <!-- LEADERBOARDS -->
+          <a th:href="@{/leaderboard}" class="nav-item">
+            <div class="nav-icon">
+              <img
+                th:src="@{/images/businessman-with-target.png}"
+                alt="Leaderboards"
+              />
+            </div>
+            <span class="nav-text">LEADERBOARDS</span>
+          </a>
 
-      <!-- QUESTS -->
-      <a th:href="@{/q0}" class="nav-item">
-        <div class="nav-icon">
-          <img th:src="@{/images/treasure-chest.png}" alt="Quests" />
-        </div>
-        <span class="nav-text">QUESTS</span>
-      </a>
+          <!-- QUESTS -->
+          <a th:href="@{/q0}" class="nav-item">
+            <div class="nav-icon">
+              <img th:src="@{/images/treasure-chest.png}" alt="Quests" />
+            </div>
+            <span class="nav-text">QUESTS</span>
+          </a>
 
-      <!-- PROFILE -->
-      <a th:href="@{/profile_add_friend}" class="nav-item">
-        <div class="nav-icon">
-          <img th:src="@{/images/person.png}" alt="Profile" />
-        </div>
-        <span class="nav-text">PROFILE</span>
-      </a>
+          <!-- PROFILE -->
+          <a th:href="@{/profile_add_friend}" class="nav-item">
+            <div class="nav-icon">
+              <img th:src="@{/images/person.png}" alt="Profile" />
+            </div>
+            <span class="nav-text">PROFILE</span>
+          </a>
 
-      <!-- LOGOUT (should POST for security, see below) -->
-      <form th:action="@{/logout}" method="post" class="nav-item" style="margin:0; padding:0; background:none; border:none;">
-        <button type="submit" style="all: unset; cursor: pointer; display: flex; align-items: center;">
-          <div class="nav-icon logout-icon">
-            <img th:src="@{/images/log_out.png}" alt="log_out" />
-          </div>
-          <span class="nav-text">LOGOUT</span>
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Main Content -->
-  <div class="main-content">
-    <div class="topic-cards-container" id="topicCardsContainer">
-      <div class="topic-card">
-        <div class="topic-header">
-          <div class="general-title">
-            <h2>Welcome, <span th:text="${user?.name != null ? user.name : 'User'}">User</span>!</h2>
-          </div>
-        </div>
-        <div class="topic-path-container">
-          <div class="topic-path" id="topicPath">
-            <!-- Backend-driven topic loop -->
-            <div th:each="topic, iterStat : ${topics}"
-                 class="topic-item"
-                 th:data-topic-id="${topic.topicId}"
-                 th:data-title="${topic.topicName}"
-                 th:classappend="${iterStat.index % 4 == 1} ? 'left-position' : (${iterStat.index % 4 == 3} ? 'right-position' : '')">
-
-              <div class="progress-ring"></div>
-              <div class="star-container">
-                <img th:src="@{/images/star.png}" alt="Star" />
+          <!-- LOGOUT -->
+          <a th:href="@{/logout}" class="nav-item">
+            <div class="nav-icon logout-icon">
+              <img th:src="@{/images/log_out.png}" alt="Logout" />
+            </div>
+            <span class="nav-text">LOGOUT</span>
+          </a>
+          <!-- <form
+            th:action="@{/logout}"
+            method="post"
+            class="nav-item"
+            style="margin: 0; padding: 0; background: none; border: none"
+          >
+            <button
+              type="submit"
+              style="
+                all: unset;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                /* margin-right: 50px; */
+              "
+            >
+              <div class="nav-icon logout-icon">
+                <img th:src="@{/images/log_out.png}" alt="log_out" />
               </div>
+              <span class="nav-text">LOGOUT</span>
+            </button>
+          </form> -->
+        </div>
+      </div>
 
-              <div class="hover-topic">
-                <div class="topic-title">
-                  <div class="section-title" th:text="'TOPIC ' + ${topic.topicId}">Topic</div>
-                  <h2 th:text="${topic.topicName}">Topic Name</h2>
-                </div>
-                <div class="progress-container">
-                  <div class="progress-bar-wrapper">
-                    <div class="progress-bar-topic"
-                         th:style="'width:' + (${topic.completedLessons} * 100 / ${topic.totalLessons}) + '%'">
+      <!-- Main Content -->
+      <div class="main-content">
+        <div class="topic-cards-container" id="topicCardsContainer">
+          <div class="topic-card">
+            <div class="topic-header">
+              <div class="general-title">
+                <h2>
+                  Welcome,
+                  <span th:text="${user?.name != null ? user.name : 'User'}"
+                    >User</span
+                  >!
+                </h2>
+              </div>
+            </div>
+            <div class="topic-path-container">
+              <div class="topic-path" id="topicPath">
+                <!-- Backend-driven topic loop -->
+                <th:block th:each="topic, iterStat : ${topics}">
+                  <!-- Topic Item -->
+                  <div
+                    class="topic-item"
+                    th:data-topic-id="${topic.topicId}"
+                    th:data-title="${topic.topicName}"
+                    th:data-description="${topic.description}"
+                    th:classappend="${iterStat.index % 4 == 1} ? 'left-position' : (${iterStat.index % 4 == 3} ? 'right-position' : '')"
+                  >
+                    <div class="progress-ring"></div>
+                    <div class="star-container">
+                      <img th:src="@{/images/star.png}" alt="Star" />
+                    </div>
+
+                    <div class="hover-topic">
+                      <div class="topic-title">
+                        <div
+                          class="section-title"
+                          th:text="'TOPIC ' + ${topic.topicId}"
+                        >
+                          Topic
+                        </div>
+                        <h2 th:text="${topic.topicName}">Topic Name</h2>
+                        <h3 th:text="${topic.description}">Topic Description</h3>
+                      </div>
+                      <div class="progress-container">
+                        <div class="progress-bar-wrapper">
+                          <div
+                            class="progress-bar-topic"
+                            th:style="'width:' + (${topic.completedLessons != null and topic.totalLessons != null and topic.totalLessons > 0} ? (${topic.completedLessons} * 100 / ${topic.totalLessons}) : 0) + '%'"
+                          ></div>
+                        </div>
+                        <p
+                          th:text="${topic.completedLessons != null and topic.totalLessons != null} ? (${topic.completedLessons} + ' / ' + ${topic.totalLessons} + ' lessons completed') : '0 / 5 lessons completed'"
+                        ></p>
+                      </div>
                     </div>
                   </div>
-                  <p th:text="${topic.completedLessons + ' / ' + topic.totalLessons + ' lessons completed'}"></p>
-                </div>
+
+                  <!-- Rock items between topics (except after the last topic) -->
+                  <div
+                    th:if="${!iterStat.last}"
+                    class="rock-item"
+                    th:classappend="${iterStat.index % 4 == 0} ? 'ctl-pattern' : (${iterStat.index % 4 == 1} ? 'ltc-pattern' : (${iterStat.index % 4 == 2} ? 'ctr-pattern' : 'rtc-pattern'))"
+                  >
+                    <div class="rock rock-1">
+                      <img th:src="@{/images/rock.png}" alt="Rock" />
+                    </div>
+                    <div class="rock rock-2">
+                      <img th:src="@{/images/rock.png}" alt="Rock" />
+                    </div>
+                    <div class="rock rock-3">
+                      <img th:src="@{/images/rock.png}" alt="Rock" />
+                    </div>
+                  </div>
+                </th:block>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
 
-            <!-- Add rock items between topics (if you want to keep the visual path) -->
-            <div th:each="topic, iterStat : ${topics}"
-                 th:if="${!iterStat.last}"
-                 class="rock-item"
-                 th:classappend="${iterStat.index % 4 == 0} ? 'ctl-pattern' : (${iterStat.index % 4 == 1} ? 'ltc-pattern' : (${iterStat.index % 4 == 2} ? 'ctr-pattern' : 'rtc-pattern'))">
-              <div class="rock rock-1"><img th:src="@{/images/rock.png}" alt="Rock" /></div>
-              <div class="rock rock-2"><img th:src="@{/images/rock.png}" alt="Rock" /></div>
-              <div class="rock rock-3"><img th:src="@{/images/rock.png}" alt="Rock" /></div>
+      <!-- Right Sidebar -->
+      <div class="right-sidebar">
+        <!-- Stats -->
+        <div class="stats-wrapper">
+          <div class="stats">
+            <div class="stat-item flag">
+              <img th:src="@{/images/vietnam.png}" alt="Flags" />
+            </div>
+            <div class="stat-item streak">
+              <img th:src="@{/images/fire.png}" alt="Streak" />
+              <div
+                class="count"
+                th:text="${user?.streak != null ? user.streak : '1'}"
+              >
+                1
+              </div>
+            </div>
+            <div class="stat-item gems">
+              <img th:src="@{/images/gem.png}" alt="Gems" />
+              <div class="count" th:text="${user?.gems}">gems</div>
+            </div>
+            <div class="stat-item hearts">
+              <img th:src="@{/images/heart.png}" alt="Hearts" />
+              <div class="count">4</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Unlock Leaderboards -->
+        <div class="sidebar-card">
+          <h3>Unlock Leaderboards!</h3>
+          <div class="leaderboard-content">
+            <div class="lock-icon">
+              <span>🔒</span>
+            </div>
+            <p>Complete more lessons to unlock</p>
+          </div>
+        </div>
+
+        <!-- Daily Quests -->
+        <div class="sidebar-card">
+          <div class="card-header">
+            <h3>Daily Quests</h3>
+            <span class="view-all">VIEW ALL</span>
+          </div>
+          <div class="quest-item">
+            <div class="quest-icon">⚡</div>
+            <div class="quest-details">
+              <p>Earn 10 XP</p>
+              <div class="progress-bar">
+                <div class="progress" style="width: 100%"></div>
+                <div class="progress-text">10/10</div>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-
-  <!-- Right Sidebar -->
-  <div class="right-sidebar">
-    <!-- Stats -->
-    <div class="stats-wrapper">
-      <div class="stats">
-        <div class="stat-item flag">
-          <img th:src="@{/images/vietnam.png}" alt="Flags" />
-        </div>
-        <div class="stat-item streak">
-          <img th:src="@{/images/fire.png}" alt="Streak" />
-          <div class="count" th:text="${user?.streak != null ? user.streak : '1'}">1</div>
-        </div>
-        <div class="stat-item gems">
-          <img th:src="@{/images/gem.png}" alt="Gems" />
-          <div class="count" th:text="${user?.gems}">gems</div>
-        </div>
-        <div class="stat-item hearts">
-          <img th:src="@{/images/heart.png}" alt="Hearts" />
-          <div class="count">4</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Unlock Leaderboards -->
-    <div class="sidebar-card">
-      <h3>Unlock Leaderboards!</h3>
-      <div class="leaderboard-content">
-        <div class="lock-icon">
-          <span>🔒</span>
-        </div>
-        <p>Complete more lessons to unlock</p>
-      </div>
-    </div>
-
-    <!-- Daily Quests -->
-    <div class="sidebar-card">
-      <div class="card-header">
-        <h3>Daily Quests</h3>
-        <span class="view-all">VIEW ALL</span>
-      </div>
-      <div class="quest-item">
-        <div class="quest-icon">⚡</div>
-        <div class="quest-details">
-          <p>Earn 10 XP</p>
-          <div class="progress-bar">
-            <div class="progress" style="width: 100%"></div>
-            <div class="progress-text">10/10</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-  // Make topics clickable - redirect to lessons with topicId
-  document.addEventListener("DOMContentLoaded", () => {
-    document.querySelectorAll(".topic-item").forEach((item) => {
-      item.addEventListener("click", () => {
-        const topicId = item.dataset.topicId;
-        const topicTitle = item.dataset.title;
-
-        if (topicId) {
-          console.log(`Selected topic ${topicId}: ${topicTitle}`);
-
-          // Visual feedback
-          document.querySelectorAll(".topic-item").forEach((topic) => {
-            topic.style.boxShadow = "0 0 10px rgba(88, 204, 2, 0.5)";
-          });
-          item.style.boxShadow = "0 0 20px rgba(255, 215, 0, 0.8)";
-
-          // Redirect to lessons page with topicId
-          window.location.href = `/lessons?topicId=${topicId}`;
-        }
-      });
-    });
-  });
-
-  // Logout function
-  function logout() {
-    if (confirm('Are you sure you want to logout?')) {
-      window.location.href = '/logout';
-    }
-  }
-
-  // Navigation items click handlers
-  document.querySelectorAll('.nav-item').forEach((item, index) => {
-    item.addEventListener('click', () => {
-      // Remove active class from all items
-      document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-
-      // Add active class to clicked item
-      item.classList.add('active');
-
-      // Handle navigation based on index or content
-      const navText = item.querySelector('.nav-text')?.textContent;
-      switch(navText) {
-        case 'LEARN':
-          // Already on learn page
-          break;
-        case 'LEADERBOARDS':
-          // Implement leaderboards navigation
-          console.log('Navigate to leaderboards');
-          break;
-        case 'QUESTS':
-          // Implement quests navigation
-          console.log('Navigate to quests');
-          break;
-        case 'PROFILE':
-          // Implement profile navigation
-          console.log('Navigate to profile');
-          break;
-      }
-    });
-  });
-</script>
-</body>
+    <script th:src="@{/js/dashboard.js}"></script>
+  </body>
 </html>
