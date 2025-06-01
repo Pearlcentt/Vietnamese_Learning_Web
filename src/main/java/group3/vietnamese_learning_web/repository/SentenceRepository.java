@@ -6,5 +6,4 @@ import java.util.List;
 
 public interface SentenceRepository extends JpaRepository<Sentence, Integer> {
     List<Sentence> findByTopicName(String topicName);
-    List<Sentence> findByTopicNameAndEngContainingIgnoreCase(String topicName, String keyword);
 }

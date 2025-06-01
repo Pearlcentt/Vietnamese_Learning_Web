@@ -13,18 +13,14 @@ public class Sentence {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "s_id")
-    private Integer sid;
+    private Integer sId;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(name = "eng", nullable = false, columnDefinition = "TEXT")
     private String eng;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(name = "viet", nullable = false, columnDefinition = "TEXT")
     private String viet;
 
-    @Column(nullable = false, length = 255)
-    private String topicName; // Foreign key to Topic, could be relationship if desired
-
-    // Optional: Relationship to Words
-    // @OneToMany(mappedBy = "sentence")
-    // private List<Word> words;
+    @Column(name = "topic_name", nullable = false)
+    private String topicName;
 }

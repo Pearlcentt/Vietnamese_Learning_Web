@@ -12,9 +12,11 @@ import java.util.List;
 public class QuestionController {
     private final QuestionService questionService;
 
-    // Example: Get questions for a lesson (provide sentence IDs as a param or from your lesson logic)
     @GetMapping("/lesson")
-    public List<QuestionDTO> getQuestionsForLesson(@RequestParam List<Integer> sentenceIds) {
-        return questionService.getQuestionsForLesson(sentenceIds);
+    public List<QuestionDTO> getQuestionsForLesson(
+            @RequestParam List<Integer> sentenceIds,
+            @RequestParam int lessonType
+    ) {
+        return questionService.getQuestionsForLesson(sentenceIds, lessonType);
     }
 }

@@ -3,6 +3,9 @@ package group3.vietnamese_learning_web.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.Arrays;
+import java.util.List;
+
 @Entity
 @Table(name = "Word")
 @Data
@@ -15,26 +18,32 @@ public class Word {
     @Column(name = "w_id")
     private Integer wId;
 
-    @Column(nullable = false)
-    private Integer sid; // Foreign key to Sentence
+    @Column(name = "s_id", nullable = false)
+    private Integer sId;
 
-    @Column(nullable = false)
-    private Integer idx; // Order of word in sentence
+    @Column(name = "idx", nullable = false)
+    private Integer idx;
 
-    @Column(nullable = false, length = 255)
+    @Column(name = "viet", nullable = false)
     private String viet;
 
-    @Column(columnDefinition = "TEXT")
-    private String vietSimilarWords;
+    @Column(name = "viet_similar_words")
+    private String vietSimilarWords; // Comma-separated in DB
 
-    @Column(nullable = false, length = 255)
+    @Column(name = "eng", nullable = false)
     private String eng;
 
-    @Column(columnDefinition = "TEXT")
-    private String engSimilarWords;
+    @Column(name = "eng_similar_words")
+    private String engSimilarWords; // Comma-separated in DB
 
-    // Optional: Relationship to Sentence
-    // @ManyToOne(fetch = FetchType.LAZY)
-    // @JoinColumn(name = "s_id", insertable = false, updatable = false)
-    // private Sentence sentence;
+    // Helper to parse viet_similar_words into List
+    public List<String> getVietSimilarWordsList() {
+        if (vietSimilarWords == null || vietSimilarWords.isEmpty()) return List.of();
+        return Arrays.asList(vietSimilarWords.split(",\\s*"));
+    }
+
+    public List<String> getEngSimilarWordsList() {
+        if (engSimilarWords == null || engSimilarWords.isEmpty()) return List.of();
+        return Arrays.asList(engSimilarWords.split(",\\s*"));
+    }
 }
