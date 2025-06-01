@@ -16,10 +16,8 @@ public class Word {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "w_id")
-    private Integer wId;
-
-    @Column(name = "s_id", nullable = false)
-    private Integer sId;
+    private Integer wId;    @Column(name = "s_id", nullable = false)
+    private Integer sid;
 
     @Column(name = "idx", nullable = false)
     private Integer idx;

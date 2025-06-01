@@ -70,25 +70,41 @@ document.addEventListener("DOMContentLoaded", () => {
       progressFill.style.transition = "width 0.3s ease-in-out";
       progressFill.style.width = `${percentage}%`;
     }, 200);
-  }
-
-  // Handle Start button
+  }  // Handle Start button
   if (startButton) {
     startButton.addEventListener("click", () => {
       localStorage.setItem("progress", "1");
       localStorage.setItem("prevPercentage", "0");
-      const randomIndex = Math.floor(Math.random() * questionFiles.length);
-      // Use absolute path and preserve lessonId
-      window.location.href = `/src/frontend/html/${questionFiles[randomIndex]}?lessonId=${lessonId}`;
+      
+      // Extract topicId and lessonId from current URL path
+      // Current URL should be like: /questions/start/1/1
+      const pathParts = window.location.pathname.split('/');
+      const topicId = pathParts[3]; // /questions/start/1/1 -> index 3 is topicId
+      const lessonId = pathParts[4]; // /questions/start/1/1 -> index 4 is lessonId
+      
+      if (topicId && lessonId) {
+        // Navigate to questions controller with proper parameters
+        window.location.href = `/questions/${topicId}/${lessonId}`;
+      } else {
+        // Fallback navigation
+        console.error("Missing topicId or lessonId in URL path. Current path:", window.location.pathname);
+        window.location.href = '/dashboard';
+      }
     });
   }
-
   // Handle Quit button
   if (quitButton) {
     quitButton.addEventListener("click", () => {
       if (confirm("Bạn chắc muốn rời bài học không?")) {
         resetProgress();
-        window.location.href = "/src/frontend/html/lessons.html";
+        // Navigate back to lessons or dashboard
+        const urlParams = new URLSearchParams(window.location.search);
+        const topicId = urlParams.get("topicId");
+        if (topicId) {
+          window.location.href = `/lessons?topicId=${topicId}`;
+        } else {
+          window.location.href = '/dashboard';
+        }
       }
     });
     quitButton.addEventListener("mouseenter", () => {
@@ -98,13 +114,19 @@ document.addEventListener("DOMContentLoaded", () => {
       quitButton.style.backgroundColor = "#ddd";
     });
   }
-
   // Handle Done button
   if (doneButton) {
     doneButton.addEventListener("click", () => {
       if (doneButton.classList.contains("enabled")) {
         resetProgress();
-        window.location.href = "/src/frontend/html/lessons.html";
+        // Navigate back to lessons or dashboard
+        const urlParams = new URLSearchParams(window.location.search);
+        const topicId = urlParams.get("topicId");
+        if (topicId) {
+          window.location.href = `/lessons?topicId=${topicId}`;
+        } else {
+          window.location.href = '/dashboard';
+        }
       }
     });
 
@@ -149,9 +171,18 @@ function goToNextQuestion() {
       }, 500);
     }
 
-    // Use absolute path and preserve lessonId
-    const randomIndex = Math.floor(Math.random() * questionFiles.length);
-    window.location.href = `/src/frontend/html/${questionFiles[randomIndex]}?lessonId=${lessonId}`;
+    // Get current URL parameters and stay in the same lesson
+    const urlParams = new URLSearchParams(window.location.search);
+    const topicId = urlParams.get("topicId");
+    const lessonId = urlParams.get("lessonId");
+    
+    if (topicId && lessonId) {
+      // Reload the same question controller (it will generate new questions)
+      window.location.href = `/questions/${topicId}/${lessonId}`;
+    } else {
+      // Fallback: refresh current page
+      window.location.reload();
+    }
   } else {
     progress += 1;
     localStorage.setItem("progress", progress.toString());
@@ -166,7 +197,10 @@ function goToNextQuestion() {
       doneButton.classList.add("enabled");
     }
 
-    const topicId = new URLSearchParams(window.location.search).get("topicId");
+    // Save progress when lesson is completed
+    const urlParams = new URLSearchParams(window.location.search);
+    const topicId = urlParams.get("topicId");
+    const lessonId = urlParams.get("lessonId");
     if (topicId && lessonId) {
       saveLessonProgress(topicId, lessonId);
     }
@@ -183,11 +217,44 @@ function resetProgress() {
 }
 
 function saveLessonProgress(topicId, lessonId) {
+  // Call our Spring Boot API endpoint
   fetch(`/api/progress/complete?topicId=${topicId}&lessonId=${lessonId}`, {
-    method: "POST"
+    method: "POST",
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest'
+    }
   })
-      .then(res => res.text())
-      .then(msg => console.log("Progress Saved:", msg))
-      .catch(err => console.error("Failed to save progress", err));
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.text();
+      })
+      .then(message => {
+        console.log("Progress Saved:", message);
+        // Optionally redirect to lessons page after successful completion
+        setTimeout(() => {
+          const urlParams = new URLSearchParams(window.location.search);
+          const topicId = urlParams.get("topicId");
+          if (topicId) {
+            window.location.href = `/lessons?topicId=${topicId}`;
+          } else {
+            window.location.href = '/dashboard';
+          }
+        }, 2000); // Give user time to see completion message
+      })
+      .catch(err => {
+        console.error("Failed to save progress:", err);
+        // Even if save fails, we can still redirect (progress might be saved client-side)
+        setTimeout(() => {
+          const urlParams = new URLSearchParams(window.location.search);
+          const topicId = urlParams.get("topicId");
+          if (topicId) {
+            window.location.href = `/lessons?topicId=${topicId}`;
+          } else {
+            window.location.href = '/dashboard';
+          }
+        }, 1000);
+      });
 }
 

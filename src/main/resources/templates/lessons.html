@@ -17,33 +17,32 @@
       <div class="sidebar">
         <div class="logo">
           <h1>vietlingo</h1>
-        </div>
-        <div class="nav-items">
-          <div class="nav-item active" id="home-button">
+        </div>        <div class="nav-items">
+          <div class="nav-item active" id="home-button" onclick="window.location.href='/dashboard'">
             <div class="nav-icon home-icon">
               <link rel="stylesheet" th:href="@{/css/start copy.css}" />
             </div>
             <span class="nav-text">LEARN</span>
           </div>
-          <div class="nav-item">
+          <div class="nav-item" onclick="window.location.href='/leaderboard'">
             <div class="nav-icon">
               <img th:src="@{/images/businessman-with-target.png}" alt="Leaderboards" />
             </div>
             <span class="nav-text">LEADERBOARDS</span>
           </div>
-          <div class="nav-item">
+          <div class="nav-item" onclick="window.location.href='/quests'">
             <div class="nav-icon">
               <img th:src="@{/images/treasure-chest.png}" alt="Quests" />
             </div>
             <span class="nav-text">QUESTS</span>
           </div>
-          <div class="nav-item">
+          <div class="nav-item" onclick="window.location.href='/shop'">
             <div class="nav-icon">
               <img th:src="@{/images/gem.png}" alt="Shop" />
             </div>
             <span class="nav-text">SHOP</span>
           </div>
-          <div class="nav-item">
+          <div class="nav-item" onclick="window.location.href='/profile'">
             <div class="nav-icon">
               <img th:src="@{/images/person.png}" alt="Profile" />
             </div>
@@ -68,17 +67,14 @@
               </div>
             </div>
           </div>
-        </div>
-        <div class="lesson-container">
+        </div>        <div class="lesson-container">
           <div class="lesson-row" th:each="lesson : ${lessons}">
             <div class="bullet-point">
               <img th:src="@{/images/rock.png}" alt="rock" />
-            </div>
-
-            <div class="lesson-box"
+            </div>            <div class="lesson-box"
                  th:id="'q' + ${lesson.lessonId}"
-                 th:classappend="${lesson.status != 'Completed'} ? ' locked' : ''"
-                 th:onclick="'window.location.href=\'/q0.html?topicId=' + ${lesson.topicId} + '&lessonId=' + ${lesson.lessonId} + '\';'">
+                 th:classappend="${lesson.status == 'Locked'} ? ' locked' : ''"
+                 th:onclick="${lesson.status != 'Locked'} ? ('window.location.href=\'/questions/start/' + ${lesson.topicId} + '/' + ${lesson.lessonId} + '\';') : ''">
               <h3 th:text="'Lesson ' + ${lesson.lessonId} + ': ' + ${lesson.lessonType}">Lesson Title</h3>
             </div>
           </div>

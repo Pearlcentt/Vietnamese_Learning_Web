@@ -50,64 +50,96 @@ public class QuestionService {
         return questions;
     }
 
-    // --- Individual builders for each lesson type ---
-
-    // Lesson 1: Vocab
+    // --- Individual builders for each lesson type ---    // Lesson 1: Vocab
     private QuestionDTO buildVocabQuestion(Sentence sentence, List<Word> words) {
         // Use the Vietnamese translation and similar words from your word structure
         List<String> vietList = words.stream().map(Word::getViet).collect(Collectors.toList());
         List<String> similar = new ArrayList<>();
         for (Word w : words) {
-            if (w.getVietSimilarWords() != null) {
-                similar.addAll(w.getVietSimilarWords()); // Assuming vietSimilarWords is a List<String>
+            similar.addAll(w.getVietSimilarWordsList());
+        }
+        
+        // If we have similar words, use them as choices
+        List<String> choices = new ArrayList<>();
+        if (!similar.isEmpty()) {
+            choices.addAll(similar);
+            // Add the correct answer
+            choices.add(sentence.getViet());
+            Collections.shuffle(choices);
+        } else {
+            // Fallback: use words from the sentence as choices
+            choices.addAll(vietList);
+            if (choices.size() < 4) {
+                choices.add(sentence.getViet());
             }
         }
+        
         return QuestionDTO.builder()
-                .sId(sentence.getSid())
+                .sId(sentence.getSId())
                 .eng(sentence.getEng())
                 .viet(sentence.getViet())
                 .vietList(vietList)
                 .vietSimilarWords(similar)
+                .answer(sentence.getViet())
+                .choices(choices)
                 .type(1)
                 .build();
-    }
-
-    // Lesson 2: Fill in the blank
+    }// Lesson 2: Fill in the blank
     private QuestionDTO buildFillInBlankQuestion(Sentence sentence, List<Word> words) {
         // Randomly pick a word to blank
         if (words.isEmpty()) return buildVocabQuestion(sentence, words);
         Word target = words.get((int)(Math.random() * words.size()));
         String originalSentence = sentence.getViet();
-        String blankedSentence = originalSentence.replaceFirst(target.getViet(), "_____");
+        String blankedSentence = originalSentence.replaceFirst("\\b" + target.getViet() + "\\b", "_____");
+        
+        // Create choices including the correct answer and similar words
         List<String> choices = new ArrayList<>();
         choices.add(target.getViet());
-        if (target.getVietSimilarWords() != null) choices.addAll(target.getVietSimilarWords());
+        
+        // Add similar words if available
+        List<String> similarWords = target.getVietSimilarWordsList();
+        if (!similarWords.isEmpty()) {
+            choices.addAll(similarWords);
+        } else {
+            // If no similar words, add some random words from other words in the sentence
+            words.stream()
+                .filter(w -> !w.getViet().equals(target.getViet()))
+                .limit(3)
+                .forEach(w -> choices.add(w.getViet()));
+        }
+        
+        // Ensure we have at least 4 choices, pad with placeholder if needed
+        while (choices.size() < 4) {
+            choices.add("option" + choices.size());
+        }
+        
         Collections.shuffle(choices);
         return QuestionDTO.builder()
-                .sId(sentence.getSid())
+                .sId(sentence.getSId())
+                .eng(sentence.getEng())
+                .viet(sentence.getViet())
                 .question(blankedSentence)
                 .answer(target.getViet())
                 .choices(choices)
                 .type(2)
                 .build();
-    }
-
-    // Lesson 3: Reorder Words
+    }    // Lesson 3: Reorder Words
     private QuestionDTO buildReorderWordQuestion(Sentence sentence, List<Word> words) {
         List<String> wordList = words.stream().map(Word::getViet).collect(Collectors.toList());
         List<String> shuffled = new ArrayList<>(wordList);
         Collections.shuffle(shuffled);
+        
         return QuestionDTO.builder()
-                .sId(sentence.getSid())
+                .sId(sentence.getSId())
+                .eng(sentence.getEng())
+                .viet(sentence.getViet())
                 .question(sentence.getEng())
                 .answer(sentence.getViet())
                 .words(shuffled)
                 .correctOrder(wordList)
                 .type(3)
                 .build();
-    }
-
-    // Lesson 4: Reorder Chars
+    }    // Lesson 4: Reorder Chars
     private QuestionDTO buildReorderCharQuestion(Sentence sentence, List<Word> words) {
         // Use the first word as target (or change as needed)
         if (words.isEmpty()) return buildVocabQuestion(sentence, words);
@@ -117,21 +149,24 @@ public class QuestionService {
             .collect(Collectors.toList());
         List<String> shuffled = new ArrayList<>(chars);
         Collections.shuffle(shuffled);
+        
         return QuestionDTO.builder()
-                .sId(sentence.getSid())
+                .sId(sentence.getSId())
+                .eng(sentence.getEng())
+                .viet(sentence.getViet())
                 .question(sentence.getEng())
                 .answer(word)
                 .chars(shuffled)
-                .correctOrder(chars)
+                .charOrder(chars)
                 .type(4)
                 .build();
-    }
-
-    // Lesson 5: Listen and Fill
+    }    // Lesson 5: Listen and Fill
     private QuestionDTO buildListenAndFillQuestion(Sentence sentence) {
         return QuestionDTO.builder()
-                .sId(sentence.getSid())
-                .audioUrl(sentence.getAudioUrl()) // add audioUrl in your Sentence model
+                .sId(sentence.getSId())
+                .eng(sentence.getEng())
+                .viet(sentence.getViet())
+                .audioUrl(sentence.getAudioUrl())
                 .answer(sentence.getViet())
                 .type(5)
                 .build();

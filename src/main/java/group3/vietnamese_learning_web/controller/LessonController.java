@@ -20,9 +20,7 @@ import java.util.List;
 @RequestMapping("/lessons")
 public class LessonController {
     private final LessonService lessonService;
-    private final AuthService authService;
-
-    // 1. List all lessons in a topic with progress status (recommended as main method)
+    private final AuthService authService;    // 1. List all lessons in a topic with progress status (recommended as main method)
     @GetMapping
     public String getLessonsWithProgress(@RequestParam Integer topicId, Model model) {
         // Get userId from logged-in user
@@ -35,6 +33,7 @@ public class LessonController {
         List<LessonWithProgressDTO> lessons = lessonService.getLessonsWithProgress(topicId, userId);
         model.addAttribute("lessons", lessons);
         model.addAttribute("user", user);
+        model.addAttribute("topicId", topicId);
         return "lessons";
     }
 
