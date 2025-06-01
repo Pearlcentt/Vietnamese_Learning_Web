@@ -67,6 +67,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // Add hover effects for better UX
     item.addEventListener("mouseenter", function () {
       this.style.transition = "all 0.3s ease";
+      const description = this.dataset.description;
+      const descriptionElement = this.querySelector(".topic-description");
+      if (descriptionElement && description) {
+        descriptionElement.textContent = description;
+      }
     });
 
     item.addEventListener("mouseleave", function () {
@@ -105,19 +110,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }, index * 100);
   });
 
-  // Optional: Handle progress bar animations
-  const progressBars = document.querySelectorAll(".progress-bar-topic");
-  progressBars.forEach((bar) => {
-    const width = bar.style.width;
-    if (width && width !== "0%") {
-      bar.style.width = "0%";
+  // // Optional: Handle progress bar animations
+  // const progressBars = document.querySelectorAll(".progress-bar-topic");
+  // progressBars.forEach((bar) => {
+  //   const width = bar.style.width;
+  //   if (width && width !== "0%") {
+  //     bar.style.width = "0%";
 
-      setTimeout(() => {
-        bar.style.transition = "width 1s ease-out";
-        bar.style.width = width;
-      }, 500);
-    }
-  });
+  //     setTimeout(() => {
+  //       bar.style.transition = "width 1s ease-out";
+  //       bar.style.width = width;
+  //     }, 500);
+  //   }
+  // });
 
   // Optional: Add keyboard navigation
   document.addEventListener("keydown", (e) => {

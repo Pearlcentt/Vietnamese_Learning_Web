@@ -122,7 +122,6 @@
                           Topic
                         </div>
                         <h2 th:text="${topic.topicName}">Topic Name</h2>
-                        <h3 th:text="${topic.description}">Topic Description</h3>
                       </div>
                       <div class="progress-container">
                         <div class="progress-bar-wrapper">
@@ -134,6 +133,9 @@
                         <p
                           th:text="${topic.completedLessons != null and topic.totalLessons != null} ? (${topic.completedLessons} + ' / ' + ${topic.totalLessons} + ' lessons completed') : '0 / 5 lessons completed'"
                         ></p>
+                      </div>
+                      <div class="topic-description">
+                        <!-- Description will be added by JavaScript -->
                       </div>
                     </div>
                   </div>
@@ -201,7 +203,7 @@
         </div>
 
         <!-- Daily Quests -->
-        <div class="sidebar-card">
+        <!-- <div class="sidebar-card">
           <div class="card-header">
             <h3>Daily Quests</h3>
             <span class="view-all">VIEW ALL</span>
@@ -216,7 +218,7 @@
               </div>
             </div>
           </div>
-        </div>
+        </div> -->
       </div>
     </div>
     <script th:src="@{/js/dashboard.js}"></script>
