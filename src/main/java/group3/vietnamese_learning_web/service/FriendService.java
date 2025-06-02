@@ -103,7 +103,8 @@ public class FriendService {
             if (entry.getValue().contains(fromUid)) {
                 sentRequests.add(entry.getKey());
             }
-        }        return sentRequests;
+        }
+        return sentRequests;
     }
 
     // Helper method to get friends from database
@@ -120,13 +121,14 @@ public class FriendService {
             System.err.println("Error fetching friends from database for user " + uid + ": " + e.getMessage());
         }
         return Collections.emptySet();
-    }    // Helper method to update user friendship in database
+    } // Helper method to update user friendship in database
+
     @Transactional
     private void updateUserFriendship(Integer userId, Integer friendId, boolean addFriend) {
         try {
             Optional<UserFriend> userFriendOpt = userFriendRepository.findByUserId(userId);
             UserFriend userFriend;
-            
+
             if (userFriendOpt.isPresent()) {
                 userFriend = userFriendOpt.get();
             } else {
@@ -136,7 +138,7 @@ public class FriendService {
                         .friendId("")
                         .build();
             }
-            
+
             if (addFriend) {
                 // Use the helper method to add friend
                 userFriend.addFriendId(friendId);

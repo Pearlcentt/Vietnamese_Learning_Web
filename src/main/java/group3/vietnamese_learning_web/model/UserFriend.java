@@ -22,7 +22,7 @@ public class UserFriend {
         if (friendId == null || friendId.trim().isEmpty()) {
             return new java.util.ArrayList<>();
         }
-        
+
         java.util.List<Integer> result = new java.util.ArrayList<>();
         String[] idArray = friendId.split(",");
         for (String idStr : idArray) {

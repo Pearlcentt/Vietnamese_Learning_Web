@@ -80,7 +80,8 @@ public class AuthService implements UserDetailsService {
         Optional<User> userOpt = userRepository.findByUsername(username);
         if (!userOpt.isPresent()) {
             throw new UsernameNotFoundException("User not found");
-        }        User user = userOpt.get();
+        }
+        User user = userOpt.get();
 
         // Get friend IDs from UserFriend table
         List<String> friendIdStrings = getFriendIdsForUser(user.getUId());
@@ -162,7 +163,9 @@ public class AuthService implements UserDetailsService {
             // If there's any issue with streak calculation, return 0
             return 0;
         }
-    }    public UserResponseDTO toResponseDTO(User user) {
+    }
+
+    public UserResponseDTO toResponseDTO(User user) {
         // Get friend IDs from UserFriend table
         List<String> friendIdStrings = getFriendIdsForUser(user.getUId());
 
@@ -183,7 +186,9 @@ public class AuthService implements UserDetailsService {
         int streak = calculateStreak(user.getUId());
         dto.setStreak(streak);
         return dto;
-    }    /**
+    }
+
+    /**
      * Optimized version of toResponseDTO that doesn't calculate streak
      * Use this for search results and friend lists to avoid N+1 queries
      */

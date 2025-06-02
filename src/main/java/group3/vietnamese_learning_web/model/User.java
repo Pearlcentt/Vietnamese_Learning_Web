@@ -32,7 +32,8 @@ public class User {
     private String name;
 
     @Column(nullable = false)
-    private LocalDate dob;    @Enumerated(EnumType.STRING)
+    private LocalDate dob;
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)
     private Gender gender; // enum Gender { Male, Female, Other }
 
@@ -40,7 +41,7 @@ public class User {
     @Column(name = "points", nullable = false, columnDefinition = "INT DEFAULT 0")
     private Integer points = 0;
 
-    // New avatar field - URL or path to avatar image    @Builder.Default
+    // New avatar field - URL or path to avatar image @Builder.Default
     @Column(name = "avatar", length = 500)
     private String avatar = "/images/default_avatar.png";
 
