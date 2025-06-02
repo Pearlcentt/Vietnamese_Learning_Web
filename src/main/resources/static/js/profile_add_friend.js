@@ -125,7 +125,10 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Fetch error details:', error.message, error.stack);
             alert('An error occurred. Please try again.');
             throw error;
-        }    }
+
+        }
+    }
+
 
     // --- Functions ---
     function loadProfileDisplayData() {
@@ -206,7 +209,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 noFriendRequestsMessage.style.display = 'block';
             }
         } else {
-            if (noFriendRequestsMessage) noFriendRequestsMessage.style.display = 'none';            requests.forEach(request => {
+            if (noFriendRequestsMessage) noFriendRequestsMessage.style.display = 'none';
+            requests.forEach(request => {
                 const li = document.createElement('li');
                 let actionsHtml = '';
                 if (type === 'received') {
@@ -229,13 +233,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-
     // --- Avatar Modal Logic ---
     function populateAvatarSelectionGrid() {
         avatarSelectionGrid.innerHTML = '';
         (sampleAvatars || []).forEach(avatarSrc => {
             const img = document.createElement('img');
-            img.src = avatarSrc; 
+            img.src = avatarSrc;
             img.alt = "Avatar option";
             img.classList.add('avatar-option');
             img.dataset.src = avatarSrc;
@@ -279,11 +282,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 console.log("Avatar selected (from list):", currentSelectedAvatarInModal);
                 // **BACKEND INTEGRATION POINT**: Send selectedAvatarUrlInput.value with the main profile update form
-                // Or, if you want to update avatar immediately:
-                // try {
-                //    await makeApiCall(backendUrls.updateProfile, 'POST', { avatarUrl: currentSelectedAvatarInModal });
-                //    alert('Avatar updated!');
-                // } catch (e) { /* handle error, revert optimistic update if needed */ }
             }
             closeAvatarModal();
         });
@@ -323,23 +321,25 @@ document.addEventListener('DOMContentLoaded', () => {
             if (editProfileView) editProfileView.style.display = 'block';
             loadEditFormData();
         });
-    }    if (cancelEditProfileBtn) {
+    }
+    if (cancelEditProfileBtn) {
         cancelEditProfileBtn.addEventListener('click', () => {
             if (editProfileView) editProfileView.style.display = 'none';
             if (profileView) profileView.style.display = 'block';
             if (profileView) profileView.classList.add('profile-view-active');
         });
-    }    if (editProfileForm) {
+    }
+    if (editProfileForm) {
         editProfileForm.addEventListener('submit', async (e) => {
             e.preventDefault(); // Prevent default form submission
-            
+
             try {
                 const formData = new FormData(editProfileForm);
                 const response = await makeApiCall(backendUrls.updateProfile, 'POST', formData, true);
-                  // Check if the response indicates success
+                // Check if the response indicates success
                 if (response && response.success) {
                     // Update current user data with the response from server
-                    if (currentUserData && response.user) { 
+                    if (currentUserData && response.user) {
                         Object.assign(currentUserData, response.user);
                     }
 
@@ -445,77 +445,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 searchResultsUi.innerHTML = '<li>Please enter a username to search.</li>';
                 return;
             }
-              try {
-                const searchUrl = `${backendUrls.searchFriends}?query=${encodeURIComponent(searchTerm)}`;
-                console.log('DEBUG: Search URL:', searchUrl);
-                console.log('DEBUG: backendUrls object:', backendUrls);
-                console.log('DEBUG: searchFriends URL:', backendUrls.searchFriends);
-                console.log('DEBUG: Making API call to search friends...');
-                const results = await makeApiCall(searchUrl, 'GET');
-                console.log('DEBUG: Raw search results received:', results);
-                console.log('DEBUG: Results type:', typeof results);
-                console.log('DEBUG: Results length:', results ? results.length : 'null/undefined');
-                  if (results && results.length > 0) {                    results.forEach(user => {
-                        console.log('DEBUG: Processing user object:', user);
-                        console.log('DEBUG: user.uId:', user.uId);
-                        console.log('DEBUG: user.id:', user.id);
-                        console.log('DEBUG: typeof user.uId:', typeof user.uId);
-                        console.log('DEBUG: typeof user.id:', typeof user.id);
-                        
-                        // TEMPORARY FIX: Skip validation to test if the rest works
-                        // if (!user || (!user.uId && !user.id)) {
-                        //     console.warn('Invalid user object in search results:', user);
-                        //     return;
-                        // }
-                        
-                        // For now, let's use a fallback ID approach
-                        if (!user) {
-                            console.warn('Invalid user object in search results:', user);
-                            return;
-                        }                        // Extract user ID properly - try multiple field names
-                        let userId = user.uId || user.id || user.userId || user.u_id;
-                        
-                        // Create a mapping for known usernames to IDs (temporary fix for JSON serialization issue)
-                        const usernameToIdMap = {
-                            'HellNah': 55,
-                            'frienduser1': 2,
-                            // Add more mappings as needed
-                        };
-                          // If no ID found OR if userId is a username string that should be mapped
-                        if (!userId || (typeof userId === 'string' && usernameToIdMap[userId])) {
-                            console.warn('No valid numeric ID found, using username mapping fallback');
-                            userId = usernameToIdMap[user.username] || usernameToIdMap[userId] || userId || user.username;
-                        }
-                        
-                        const userName = user.name || user.username || 'Unknown User';
-                        const userAvatar = user.avatar || defaultAvatarUrl;
-                        
-                        console.log('DEBUG: Final userId used:', userId);
-                        console.log('DEBUG: Final userName used:', userName);
-                        console.log('DEBUG: userId type:', typeof userId);
-                        
-                        // Ensure we have a numeric ID for profile links
-                        let profileLinkId = userId;
-                        
-                        // If userId is still a string (username), try to get numeric ID from mapping
-                        if (typeof userId === 'string' && usernameToIdMap[user.username]) {
-                            profileLinkId = usernameToIdMap[user.username];
-                            console.log('DEBUG: Using mapped numeric ID for profile link:', profileLinkId);
-                        } else if (typeof userId === 'string' && usernameToIdMap[userId]) {
-                            profileLinkId = usernameToIdMap[userId];
-                            console.log('DEBUG: Using mapped numeric ID for profile link:', profileLinkId);
-                        } else if (typeof userId === 'string' && !isNaN(parseInt(userId))) {
-                            profileLinkId = parseInt(userId);
-                            console.log('DEBUG: Converted string ID to number for profile link:', profileLinkId);
-                        }
-                        
-                        console.log('DEBUG: Profile link will use ID:', profileLinkId, 'type:', typeof profileLinkId);
-                        
-                        const li = document.createElement('li');                          // Check if already friends or request sent
-                        const isFriend = currentUserData && currentUserData.friends && currentUserData.friends.some(f => (f.uId || f.id) === userId);
-                        const isRequestSent = currentUserData && currentUserData.friendRequests && currentUserData.friendRequests.sent && currentUserData.friendRequests.sent.some(r => (r.uId || r.id) === userId);
-                        
-                        let buttonHtml = `<button class="send-request-btn" data-user-id="${userId}" title="Send Friend Request"><i class="fas fa-user-plus"></i></button>`;
+
+            try {
+                console.log('DEBUG: Searching for friends with query:', searchTerm);
+                const results = await makeApiCall(`${backendUrls.searchFriends}?query=${encodeURIComponent(searchTerm)}`, 'GET');
+                console.log('DEBUG: Search results:', results);
+
+                if (results && results.length > 0) {
+                    results.forEach(user => {
+                        console.log('DEBUG: Processing user:', user);
+                        const li = document.createElement('li');
+
+                        // Check if already friends or request sent
+                        const isFriend = currentUserData.friends.some(f => f.uId === user.uId);
+                        const isRequestSent = currentUserData.friendRequests.sent.some(r => r.uId === user.uId);
+                        console.log('DEBUG: User', user.uId, 'isFriend:', isFriend, 'isRequestSent:', isRequestSent);
+
+                        let buttonHtml = `<button class="send-request-btn" data-user-id="${user.uId}" title="Send Friend Request"><i class="fas fa-user-plus"></i></button>`;
+
                         if (isFriend) {
                             buttonHtml = `<button disabled class="send-request-btn"><i class="fas fa-users"></i></button>`; // Already friends
                         } else if (isRequestSent) {
@@ -529,6 +476,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         `;
                         searchResultsUi.appendChild(li);
                     });
+
                     // Add event listeners to the newly created send request buttons
                     const sendRequestBtns = searchResultsUi.querySelectorAll('.send-request-btn:not([disabled])');
                     sendRequestBtns.forEach(btn => {                        btn.addEventListener('click', async function() {
@@ -541,11 +489,11 @@ document.addEventListener('DOMContentLoaded', () => {
                                         this.innerHTML = '<i class="fas fa-check"></i>';
                                         this.disabled = true;
                                         this.title = 'Request Sent';
-                                        
+
                                         // Update current user data
                                         const targetUser = { uId: parseInt(targetUid) };
                                         currentUserData.friendRequests.sent.push(targetUser);
-                                        
+
                                         // Re-render friend requests to update counts
                                         renderFriendRequests('sent');
                                     }
@@ -575,7 +523,6 @@ document.addEventListener('DOMContentLoaded', () => {
             renderFriendRequests(tabType);
         });
     });
-
 
     // Event delegation for dynamic buttons
     document.body.addEventListener('click', async function (event) {
@@ -609,9 +556,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderFriendRequests('received');
                 alert(`Friend request accepted!`);
             } catch (e) { /* Error handled */ }
+
         }        if (declineRequestBtn) {
             const requesterId = declineRequestBtn.dataset.requesterId;
             console.log('Decline button clicked, requester ID:', requesterId);
+
             try {
                 await makeApiCall(`${backendUrls.declineFriendRequest}/${requesterId}`, 'POST');
                 currentUserData.friendRequests.received = currentUserData.friendRequests.received.filter(r => r.uId != requesterId);
@@ -641,13 +590,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 sendRequestBtn.innerHTML = '<i class="fas fa-check"></i>';
                 alert(`Friend request sent!`);
             } catch (e) { /* Error handled */ }
-        }});
+        }
+    });
 
     // --- Friend Request Actions for Profile View (other user) ---
-    // Friend request buttons for other user's profile
     const sendFriendRequestBtn = document.getElementById('sendFriendRequestBtn');
     const acceptFriendBtn = document.getElementById('acceptFriendBtn');
-    const declineFriendBtn = document.getElementById('declineFriendBtn');    if (sendFriendRequestBtn) {
+
+    const declineFriendBtn = document.getElementById('declineFriendBtn');
+    if (sendFriendRequestBtn) {
+        console.log('DEBUG: Found sendFriendRequestBtn, adding event listener');
+
         sendFriendRequestBtn.addEventListener('click', async function () {
             const targetId = this.getAttribute('data-target-id');
             if (!targetId) {
@@ -672,7 +625,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.disabled = true;
                 this.innerHTML = '<i class="fas fa-check"></i> Accepted';
                 alert('Friend request accepted!');
-                // Optionally reload page or update UI
                 window.location.reload();
             } catch (e) {
                 alert('Failed to accept friend request.');
@@ -695,15 +647,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-
     // --- Initial Load ---
     function initializePage() {
         if (!currentUserData) {
             console.error("Current user data not available. Page cannot be initialized.");
-            // Potentially redirect to login or show an error message
-            // For now, try to make parts of the page work if possible or just return
-            // document.body.innerHTML = "<h1>Error: User data not loaded. Please try logging in again.</h1>";
-            // return;
         }
         loadProfileDisplayData();
         loadSidebarBadges();
@@ -714,7 +661,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const sentTab = document.querySelector('.fr-tab-btn[data-tab="sent"]');
         if (receivedTab) receivedTab.classList.add('active');
         if (sentTab) sentTab.classList.remove('active');
-
     }
 
     initializePage();

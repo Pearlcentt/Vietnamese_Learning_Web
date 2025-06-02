@@ -6,14 +6,175 @@
     <title th:text="${userDto != null and userDto.name != null} ? ${userDto.name} + ' - Profile' : 'Profile and Add Friend'">Profile and Add Friend</title>
     <link rel="stylesheet" th:href="@{/css/profile_add_friend.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* Reset and Base Styles from dashboard theme */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+            Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+        }
+
+        :root {
+            --PRIMARY_COLOR: #f5efe6;
+            --ACTIVE_ITEM_COLOR: #da251d;
+            --TITLE-text: #ff9e0c;
+            --ITEM-text: #c75a00;
+            --BORDER_LINE: #d9cfc0;
+            --RIGHT-BOX: #5c5149;
+            --duo-green: #58cc02;
+            --duo-blue: #1cb0f6;
+            --duo-gray-light: #e5e5e5;
+            --duo-gray-medium: #afafaf;
+            --duo-gray-dark: #777777;
+            --duo-text-dark: #4b4b4b;
+            --duo-text-light: #ffffff;
+            --duo-border: #e5e5e5;
+            --duo-yellow: #ffc800;
+            --duo-red: #ff4b4b;
+            --pearl-color: #f7b9d0;
+            --light-green-button: #c8e6c9;
+            --light-green-button-hover: #b9d8ba;
+        }
+
+        body {
+            background-color: var(--PRIMARY_COLOR);
+            color: var(--ITEM-text);
+            overflow-x: hidden;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .app-layout-container {
+            display: flex;
+            min-height: 100vh;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Left Sidebar Styles (from dashboard) */
+        .sidebar {
+            width: 20%;
+            background-color: var(--PRIMARY_COLOR);
+            padding: 20px 0;
+            border-right: 2px solid var(--BORDER_LINE);
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            min-width: 220px;
+        }
+
+        .logo {
+            padding: 0 20px;
+            margin-bottom: 25px;
+        }
+
+        .logo h1 {
+            color: var(--ITEM-text);
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .nav-items {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #afafaf;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 16px;
+            margin: 0 8px;
+            text-decoration: none;
+        }
+
+        .nav-item:hover {
+            background-color: var(--TITLE-text);
+            color: #ffffff;
+        }
+
+        .nav-item.active {
+            background-color: var(--TITLE-text);
+            color: white;
+        }
+
+        .nav-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .nav-icon img {
+            width: 28px;
+            height: 28px;
+            object-fit: contain;
+        }
+
+        .home-icon {
+            background-color: #e1d9c8;
+            border-radius: 8px;
+        }
+
+        .nav-text {
+            font-weight: 700;
+            font-size: 15px;
+        }
+    </style>
 </head>
 <body>
 <div class="app-layout-container">
-    <!-- Sidebar Trái -->
-    <aside class="left-sidebar-profile">
-        <a th:href="@{/dashboard}" class="back-to-home-btn-profile">
-            <i class="fas fa-arrow-left"></i> Dashboard
-        </a>
+    <!-- Left Sidebar (giống với leaderboard) -->
+    <aside class="sidebar">
+        <div class="logo">
+            <h1>VietLingo</h1>
+        </div>
+        <nav class="nav-items">
+            <!-- LEARN -->
+            <a th:href="@{/dashboard}" class="nav-item">
+                <div class="nav-icon home-icon">
+                    <img th:src="@{/images/play-button.png}" alt="Learn" />
+                </div>
+                <span class="nav-text">LEARN</span>
+            </a>
+
+            <!-- LEADERBOARDS -->
+            <a th:href="@{/leaderboard}" class="nav-item">
+                <div class="nav-icon">
+                    <img th:src="@{/images/businessman-with-target.png}" alt="Leaderboards" />
+                </div>
+                <span class="nav-text">LEADERBOARDS</span>
+            </a>
+
+            <!-- PROFILE (active) -->
+            <a th:href="@{/profile_add_friend}" class="nav-item active">
+                <div class="nav-icon">
+                    <img th:src="@{/images/person.png}" alt="Profile" />
+                </div>
+                <span class="nav-text">PROFILE</span>
+            </a>
+
+            <!-- LOGOUT -->
+            <a th:href="@{/logout}" class="nav-item" id="logoutLink">
+                <div class="nav-icon">
+                    <img th:src="@{/images/log_out.png}" alt="Logout" />
+                </div>
+                <span class="nav-text">LOGOUT</span>
+            </a>
+        </nav>
     </aside>
 
     <!-- Main Content (Profile View & Edit View) -->
@@ -21,7 +182,9 @@
         <div id="profileView" class="profile-view-active">
             <div class="profile-main">                <div class="profile-header">
                     <div class="avatar-container">
-                        <img th:src="${userDto?.avatar != null ? userDto.avatar : '/images/default_avatar.png'}" alt="Avatar" id="profileAvatarDisplay" class="avatar-placeholder">
+
+                        <img src="/images/avatar3.png" alt="Avatar" id="profileAvatarDisplay" class="avatar-placeholder">
+
                     </div>
                 </div>
 
@@ -74,19 +237,17 @@
                     </div>
                 </div>
             </div>
-        </div>        <div id="editProfileView" class="edit-profile-container" style="display: none;">
+        </div>
+        <div id="editProfileView" class="edit-profile-container" style="display: none;">
             <h2><i class="fas fa-user-cog"></i> Edit profile</h2>
-            
             <!-- Success Message -->
             <div th:if="${param.success}" class="alert alert-success">
                 <i class="fas fa-check-circle"></i> Profile updated successfully!
             </div>
-            
             <!-- Error Message -->
             <div th:if="${errorMessage}" class="alert alert-error">
                 <i class="fas fa-exclamation-circle"></i> <span th:text="${errorMessage}">Error message</span>
             </div>
-            
             <div th:if="${userEditForm != null}">
                 <form id="editProfileForm" th:action="@{/profile/update}" method="post" th:object="${userEditForm}">
                     <div class="form-group">
@@ -184,7 +345,9 @@
     window.serverData = {
         currentUser: /*[[${userDto}]]*/ null,
         csrfToken: /*[[${_csrf?.token}]]*/ '',
-        csrfHeaderName: /*[[${_csrf?.headerName}]]*/ '',        
+
+        csrfHeaderName: /*[[${_csrf?.headerName}]]*/ '',
+
         urls: {
             updateProfile: /*[[@{/api/profile/update}]]*/ '/api/profile/update',
             searchFriends: /*[[@{/friends/search}]]*/ '/friends/search',
@@ -205,22 +368,46 @@
         ],
         defaultAvatarUrl: '/images/default_avatar.png'
     };
-    
+
+    // DEBUG: Log initial server data
+    console.log('DEBUG: Initial serverData:', serverData);
+
     // Restructure friend data for JavaScript compatibility
     if (window.serverData.currentUser) {
         // Ensure friends array exists
         if (!window.serverData.currentUser.friends) {
             window.serverData.currentUser.friends = [];
         }
-        
+
         // Structure friend requests data as expected by JavaScript
         window.serverData.currentUser.friendRequests = {
             received: window.serverData.currentUser.receivedFriendRequests || [],
             sent: window.serverData.currentUser.sentFriendRequests || []
         };
+
+
+        // DEBUG: Log structured data
+        console.log('DEBUG: Structured currentUser:', serverData.currentUser);
+        console.log('DEBUG: Friends count:', serverData.currentUser.friends.length);
+        console.log('DEBUG: Received requests count:', serverData.currentUser.friendRequests.received.length);
+        console.log('DEBUG: Sent requests count:', serverData.currentUser.friendRequests.sent.length);
+
     }
     /*]]>*/
 </script>
 <script th:src="@{/js/profile_add_friend.js}"></script>
+
+<!-- Script xác nhận logout giống như trong leaderboard -->
+<script>
+    const logoutLink = document.getElementById("logoutLink");
+    if (logoutLink) {
+        logoutLink.addEventListener("click", (event) => {
+            event.preventDefault();
+            if (confirm("Are you sure you want to logout?")) {
+                window.location.href = logoutLink.href;
+            }
+        });
+    }
+</script>
 </body>
 </html>
