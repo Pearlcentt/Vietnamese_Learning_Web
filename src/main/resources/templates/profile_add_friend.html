@@ -37,7 +37,16 @@
                         <a href="#" id="followingCountLink"><span id="followingCount" th:text="${userDto?.friends != null} ? ${userDto.friends.size()} : 0">0</span> Following</a>
                         <a href="#" id="followersCountLink"><span id="followersCount" th:text="${userDto?.friends != null} ? ${userDto.friends.size()} : 0">0</span> Followers</a>
                     </div>
-                    <button id="editProfileBtn" class="action-btn"><i class="fas fa-user-edit"></i> Edit profile</button>
+                    <!-- Show edit button only for own profile -->
+                    <button id="editProfileBtn" class="action-btn" th:if="${!viewOnly}"><i class="fas fa-user-edit"></i> Edit profile</button>
+                    <!-- Show friend request actions for other users -->
+                    <div th:if="${viewOnly}">
+                        <button class="action-btn" th:if="${alreadyFriends}" disabled><i class="fas fa-users"></i> Friends</button>
+                        <button class="action-btn" th:if="${requestSent}" disabled><i class="fas fa-check"></i> Request Sent</button>
+                        <button class="action-btn" th:if="${requestReceived}" th:attr="data-requester-id=${userDto.uId}" id="acceptFriendBtn"><i class="fas fa-user-plus"></i> Accept</button>
+                        <button class="action-btn" th:if="${requestReceived}" th:attr="data-requester-id=${userDto.uId}" id="declineFriendBtn"><i class="fas fa-user-times"></i> Decline</button>
+                        <button class="action-btn" th:if="${!alreadyFriends and !requestSent and !requestReceived}" th:attr="data-target-id=${userDto.uId}" id="sendFriendRequestBtn"><i class="fas fa-user-plus"></i> Add Friend</button>
+                    </div>
                 </div>
 
                 <div class="statistics-section">
@@ -184,6 +193,29 @@
             unfriend: /*[[@{/friends/unfriend}]]*/ '/friends/unfriend'
         }
     };
+    
+    // DEBUG: Log initial server data
+    console.log('DEBUG: Initial serverData:', serverData);
+    
+    // Restructure friend data for JavaScript compatibility
+    if (serverData.currentUser) {
+        // Ensure friends array exists
+        if (!serverData.currentUser.friends) {
+            serverData.currentUser.friends = [];
+        }
+        
+        // Structure friend requests data as expected by JavaScript
+        serverData.currentUser.friendRequests = {
+            received: serverData.currentUser.receivedFriendRequests || [],
+            sent: serverData.currentUser.sentFriendRequests || []
+        };
+        
+        // DEBUG: Log structured data
+        console.log('DEBUG: Structured currentUser:', serverData.currentUser);
+        console.log('DEBUG: Friends count:', serverData.currentUser.friends.length);
+        console.log('DEBUG: Received requests count:', serverData.currentUser.friendRequests.received.length);
+        console.log('DEBUG: Sent requests count:', serverData.currentUser.friendRequests.sent.length);
+    }
     /*]]>*/
 </script>
 <script th:src="@{/js/profile_add_friend.js}"></script>

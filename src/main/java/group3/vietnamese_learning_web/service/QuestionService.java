@@ -24,18 +24,38 @@ public class QuestionService {
         List<QuestionDTO> questions = new ArrayList<>();
 
         // Limit to 2 sentences per lesson as requested
-        int maxSentences = Math.min(2, sentenceIds.size());
-
-        // Ensure we use different sentences by taking different indices
+        int maxSentences = 2;
         List<Integer> selectedSentenceIds = new ArrayList<>();
+
         if (sentenceIds.size() >= 2) {
             // Use first and second sentence if available
             selectedSentenceIds.add(sentenceIds.get(0));
             selectedSentenceIds.add(sentenceIds.get(1));
         } else if (sentenceIds.size() == 1) {
-            // If only one sentence, use it twice (fallback)
-            selectedSentenceIds.add(sentenceIds.get(0));
-            selectedSentenceIds.add(sentenceIds.get(0));
+            // Try to fetch a random second sentence from the same topic
+            Integer firstSid = sentenceIds.get(0);
+            Sentence firstSentence = sentenceRepository.findById(firstSid).orElse(null);
+            if (firstSentence != null) {
+                String topicName = firstSentence.getTopicName();
+                List<Sentence> allTopicSentences = sentenceRepository.findByTopicName(topicName);
+                List<Sentence> candidates = allTopicSentences.stream()
+                        .filter(s -> !s.getSId().equals(firstSid))
+                        .collect(Collectors.toList());
+                if (!candidates.isEmpty()) {
+                    // Pick a random one
+                    Sentence extra = candidates.get((int) (Math.random() * candidates.size()));
+                    selectedSentenceIds.add(firstSid);
+                    selectedSentenceIds.add(extra.getSId());
+                } else {
+                    // Only one sentence in topic, duplicate
+                    selectedSentenceIds.add(firstSid);
+                    selectedSentenceIds.add(firstSid);
+                }
+            } else {
+                // Fallback: duplicate
+                selectedSentenceIds.add(firstSid);
+                selectedSentenceIds.add(firstSid);
+            }
         }
 
         for (int i = 0; i < maxSentences && i < selectedSentenceIds.size(); i++) {

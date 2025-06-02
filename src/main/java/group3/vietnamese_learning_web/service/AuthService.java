@@ -7,7 +7,6 @@ import group3.vietnamese_learning_web.dto.UserRegistrationDTO;
 import group3.vietnamese_learning_web.dto.UserLoginDTO;
 import group3.vietnamese_learning_web.dto.UserResponseDTO;
 import group3.vietnamese_learning_web.dto.UserEditForm;
-import group3.vietnamese_learning_web.model.Gender;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -16,12 +15,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.sql.Date;
-
 import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Collectors;
 
 @Service
@@ -91,6 +89,22 @@ public class AuthService implements UserDetailsService {
                 .gems(306)
                 .points(user.getPoints() != null ? user.getPoints() : 0)
                 .build();
+    }
+
+    public UserResponseDTO getUserByUid(Integer uid) {
+        Optional<User> userOpt = userRepository.findById(uid);
+        if (!userOpt.isPresent()) {
+            return null;
+        }
+        return toResponseDTO(userOpt.get());
+    }
+
+    public List<UserResponseDTO> searchUsersByName(String query) {
+        // Search by name or username containing the query (case-insensitive)
+        List<User> users = userRepository.findByNameContainingIgnoreCaseOrUsernameContainingIgnoreCase(query, query);
+        return users.stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
     public int calculateStreak(Integer uid) {

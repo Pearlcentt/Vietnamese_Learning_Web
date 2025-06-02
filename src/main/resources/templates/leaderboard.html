@@ -13,7 +13,7 @@
 <body>
     <div class="app-container">
         <aside class="left-nav-sidebar">
-            <a th:href="@{/homepage}" class="back-to-home-button">
+            <a th:href="@{/dashboard}" class="back-to-home-button">
                 <i class="fas fa-arrow-left"></i> Homepage
             </a>
         </aside>
@@ -110,6 +110,7 @@
         // Convert points to XP format for leaderboard display
         if (serverData.globalLeaderboard) {
             serverData.globalLeaderboard = serverData.globalLeaderboard.map(user => ({
+                uId: user.uId || user.uid || user.id,
                 username: user.username,
                 xp: user.points || 0,
                 avatar: user.avatar || serverData.defaultAvatarUrl
@@ -118,6 +119,7 @@
         
         if (serverData.friendsLeaderboard) {
             serverData.friendsLeaderboard = serverData.friendsLeaderboard.map(user => ({
+                uId: user.uId || user.uid || user.id,
                 username: user.username,
                 xp: user.points || 0,
                 avatar: user.avatar || serverData.defaultAvatarUrl

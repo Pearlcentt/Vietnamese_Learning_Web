@@ -79,22 +79,18 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-
         // Sắp xếp lại data theo XP giảm dần để xác định rank
         const sortedData = [...leaderboardData].sort((a, b) => b.xp - a.xp);
 
         sortedData.forEach((user, index) => {
             const actualRank = index + 1;
-
             const item = document.createElement('div');
             item.classList.add('leaderboard-item');
             if (currentUser && user.username === currentUser.username) {
                 item.classList.add('current-user-highlight');
             }
-
             let rankContentHtml = '';
             let rankSpecificClass = '';
-
             if (actualRank === 1) {
                 rankContentHtml = `<img src="${medalImageUrls.gold}" alt="Gold Medal" class="rank-medal-image">`;
                 rankSpecificClass = 'rank-has-medal';
@@ -107,12 +103,23 @@ document.addEventListener('DOMContentLoaded', function () {
             } else {
                 rankContentHtml = actualRank;
             }
-
+            // Add data-user-id attribute for click navigation
+            item.setAttribute('data-user-id', user.uId || user.uid || user.id || '');
             item.innerHTML = `
                 <div class="rank ${rankSpecificClass}">${rankContentHtml}</div>
                 <div class="username-leaderboard">${user.username || 'Unknown User'}</div>
                 <div class="xp">${user.xp || 0} XP</div>
             `;
+            // Make row clickable if userId exists
+            if (item.getAttribute('data-user-id')) {
+                item.style.cursor = 'pointer';
+                item.addEventListener('click', function() {
+                    const uid = item.getAttribute('data-user-id');
+                    if (uid) {
+                        window.location.href = `/profile/${uid}`;
+                    }
+                });
+            }
             leaderboardListContainer.appendChild(item);
         });
     }

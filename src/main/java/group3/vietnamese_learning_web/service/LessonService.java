@@ -70,7 +70,9 @@ public class LessonService {
                             .build();
                 })
                 .collect(Collectors.toList());
-    }    private String determineActualStatus(LessonWithProgressProjection current,
+    }
+
+    private String determineActualStatus(LessonWithProgressProjection current,
             List<LessonWithProgressProjection> allLessons) {
         // All lessons are now unlocked to allow free access to any lesson
         if (current.getStatus() != null) {
