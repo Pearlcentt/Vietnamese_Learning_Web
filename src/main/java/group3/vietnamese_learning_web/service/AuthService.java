@@ -71,7 +71,9 @@ public class AuthService implements UserDetailsService {
                 .password(user.getPassword()) // must be encoded
                 .roles("USER") // or user.getRole() if present
                 .build();
-    }    public UserResponseDTO getUserByUsername(String username) throws UsernameNotFoundException {
+    }
+
+    public UserResponseDTO getUserByUsername(String username) throws UsernameNotFoundException {
         Optional<User> userOpt = userRepository.findByUsername(username);
         if (!userOpt.isPresent()) {
             throw new UsernameNotFoundException("User not found");
@@ -121,14 +123,16 @@ public class AuthService implements UserDetailsService {
         for (User user : users) {
             System.out.println("DEBUG: User from DB - ID: " + user.getUId() + ", Username: " + user.getUsername()
                     + ", Name: " + user.getName());
-        }        List<UserResponseDTO> result = users.stream()
+        }
+        List<UserResponseDTO> result = users.stream()
                 .map(this::toResponseDTOWithoutStreak) // Use optimized version without streak calculation
                 .collect(Collectors.toList());
 
         System.out.println("DEBUG: Converted to " + result.size() + " DTOs");
         // Debug: Print the actual DTO content
         for (UserResponseDTO dto : result) {
-            System.out.println("DEBUG: DTO - ID: " + dto.getUId() + ", Username: " + dto.getUsername() + ", Name: " + dto.getName());
+            System.out.println("DEBUG: DTO - ID: " + dto.getUId() + ", Username: " + dto.getUsername() + ", Name: "
+                    + dto.getName());
         }
         return result;
     }
@@ -152,7 +156,9 @@ public class AuthService implements UserDetailsService {
             // If there's any issue with streak calculation, return 0
             return 0;
         }
-    }    public UserResponseDTO toResponseDTO(User user) {
+    }
+
+    public UserResponseDTO toResponseDTO(User user) {
         UserResponseDTO dto = UserResponseDTO.builder()
                 .uId(user.getUId())
                 .username(user.getUsername())
@@ -170,7 +176,9 @@ public class AuthService implements UserDetailsService {
         int streak = calculateStreak(user.getUId());
         dto.setStreak(streak);
         return dto;
-    }    /**
+    }
+
+    /**
      * Optimized version of toResponseDTO that doesn't calculate streak
      * Use this for search results and friend lists to avoid N+1 queries
      */
@@ -217,7 +225,7 @@ public class AuthService implements UserDetailsService {
             }
             user.setEmail(editForm.getEmail().trim());
             updated = true;
-        }        // Update password if new password is provided and current password was verified
+        } // Update password if new password is provided and current password was verified
         if (editForm.getNewPassword() != null && !editForm.getNewPassword().isEmpty() &&
                 editForm.getCurrentPassword() != null && !editForm.getCurrentPassword().isEmpty()) {
             user.setPassword(passwordEncoder.encode(editForm.getNewPassword()));

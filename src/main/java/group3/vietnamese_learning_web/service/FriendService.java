@@ -14,8 +14,9 @@ public class FriendService {
     private final UserRepository userRepository;
 
     // In-memory maps for demo (can be replaced with database tables later)
-    private final Map<Integer, Set<Integer>> friendRequests = new HashMap<>(); // key: targetUid, value: Set of requester UIDs
-    
+    private final Map<Integer, Set<Integer>> friendRequests = new HashMap<>(); // key: targetUid, value: Set of
+                                                                               // requester UIDs
+
     // Note: friends map is now backed by User.friendIds in database
     // but we keep this for backward compatibility and caching
     private final Map<Integer, Set<Integer>> friends = new HashMap<>(); // key: uid, value: Set of friend UIDs
@@ -35,11 +36,11 @@ public class FriendService {
             // Add to in-memory cache
             friends.computeIfAbsent(userUid, k -> new HashSet<>()).add(requesterUid);
             friends.computeIfAbsent(requesterUid, k -> new HashSet<>()).add(userUid);
-            
+
             // Update database - add friendship to both users' friendIds
             updateUserFriendship(userUid, requesterUid, true);
             updateUserFriendship(requesterUid, userUid, true);
-            
+
             return true;
         }
         return false;
@@ -88,11 +89,11 @@ public class FriendService {
         // Remove from in-memory cache
         boolean removed1 = friends.getOrDefault(uid1, Collections.emptySet()).remove(uid2);
         boolean removed2 = friends.getOrDefault(uid2, Collections.emptySet()).remove(uid1);
-        
+
         // Update database - remove friendship from both users' friendIds
         updateUserFriendship(uid1, uid2, false);
         updateUserFriendship(uid2, uid1, false);
-        
+
         return removed1 || removed2;
     }
 
@@ -144,7 +145,7 @@ public class FriendService {
                 if (user.getFriendIds() == null) {
                     user.setFriendIds(new ArrayList<>());
                 }
-                
+
                 String friendIdStr = friendId.toString();
                 if (addFriend) {
                     if (!user.getFriendIds().contains(friendIdStr)) {
@@ -153,7 +154,7 @@ public class FriendService {
                 } else {
                     user.getFriendIds().remove(friendIdStr);
                 }
-                
+
                 userRepository.save(user);
             }
         } catch (Exception e) {

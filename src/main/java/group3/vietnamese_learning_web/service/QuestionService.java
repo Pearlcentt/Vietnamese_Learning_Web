@@ -132,52 +132,112 @@ public class QuestionService {
                 .choices(choices)
                 .type(1)
                 .build();
-    } // Lesson 2: Fill in the blank - Vietnamese sentence with one word blanked out
+    }
 
+    // Lesson 2: Fill in the blank - Vietnamese sentence with one word blanked out
+    // Enhanced version with better Word entity utilization
     private QuestionDTO buildFillInBlankQuestion(Sentence sentence, List<Word> words) {
         if (words.isEmpty()) {
-            // Fallback: use full sentence if no words available
-            return QuestionDTO.builder()
-                    .sId(sentence.getSId())
-                    .question(sentence.getViet())
-                    .answer(sentence.getViet())
-                    .choices(List.of(sentence.getViet()))
-                    .type(2)
-                    .build();
+            // Fallback: use first word from sentence and create a blank
+            String originalSentence = sentence.getViet();
+            String[] sentenceWords = originalSentence.split("\\s+");
+            if (sentenceWords.length > 0) {
+                String firstWord = sentenceWords[0];
+                String blankedSentence = originalSentence
+                        .replaceFirst("\\b" + java.util.regex.Pattern.quote(firstWord) + "\\b", "_____");
+                return QuestionDTO.builder()
+                        .sId(sentence.getSId())
+                        .question(blankedSentence)
+                        .answer(firstWord)
+                        .choices(List.of(firstWord, "từ 1", "từ 2", "từ 3"))
+                        .type(2)
+                        .build();
+            } else {
+                return QuestionDTO.builder()
+                        .sId(sentence.getSId())
+                        .question("_____ từ thiếu")
+                        .answer("từ")
+                        .choices(List.of("từ", "từ 1", "từ 2", "từ 3"))
+                        .type(2)
+                        .build();
+            }
         }
 
-        // Pick one word to blank out
-        Word targetWord = words.get(0);
+        // Enhanced: Prefer words with more similar words for better choice generation
+        Word targetWord = words.stream()
+                .filter(word -> word.getVietSimilarWordsList() != null && !word.getVietSimilarWordsList().isEmpty())
+                .findFirst()
+                .orElse(words.get((int) (Math.random() * words.size())));
         String originalSentence = sentence.getViet();
-        String blankedSentence = originalSentence.replaceFirst("\\b" + targetWord.getViet() + "\\b", "_____");
 
-        // Create choices: correct answer + similar words
+        // Enhanced: Better sentence reconstruction using word index
+        String blankedSentence = createBlankedSentence(originalSentence, words, targetWord);
+
+        // Enhanced: Smarter choice generation
+        List<String> choices = generateChoicesForWord(targetWord, words);
+        Collections.shuffle(choices);
+
+        return QuestionDTO.builder()
+                .sId(sentence.getSId())
+                .question(blankedSentence)
+                .answer(targetWord.getViet())
+                .choices(choices).type(2)
+                .build();
+    }
+
+    // Helper method: Create blanked sentence using word positions
+    private String createBlankedSentence(String originalSentence, List<Word> words, Word targetWord) {
+        // Try to use word boundaries first
+        String blankedSentence = originalSentence
+                .replaceFirst("\\b" + java.util.regex.Pattern.quote(targetWord.getViet()) + "\\b", "_____");
+
+        // If replacement didn't work, try without word boundaries
+        if (blankedSentence.equals(originalSentence)) {
+            blankedSentence = originalSentence.replaceFirst(java.util.regex.Pattern.quote(targetWord.getViet()),
+                    "_____");
+        }
+
+        // If still no replacement, create a simple pattern
+        if (blankedSentence.equals(originalSentence)) {
+            blankedSentence = "_____ " + originalSentence;
+        }
+
+        return blankedSentence;
+    }
+
+    // Helper method: Generate smart choices for a word
+    private List<String> generateChoicesForWord(Word targetWord, List<Word> allWords) {
         List<String> choices = new ArrayList<>();
         choices.add(targetWord.getViet()); // Correct answer
 
-        // Add similar words as wrong choices
+        // Add similar words from the target word
         List<String> similarWords = targetWord.getVietSimilarWordsList();
         choices.addAll(similarWords);
+
+        // If we need more choices, add words from other words in the sentence
+        if (choices.size() < 4) {
+            allWords.stream()
+                    .filter(word -> !word.getWId().equals(targetWord.getWId()))
+                    .map(Word::getViet)
+                    .distinct()
+                    .limit(4 - choices.size())
+                    .forEach(choices::add);
+        }
 
         // Ensure we have at least 4 choices
         while (choices.size() < 4) {
             choices.add("từ " + choices.size());
         }
 
-        // Limit to 4 choices and shuffle
+        // Limit to 4 choices
         if (choices.size() > 4) {
             choices = choices.subList(0, 4);
         }
-        Collections.shuffle(choices);
 
-        return QuestionDTO.builder()
-                .sId(sentence.getSId())
-                .question(blankedSentence) // Vietnamese sentence with blank
-                .answer(targetWord.getViet()) // The word that should fill the blank
-                .choices(choices)
-                .type(2)
-                .build();
-    } // Lesson 3: Reorder Chars - Vietnamese word split into characters and shuffled
+        return choices;
+    }
+
+    // Lesson 3: Reorder Chars - Vietnamese word split into characters and shuffled
 
     private QuestionDTO buildReorderWordQuestion(Sentence sentence, List<Word> words) {
         // Use the first word from the sentence, or fallback to first word in sentence
