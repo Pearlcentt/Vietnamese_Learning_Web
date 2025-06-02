@@ -33,9 +33,14 @@ public class LessonController {
 
         // Use projection-based service method for status/progress
         List<LessonWithProgressDTO> lessons = lessonService.getLessonsWithProgress(topicId, userId);
+        
+        boolean allLessonsCompleted = lessons.stream()
+                                            .allMatch(lesson -> "Completed".equals(lesson.getStatus()));
+
         model.addAttribute("lessons", lessons);
         model.addAttribute("user", user);
         model.addAttribute("topicId", topicId);
+        model.addAttribute("allLessonsCompleted", allLessonsCompleted); // Add this line
         return "lessons";
     }
 
