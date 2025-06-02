@@ -277,6 +277,12 @@ body {
   right: 85px; /* For right-positioned items, show on left */
   left: auto;
 }
+.topic-description {
+  font-size: 14px;
+  color: #555;
+  margin-top: 10px;
+  display: none; /* Hidden by default */
+}
 
 .topic-item:hover .hover-topic {
   opacity: 1;
@@ -314,6 +320,13 @@ body {
   align-items: center;
   justify-content: space-between;
   /* margin-top: 8px; */
+}
+.topic-item:hover .hover-topic .progress-container {
+  display: none; /* Hide progress bar on hover */
+}
+
+.topic-item:hover .hover-topic .topic-description {
+  display: block; /* Show description on hover */
 }
 
 .progress-bar-wrapper {

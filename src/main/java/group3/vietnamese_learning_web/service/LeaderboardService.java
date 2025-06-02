@@ -21,7 +21,9 @@ public class LeaderboardService {
 
     private final UserRepository userRepository;
     private final ProgressRepository progressRepository;
-    private final AuthService authService;    public List<UserResponseDTO> getTopUsers(int limit) {
+    private final AuthService authService;
+
+    public List<UserResponseDTO> getTopUsers(int limit) {
         // Get users with their progress scores instead of points
         List<Object[]> userScores = progressRepository.sumScoresGroupByUserId();
         Map<Integer, Integer> userScoreMap = new HashMap<>();
@@ -57,7 +59,9 @@ public class LeaderboardService {
                     return dto;
                 })
                 .collect(Collectors.toList());
-    }    public void addPoints(User user, int points) {
+    }
+
+    public void addPoints(User user, int points) {
         // This method is now deprecated as we calculate points from Progress table
         // Keep for backward compatibility but don't actually modify user points
         // Points are now calculated dynamically from Progress scores
@@ -66,7 +70,7 @@ public class LeaderboardService {
     }
 
     public void addPoints(Integer userId, int points) {
-        // This method is now deprecated as we calculate points from Progress table  
+        // This method is now deprecated as we calculate points from Progress table
         // Keep for backward compatibility but don't actually modify user points
         // Points are now calculated dynamically from Progress scores
         // Instead, trigger a sync of points from Progress table

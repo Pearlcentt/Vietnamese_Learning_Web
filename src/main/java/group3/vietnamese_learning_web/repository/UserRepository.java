@@ -20,4 +20,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     @Query("SELECT u FROM User u WHERE u.points > 0 ORDER BY u.points DESC")
     List<User> findUsersWithPointsOrderByPointsDesc();
+
+    // Search users by name or username (case-insensitive)
+    List<User> findByNameContainingIgnoreCaseOrUsernameContainingIgnoreCase(String name, String username);
 }

@@ -399,14 +399,14 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     const isCorrect = currentOrder.every(
       (char, index) => char === correctOrder[index]
-    );
-
-    if (isCorrect) {
+    );    if (isCorrect) {
       checkButton.style.backgroundColor = "#52f52a";
       resultMessage.textContent = "Correct!";
       resultMessage.classList.add("show");
       tickIcon.classList.add("show");
       errorIcon.classList.add("hidden");
+      // Record correct answer
+      recordAnswer(true);
     } else {
       resultMessage.textContent = "Incorrect!";
       resultMessage.style.color = "red";
@@ -414,6 +414,8 @@ document.addEventListener("DOMContentLoaded", function () {
       tickIcon.classList.add("hidden");
       errorIcon.classList.add("show");
       checkButton.style.backgroundColor = "#ff1d0d";
+      // Record incorrect answer
+      recordAnswer(false);
     }
     checkButton.innerText = "Continue";
   });
@@ -433,11 +435,12 @@ document.addEventListener("DOMContentLoaded", function () {
       resultMessage.style.color = "red";
       resultMessage.classList.add("show");
       tickIcon.classList.add("hidden");
-      errorIcon.classList.add("show");
-      checkButton.style.backgroundColor = "#ff1d0d";
+      errorIcon.classList.add("show");      checkButton.style.backgroundColor = "#ff1d0d";
       checkButton.innerText = "Continue";
       isIgnored = true;
       isChecked = true;
+      // Record ignored as incorrect
+      recordAnswer(false);
     });
   }
 

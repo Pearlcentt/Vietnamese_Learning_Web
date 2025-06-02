@@ -49,9 +49,11 @@ public class ProgressController {
             @RequestParam Integer lessonId,
             @RequestParam Integer score,
             @RequestParam ProgressStatus status) {
-        return progressService.updateProgress(uid, topicId, lessonId, score, status);
-    } // Complete lesson endpoint called from frontend    @PostMapping("/complete")
-    public ResponseEntity<String> completeLesson(
+        return progressService.updateProgress(uid, topicId, lessonId, score, status);    }
+
+    // Start lesson endpoint - marks lesson as "In Progress" when user begins
+    @PostMapping("/start")
+    public ResponseEntity<String> startLesson(
             @RequestParam Integer topicId,
             @RequestParam Integer lessonId,
             Authentication authentication) {
@@ -60,22 +62,72 @@ public class ProgressController {
             UserResponseDTO user = authService.getUserByUsername(username);
             Integer userId = user.getUId();
 
+            // Check current progress
+            ProgressDTO existingProgress = progressService.getProgress(userId, topicId, lessonId);
+            
+            // Only update to In_Progress if not already completed
+            if (existingProgress == null || existingProgress.getStatus() != ProgressStatus.Completed) {
+                // Mark lesson as in progress with initial score
+                progressService.updateProgress(userId, topicId, lessonId, 0, ProgressStatus.In_Progress);
+                return ResponseEntity.ok("Lesson started - marked as In Progress");
+            } else {
+                return ResponseEntity.ok("Lesson already completed - starting review mode");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to start lesson: " + e.getMessage());
+        }
+    }    // Complete lesson endpoint called from frontend with actual score
+    @PostMapping("/complete")
+    public ResponseEntity<String> completeLesson(
+            @RequestParam Integer topicId,
+            @RequestParam Integer lessonId,
+            @RequestParam Integer score,
+            @RequestParam Integer totalQuestions,
+            Authentication authentication) {
+        try {
+            String username = authentication.getName();
+            UserResponseDTO user = authService.getUserByUsername(username);
+            Integer userId = user.getUId();
+
+            // Calculate score percentage
+            int maxScore = 100;
+            int actualScore = Math.min(maxScore, (score * maxScore) / totalQuestions);
+            
+            // Determine status based on score
+            ProgressStatus status;
+            if (actualScore >= maxScore) {
+                status = ProgressStatus.Completed; // Only "Completed" when 100% correct
+            } else {
+                status = ProgressStatus.In_Progress; // "In Progress" when not perfect
+            }
+
             // Check if lesson was already completed
             ProgressDTO existingProgress = progressService.getProgress(userId, topicId, lessonId);
             boolean wasAlreadyCompleted = existingProgress != null &&
-                    existingProgress.getStatus() == ProgressStatus.Completed; 
-            
-            // Mark lesson as completed with max score
-            progressService.updateProgress(userId, topicId, lessonId, 100, ProgressStatus.Completed);
+                    existingProgress.getStatus() == ProgressStatus.Completed;
+
+            // Update progress with actual score and status
+            progressService.updateProgress(userId, topicId, lessonId, actualScore, status);
 
             // Sync user points with updated Progress scores
             leaderboardService.syncUserPointsFromProgress(userId);
 
-            if (!wasAlreadyCompleted) {
-                return ResponseEntity.ok("Lesson completed successfully! Your score has been updated!");
+            String message;
+            if (status == ProgressStatus.Completed) {
+                if (!wasAlreadyCompleted) {
+                    message = String.format("Perfect! Lesson completed with %d/%d correct answers! +%d points", 
+                            score, totalQuestions, actualScore);
+                } else {
+                    message = String.format("Perfect score again! %d/%d correct answers (already completed)", 
+                            score, totalQuestions);
+                }
             } else {
-                return ResponseEntity.ok("Lesson completed! (No additional points - already completed before)");
+                message = String.format("Good try! %d/%d correct answers. Get all questions right to complete the lesson!", 
+                        score, totalQuestions);
             }
+
+            return ResponseEntity.ok(message);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Failed to save progress: " + e.getMessage());

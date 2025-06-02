@@ -109,8 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
       );
     }, index * 100);
   });
-
-  // Optional: Add keyboard navigation
+  
   document.addEventListener("keydown", (e) => {
     const topics = Array.from(document.querySelectorAll(".topic-item"));
     const currentSelected = document.querySelector(

@@ -1,5 +1,9 @@
 const totalQuestions = 2;
 
+// Initialize score tracking
+let currentScore = 0;
+let questionsAnswered = 0;
+
 // Initialize question files
 let questionFiles = [
   "qtype1.html",
@@ -40,6 +44,12 @@ if (!localStorage.getItem("progress")) {
   localStorage.setItem("prevPercentage", "0");
 }
 
+// Initialize score tracking in localStorage
+if (!localStorage.getItem("currentScore")) {
+  localStorage.setItem("currentScore", "0");
+  localStorage.setItem("questionsAnswered", "0");
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const progress = parseInt(localStorage.getItem("progress")) || 0;
   const prevPercentage =
@@ -75,6 +85,9 @@ document.addEventListener("DOMContentLoaded", () => {
     startButton.addEventListener("click", () => {
       localStorage.setItem("progress", "1");
       localStorage.setItem("prevPercentage", "0");
+      // Reset score tracking when starting new lesson
+      localStorage.setItem("currentScore", "0");
+      localStorage.setItem("questionsAnswered", "0");
       
       // Extract topicId and lessonId from current URL path
       // Current URL should be like: /questions/start/1/1
@@ -82,7 +95,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const topicId = pathParts[3]; // /questions/start/1/1 -> index 3 is topicId
       const lessonId = pathParts[4]; // /questions/start/1/1 -> index 4 is lessonId
       
+      // Mark lesson as started in database
       if (topicId && lessonId) {
+        startLessonProgress(topicId, lessonId);
         // Navigate to questions controller with proper parameters
         window.location.href = `/questions/${topicId}/${lessonId}`;
       } else {
@@ -210,15 +225,63 @@ function goToNextQuestion() {
 function resetProgress() {
   localStorage.setItem("progress", "0");
   localStorage.setItem("prevPercentage", "0");
+  // Reset score tracking
+  localStorage.setItem("currentScore", "0");
+  localStorage.setItem("questionsAnswered", "0");
   const progressFill = document.querySelector(".progress-fill");
   if (progressFill) {
     progressFill.style.width = "0%";
   }
 }
 
+// Function to record answer result (called from question scripts)
+function recordAnswer(isCorrect) {
+  let currentScore = parseInt(localStorage.getItem("currentScore")) || 0;
+  let questionsAnswered = parseInt(localStorage.getItem("questionsAnswered")) || 0;
+  
+  questionsAnswered++;
+  if (isCorrect) {
+    currentScore++;
+  }
+  
+  localStorage.setItem("currentScore", currentScore.toString());
+  localStorage.setItem("questionsAnswered", questionsAnswered.toString());
+  
+  console.log(`Question answered. Score: ${currentScore}/${questionsAnswered}`);
+}
+
+function startLessonProgress(topicId, lessonId) {
+  // Call API to mark lesson as started (In Progress)
+  fetch(`/api/progress/start?topicId=${topicId}&lessonId=${lessonId}`, {
+    method: "POST",
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest'
+    }
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.text();
+  })
+  .then(message => {
+    console.log("Lesson started:", message);
+  })
+  .catch(err => {
+    console.error("Failed to start lesson progress:", err);
+    // Continue anyway - this is not critical for lesson functionality
+  });
+}
+
 function saveLessonProgress(topicId, lessonId) {
-  // Call our Spring Boot API endpoint
-  fetch(`/api/progress/complete?topicId=${topicId}&lessonId=${lessonId}`, {
+  // Get actual score data from localStorage
+  const currentScore = parseInt(localStorage.getItem("currentScore")) || 0;
+  const questionsAnswered = parseInt(localStorage.getItem("questionsAnswered")) || 0;
+  
+  console.log(`Saving lesson progress: ${currentScore}/${questionsAnswered} correct`);
+  
+  // Call our Spring Boot API endpoint with actual score data
+  fetch(`/api/progress/complete?topicId=${topicId}&lessonId=${lessonId}&score=${currentScore}&totalQuestions=${questionsAnswered}`, {
     method: "POST",
     headers: {
       'X-Requested-With': 'XMLHttpRequest'
@@ -232,6 +295,10 @@ function saveLessonProgress(topicId, lessonId) {
       })
       .then(message => {
         console.log("Progress Saved:", message);
+        // Reset score tracking after successful save
+        localStorage.setItem("currentScore", "0");
+        localStorage.setItem("questionsAnswered", "0");
+        
         // Optionally redirect to lessons page after successful completion
         setTimeout(() => {
           const urlParams = new URLSearchParams(window.location.search);
