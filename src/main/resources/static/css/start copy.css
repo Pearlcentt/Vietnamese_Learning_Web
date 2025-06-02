@@ -242,7 +242,12 @@ body {
   position: relative;
   transition: transform 0.2s ease;
 }
-
+.topic-description {
+  font-size: 14px;
+  color: #555;
+  margin-top: 10px;
+  display: none; /* Hidden by default */
+}
 .topic-item:hover {
   transform: scale(1.1);
 }
@@ -302,6 +307,14 @@ body {
   margin: 0;
 }
 
+.topic-item:hover .hover-topic .progress-container {
+  display: none; /* Hide progress bar on hover */
+}
+
+.topic-item:hover .hover-topic .topic-description {
+  display: block; /* Show description on hover */
+}
+
 .progress-container {
   display: flex;
   align-items: center;
@@ -330,7 +343,6 @@ body {
   height: 100%;
   background-color: #ffc107; /* Yellow color */
   border-radius: 6px;
-  /* transition: width 0.3s ease; */
 }
 
 .progress-text-topic {
@@ -466,6 +478,8 @@ body {
   border-radius: 16px;
   padding: 20px;
   margin-bottom: 15px;
+  max-height: 70vh; /* Set a maximum height */
+  overflow-y: auto; /* Enable vertical scrolling */
 }
 
 .sidebar-card h3 {
@@ -532,7 +546,7 @@ body {
   font-weight: 600;
 }
 
-.progress-bar {
+/* .progress-bar {
   width: 100%;
   height: 16px;
   background-color: #253858;
@@ -556,7 +570,7 @@ body {
   line-height: 16px;
   color: #ffffff;
   font-weight: 700;
-}
+} */
 
 .btn {
   width: 100%;

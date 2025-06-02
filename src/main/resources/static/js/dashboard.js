@@ -109,22 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
       );
     }, index * 100);
   });
-
-  // // Optional: Handle progress bar animations
-  // const progressBars = document.querySelectorAll(".progress-bar-topic");
-  // progressBars.forEach((bar) => {
-  //   const width = bar.style.width;
-  //   if (width && width !== "0%") {
-  //     bar.style.width = "0%";
-
-  //     setTimeout(() => {
-  //       bar.style.transition = "width 1s ease-out";
-  //       bar.style.width = width;
-  //     }, 500);
-  //   }
-  // });
-
-  // Optional: Add keyboard navigation
+  
   document.addEventListener("keydown", (e) => {
     const topics = Array.from(document.querySelectorAll(".topic-item"));
     const currentSelected = document.querySelector(
