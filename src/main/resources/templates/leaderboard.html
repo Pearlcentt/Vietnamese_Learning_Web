@@ -2,132 +2,179 @@
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${leagueSettingsDto != null ? leagueSettingsDto.name + ' - Leaderboard' : 'Duolingo Leaderboard'}">
-        Duolingo Leaderboard</title>
-    <link rel="stylesheet" th:href="@{/css/leaderboard.css}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title th:text="${leagueSettingsDto != null ? leagueSettingsDto.name + ' - Leaderboard' : 'VietLingo Leaderboard'}">
+        VietLingo Leaderboard</title>
+    <link rel="stylesheet" th:href="@{/css/leaderboard.css}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
 </head>
 
 <body>
-    <div class="app-container">
-        <aside class="left-nav-sidebar">
-            <a th:href="@{/dashboard}" class="back-to-home-button">
-                <i class="fas fa-arrow-left"></i> Homepage
+<div class="container">
+    <!-- Left Sidebar (Theo style của Dashboard) -->
+    <aside class="sidebar">
+        <div class="logo">
+            <h1>VietLingo</h1>
+        </div>
+        <nav class="nav-items">
+            <!-- LEARN -->
+            <a th:href="@{/dashboard}" class="nav-item">
+                <div class="nav-icon home-icon">
+                    <img th:src="@{/images/play-button.png}" alt="Learn" />
+                </div>
+                <span class="nav-text">LEARN</span>
             </a>
-        </aside>
 
-        <main class="main-content">
-            <header class="leaderboard-header">
-                <div class="league-icons">
-                    <!-- Logic hiển thị league icons có thể phức tạp hơn, tùy thuộc vào cách bạn quản lý các giải đấu -->
-                    <!-- Ví dụ đơn giản: -->
+            <!-- LEADERBOARDS -->
+            <a th:href="@{/leaderboard}" class="nav-item active">
+                <div class="nav-icon">
+                    <img th:src="@{/images/businessman-with-target.png}" alt="Leaderboards" />
+                </div>
+                <span class="nav-text">LEADERBOARDS</span>
+            </a>
+
+            <!-- PROFILE -->
+            <a th:href="@{/profile_add_friend}" class="nav-item">
+                <div class="nav-icon">
+                    <img th:src="@{/images/person.png}" alt="Profile" />
+                </div>
+                <span class="nav-text">PROFILE</span>
+            </a>
+
+            <!-- LOGOUT -->
+            <a th:href="@{/logout}" class="nav-item" id="logoutLink">
+                <div class="nav-icon logout-icon">
+                    <img th:src="@{/images/log_out.png}" alt="Logout" />
+                </div>
+                <span class="nav-text">LOGOUT</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content (Giữ nguyên từ leaderboard gốc) -->
+    <main class="main-content">
+        <header class="leaderboard-header">
+            <div class="league-icons">
                     <span class="league-icon ruby"
-                        th:classappend="${leagueSettingsDto?.name == 'Ruby League' ? 'active-league' : ''}"></span>
-                    <span class="league-icon emerald"
-                        th:classappend="${leagueSettingsDto?.name == 'Emerald League' ? 'active-league' : ''}"></span>
-                    <span class="league-icon amethyst"
-                        th:classappend="${leagueSettingsDto?.name == 'Amethyst League' ? 'active-league' : ''}"></span>
-                    <span class="league-icon pearl"
-                        th:classappend="${leagueSettingsDto?.name == 'Pearl League' ? 'active-league' : ''}"></span>
-                    <span class="league-icon obsidian-locked"></span> <!-- Cần logic để mở khóa -->
-                    <span class="league-icon diamond-locked"></span> <!-- Cần logic để mở khóa -->
+                          th:classappend="${leagueSettingsDto?.name == 'Ruby League' ? 'active-league' : ''}"></span>
+                <span class="league-icon emerald"
+                      th:classappend="${leagueSettingsDto?.name == 'Emerald League' ? 'active-league' : ''}"></span>
+                <span class="league-icon amethyst"
+                      th:classappend="${leagueSettingsDto?.name == 'Amethyst League' ? 'active-league' : ''}"></span>
+                <span class="league-icon pearl"
+                      th:classappend="${leagueSettingsDto?.name == 'Pearl League' ? 'active-league' : ''}"></span>
+                <span class="league-icon obsidian-locked"></span>
+                <span class="league-icon diamond-locked"></span>
+            </div>
+            <h1 th:text="${leagueSettingsDto?.name ?: 'Current League'}">Pearl League</h1>
+            <p class="promotion-info">Top <span id="promotion-count"
+                                                th:text="${leagueSettingsDto?.promotionCount ?: 0}">7</span> advance to the next league</p>
+            <p class="time-left"><span id="days-left" th:text="${leagueSettingsDto?.daysLeft ?: 0}">4</span> days
+            </p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-button active" data-tab="global">Global</button>
+            <button class="tab-button" data-tab="friends">Friends</button>
+        </div>
+
+        <div id="leaderboard-list-container">
+            <!-- Leaderboard items will be injected here by JavaScript -->
+        </div>
+    </main>
+
+    <!-- Right Sidebar (Giữ nguyên từ leaderboard gốc, style sẽ được điều chỉnh trong CSS) -->
+    <aside class="right-sidebar">
+        <div class="user-language-stats">
+            <div class="language-info-group">
+                <img th:src="@{/images/vietnam.png}" alt="User Flag" id="user-flag">
+                <span id="user-language">VIETNAMESE</span>
+            </div>
+            <div class="stats-badges-group">
+                <div class="stat-item">
+                    <i class="fas fa-fire"></i> <span id="user-streak" th:text="${user.streak ?: 0}">0</span>
                 </div>
-                <h1 th:text="${leagueSettingsDto?.name ?: 'Current League'}">Pearl League</h1>
-                <p class="promotion-info">Top <span id="promotion-count"
-                        th:text="${leagueSettingsDto?.promotionCount ?: 0}">7</span> advance to the next league</p>
-                <p class="time-left"><span id="days-left" th:text="${leagueSettingsDto?.daysLeft ?: 0}">4</span> days
-                </p>
-            </header>
-
-            <div class="tabs">
-                <button class="tab-button active" data-tab="global">Global</button>
-                <button class="tab-button" data-tab="friends">Friends</button>
-            </div>
-
-            <div id="leaderboard-list-container">
-                <!-- Leaderboard items will be injected here by JavaScript using data from the model -->
-            </div>
-        </main>        <aside class="right-sidebar">
-            <div class="user-language-stats">
-                <div class="language-info-group">
-                    <img th:src="@{/images/vietnam.png}" alt="User Flag" id="user-flag">
-                    <span id="user-language">VIETNAMESE</span>
-                </div>
-                <div class="stats-badges-group">
-                    <div class="stat-item">
-                        <i class="fas fa-fire"></i> <span id="user-streak" th:text="${user.streak ?: 0}">0</span>
-                    </div>
-                    <div class="stat-item">
-                        <i class="fas fa-gem"></i> <span id="user-gems" th:text="${user.gems ?: 0}">0</span>
-                    </div>
+                <div class="stat-item">
+                    <i class="fas fa-gem"></i> <span id="user-gems" th:text="${user.gems ?: 0}">0</span>
                 </div>
             </div>
+        </div>
 
-            <div class="user-profile-section">
-                <img th:src="${user.avatar ?: '/images/default-avatar.png'}" alt="User Avatar"
-                    id="profile-avatar" class="profile-avatar-main">
-                <h3 id="profile-username" th:text="${user.username ?: 'Username'}">Username</h3>
-                <p>Total Points: <span id="profile-total-xp" th:text="${user.points ?: 0}">0</span></p>
-                <p>Current League: <span id="profile-current-league"
-                        th:text="${leagueSettingsDto?.name ?: 'Bronze League'}">Bronze League</span></p>
+        <div class="user-profile-section">
+            <img th:src="${user.avatar ?: '/images/default_avatar.png'}" alt="User Avatar"
+                 id="profile-avatar" class="profile-avatar-main">
+            <h3 id="profile-username" th:text="${user.username ?: 'Username'}">Username</h3>
+            <p>Total Points: <span id="profile-total-xp" th:text="${user.points ?: 0}">0</span></p>
+            <p>Current League: <span id="profile-current-league"
+                                     th:text="${leagueSettingsDto?.name ?: 'Bronze League'}">Bronze League</span></p>
 
-                <h4>Achievements:</h4>
-                <ul id="profile-achievements-list">
-                    <li>No achievements yet.</li>
-                </ul>
-            </div>
-        </aside>
-    </div>    <script th:inline="javascript">
-        /*<![CDATA[*/
-        var serverData = {
-            currentUser: {
-                username: /*[[${user.username}]]*/ 'Guest',
-                avatar: /*[[${user.avatar}]]*/ '/images/default-avatar.png',
-                streak: /*[[${user.streak}]]*/ 0,
-                gems: /*[[${user.gems}]]*/ 0,
-                points: /*[[${user.points}]]*/ 0,
-                totalXp: /*[[${user.points}]]*/ 0,
-                currentLeagueXp: /*[[${user.points}]]*/ 0,
-                currentLeague: /*[[${leagueSettingsDto?.name}]]*/ 'Bronze League',
-                languageLearning: 'Vietnamese',
-                flagSrc: '/images/vietnam.png',
-                achievements: []
-            },
-            leagueSettings: /*[[${leagueSettingsDto}]]*/ null,
-            globalLeaderboard: /*[[${globalLeaderboardData}]]*/[],
-            friendsLeaderboard: /*[[${friendsLeaderboardData}]]*/[],
-            defaultAvatarUrl: /*[[@{/images/default-avatar.png}]]*/ '/images/default-avatar.png',
-            medalImageUrls: { // Để JS có thể truy cập đường dẫn ảnh huy chương
-                gold: /*[[@{/images/gold.png}]]*/ '/images/gold.png',
-                silver: /*[[@{/images/silver.png}]]*/ '/images/silver.png',
-                bronze: /*[[@{/images/bronze.png}]]*/ '/images/bronze.png'
+            <h4>Achievements:</h4>
+            <ul id="profile-achievements-list">
+                <li>No achievements yet.</li>
+            </ul>
+        </div>
+    </aside>
+</div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var serverData = {
+        currentUser: {
+            username: /*[[${user.username}]]*/ 'Guest',
+            avatar: /*[[${user.avatar}]]*/ '/images/default_avatar.png',
+            streak: /*[[${user.streak}]]*/ 0,
+            gems: /*[[${user.gems}]]*/ 0,
+            points: /*[[${user.points}]]*/ 0,
+            totalXp: /*[[${user.points}]]*/ 0,
+            currentLeagueXp: /*[[${user.points}]]*/ 0,
+            currentLeague: /*[[${leagueSettingsDto?.name}]]*/ 'Bronze League',
+            languageLearning: 'Vietnamese',
+            flagSrc: '/images/vietnam.png',
+            achievements: [] // Populate this from your backend if you have achievements
+        },
+        leagueSettings: /*[[${leagueSettingsDto}]]*/ null,
+        globalLeaderboard: /*[[${globalLeaderboardData}]]*/[],
+        friendsLeaderboard: /*[[${friendsLeaderboardData}]]*/[],
+        defaultAvatarUrl: /*[[@{/images/default_avatar.png}]]*/ '/images/default_avatar.png',
+        medalImageUrls: {
+            gold: /*[[@{/images/gold.png}]]*/ '/images/gold.png',
+            silver: /*[[@{/images/silver.png}]]*/ '/images/silver.png',
+            bronze: /*[[@{/images/bronze.png}]]*/ '/images/bronze.png'
+        }
+    };
+
+    if (serverData.globalLeaderboard) {
+        serverData.globalLeaderboard = serverData.globalLeaderboard.map(user => ({
+            uId: user.uId || user.uid || user.id,
+            username: user.username,
+            xp: user.points || 0,
+            avatar: user.avatar || serverData.defaultAvatarUrl
+        }));
+    }
+
+    if (serverData.friendsLeaderboard) {
+        serverData.friendsLeaderboard = serverData.friendsLeaderboard.map(user => ({
+            uId: user.uId || user.uid || user.id,
+            username: user.username,
+            xp: user.points || 0,
+            avatar: user.avatar || serverData.defaultAvatarUrl
+        }));
+    }
+    /*]]>*/
+</script>
+<script th:src="@{/js/leaderboard.js}"></script>
+<script>
+    // Optional: Add logout confirmation if needed (similar to dashboard.js)
+    const logoutLink = document.getElementById("logoutLink");
+    if (logoutLink) {
+        logoutLink.addEventListener("click", (event) => {
+            event.preventDefault();
+            if (confirm("Are you sure you want to logout?")) {
+                window.location.href = logoutLink.href;
             }
-
-        };
-        
-        // Convert points to XP format for leaderboard display
-        if (serverData.globalLeaderboard) {
-            serverData.globalLeaderboard = serverData.globalLeaderboard.map(user => ({
-                uId: user.uId || user.uid || user.id,
-                username: user.username,
-                xp: user.points || 0,
-                avatar: user.avatar || serverData.defaultAvatarUrl
-            }));
-        }
-        
-        if (serverData.friendsLeaderboard) {
-            serverData.friendsLeaderboard = serverData.friendsLeaderboard.map(user => ({
-                uId: user.uId || user.uid || user.id,
-                username: user.username,
-                xp: user.points || 0,
-                avatar: user.avatar || serverData.defaultAvatarUrl
-            }));
-        }
-        /*]]>*/
-    </script>
-    <script th:src="@{/js/leaderboard.js}"></script>
+        });
+    }
+</script>
 </body>
-
 </html>
