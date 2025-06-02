@@ -123,17 +123,7 @@
                         </div>
                         <h2 th:text="${topic.topicName}">Topic Name</h2>
                       </div>
-                      <div class="progress-container">
-                        <div class="progress-bar-wrapper">
-                          <div
-                            class="progress-bar-topic"
-                            th:style="'width:' + (${topic.completedLessons != null and topic.totalLessons != null and topic.totalLessons > 0} ? (${topic.completedLessons} * 100 / ${topic.totalLessons}) : 0) + '%'"
-                          ></div>
-                        </div>
-                        <p
-                          th:text="${topic.completedLessons != null and topic.totalLessons != null} ? (${topic.completedLessons} + ' / ' + ${topic.totalLessons} + ' lessons completed') : '0 / 5 lessons completed'"
-                        ></p>
-                      </div>
+
                       <div class="topic-description">
                         <!-- Description will be added by JavaScript -->
                       </div>
@@ -205,7 +195,9 @@
                 <div
                   class="progress"
                   th:style="'width:' + ${overallProgress} + '%'"
-                ></div>
+                >
+                  <!-- should be th:style="'width:' + ${overallProgress} + '%'", yellow it, 100% gray behind -->
+                </div>
                 <div
                   class="progress-text"
                   th:text="${#numbers.formatDecimal(overallProgress, 0, 2)} + '%'"
@@ -221,13 +213,29 @@
                   <span class="topic-name" th:text="${topic.topicName}"
                     >Topic Name</span
                   >
-                  <span
+                  <!-- <span
                     class="topic-percentage"
                     th:text="${topic.completedLessons != null and topic.totalLessons != null and topic.totalLessons > 0} ? 
                              ${#numbers.formatDecimal((topic.completedLessons * 100.0 / topic.totalLessons), 0, 0)} + '%' : '0%'"
                   >
                     0%
-                  </span>
+                  </span> -->
+                  <button
+                    class="dropdown-toggle"
+                    th:onclick="'toggleLessons(' + ${topic.topicId} + ')'"
+                  >
+                    <svg
+                      class="dropdown-arrow"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <polyline points="6,9 12,15 18,9"></polyline>
+                    </svg>
+                  </button>
                 </div>
                 <div class="topic-progress-bar-wrapper">
                   <div
@@ -237,13 +245,47 @@
                   ></div>
                 </div>
                 <div class="topic-progress-details">
-                  <span
+                  <!-- <span
                     th:text="${topic.completedLessons != null and topic.totalLessons != null} ? 
                                  (${topic.completedLessons} + ' / ' + ${topic.totalLessons} + ' lessons') : 
                                  '0 / 0 lessons'"
                   >
                     0 / 0 lessons
-                  </span>
+                  </span> -->
+                </div>
+                <!-- Lessons Dropdown -->
+                <div
+                  class="lessons-dropdown"
+                  th:id="'lessons-' + ${topic.topicId}"
+                >
+                  <div class="lessons-container">
+                    <!-- Loop through lessons for this topic -->
+                    <th:block
+                      th:each="lesson, lessonStat : ${#numbers.sequence(1, 5)}"
+                    >
+                      <div class="lesson-progress-item">
+                        <div class="lesson-header">
+                          <span
+                            class="lesson-name"
+                            th:text="'Lesson ' + ${lesson}"
+                            >Lesson 1</span
+                          >
+                          <span class="lesson-status">
+                            <!-- You can add logic here to check if lesson is completed -->
+                            <span class="status-icon completed">✓</span>
+                            <!-- <span class="status-icon in-progress">◐</span> -->
+                            <!-- <span class="status-icon not-started">○</span> -->
+                          </span>
+                        </div>
+                        <div class="lesson-progress-bar-wrapper">
+                          <div
+                            class="lesson-progress-bar"
+                            style="width: 75%"
+                          ></div>
+                        </div>
+                      </div>
+                    </th:block>
+                  </div>
                 </div>
               </div>
             </th:block>
@@ -252,5 +294,40 @@
       </div>
     </div>
     <script th:src="@{/js/dashboard.js}"></script>
+    <script>
+      function toggleLessons(topicId) {
+        const dropdown = document.getElementById("lessons-" + topicId);
+        const toggle = event.currentTarget;
+
+        if (dropdown.classList.contains("open")) {
+          dropdown.classList.remove("open");
+          toggle.classList.remove("active");
+        } else {
+          // Close all other dropdowns first
+          document.querySelectorAll(".lessons-dropdown.open").forEach((dd) => {
+            dd.classList.remove("open");
+          });
+          document.querySelectorAll(".dropdown-toggle.active").forEach((dt) => {
+            dt.classList.remove("active");
+          });
+
+          // Open this dropdown
+          dropdown.classList.add("open");
+          toggle.classList.add("active");
+        }
+      }
+
+      // Optional: Close dropdown when clicking outside
+      document.addEventListener("click", function (event) {
+        if (!event.target.closest(".topic-progress-item")) {
+          document.querySelectorAll(".lessons-dropdown.open").forEach((dd) => {
+            dd.classList.remove("open");
+          });
+          document.querySelectorAll(".dropdown-toggle.active").forEach((dt) => {
+            dt.classList.remove("active");
+          });
+        }
+      });
+    </script>
   </body>
 </html>
