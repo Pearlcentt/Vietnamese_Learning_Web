@@ -21,7 +21,8 @@ import java.util.stream.Collectors;
 @Controller
 @RequestMapping("/questions")
 @RequiredArgsConstructor
-public class QuestionController {    private final QuestionService questionService;
+public class QuestionController {
+    private final QuestionService questionService;
     private final AuthService authService;
     private final LessonService lessonService;
     private final LessonSentenceRepository lessonSentenceRepository;

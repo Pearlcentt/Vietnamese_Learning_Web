@@ -1,7 +1,7 @@
 package group3.vietnamese_learning_web.service;
 
-import group3.vietnamese_learning_web.model.User;
-import group3.vietnamese_learning_web.repository.UserRepository;
+import group3.vietnamese_learning_web.model.UserFriend;
+import group3.vietnamese_learning_web.repository.UserFriendRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,7 +10,7 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class FriendService {
-    private final UserRepository userRepository;
+    private final UserFriendRepository userFriendRepository;
 
     // In-memory maps for demo (can be replaced with database tables later)
     private final Map<Integer, Set<Integer>> friendRequests = new HashMap<>(); // key: targetUid, value: Set of
@@ -103,16 +103,17 @@ public class FriendService {
             if (entry.getValue().contains(fromUid)) {
                 sentRequests.add(entry.getKey());
             }
-        }
-        return sentRequests;
-    }    // Helper method to get friends from database
+        }        return sentRequests;
+    }
+
+    // Helper method to get friends from database
     private Set<Integer> getFriendsFromDatabase(Integer uid) {
         try {
-            Optional<User> userOpt = userRepository.findById(uid);
-            if (userOpt.isPresent()) {
-                User user = userOpt.get();
-                // Use the new helper method to get friend IDs as integers
-                List<Integer> friendIdsList = user.getFriendIdsList();
+            Optional<UserFriend> userFriendOpt = userFriendRepository.findByUserId(uid);
+            if (userFriendOpt.isPresent()) {
+                UserFriend userFriend = userFriendOpt.get();
+                // Use the helper method to get friend IDs as integers
+                List<Integer> friendIdsList = userFriend.getFriendIdsList();
                 return new HashSet<>(friendIdsList);
             }
         } catch (Exception e) {
@@ -123,20 +124,28 @@ public class FriendService {
     @Transactional
     private void updateUserFriendship(Integer userId, Integer friendId, boolean addFriend) {
         try {
-            Optional<User> userOpt = userRepository.findById(userId);
-            if (userOpt.isPresent()) {
-                User user = userOpt.get();
-                
-                if (addFriend) {
-                    // Use the helper method to add friend
-                    user.addFriendId(friendId);
-                } else {
-                    // Use the helper method to remove friend
-                    user.removeFriendId(friendId);
-                }
-
-                userRepository.save(user);
+            Optional<UserFriend> userFriendOpt = userFriendRepository.findByUserId(userId);
+            UserFriend userFriend;
+            
+            if (userFriendOpt.isPresent()) {
+                userFriend = userFriendOpt.get();
+            } else {
+                // Create new UserFriend record if it doesn't exist
+                userFriend = UserFriend.builder()
+                        .userId(userId)
+                        .friendId("")
+                        .build();
             }
+            
+            if (addFriend) {
+                // Use the helper method to add friend
+                userFriend.addFriendId(friendId);
+            } else {
+                // Use the helper method to remove friend
+                userFriend.removeFriendId(friendId);
+            }
+
+            userFriendRepository.save(userFriend);
         } catch (Exception e) {
             System.err.println("Error updating friendship in database for user " + userId + ": " + e.getMessage());
         }
