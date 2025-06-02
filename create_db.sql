@@ -60,7 +60,7 @@ CREATE TABLE `Progress` (
   `topic_id`     INT            NOT NULL,
   `lesson_id`    INT            NOT NULL,
   `score`        INT,
-  `status`       ENUM('Not Started','In Progress','Completed') NOT NULL DEFAULT 'Not Started',
+  `status`       ENUM('Not_Started','In_Progress','Completed') NOT NULL DEFAULT 'Not Started',
   `last_updated` TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`u_id`,`topic_id`,`lesson_id`),
   INDEX (`u_id`),

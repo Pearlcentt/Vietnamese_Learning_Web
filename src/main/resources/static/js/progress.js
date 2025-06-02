@@ -129,28 +129,6 @@ document.addEventListener("DOMContentLoaded", () => {
       quitButton.style.backgroundColor = "#ddd";
     });
   }
-  // Handle Done button
-  if (doneButton) {
-    doneButton.addEventListener("click", () => {
-      if (doneButton.classList.contains("enabled")) {
-        resetProgress();
-        // Navigate back to lessons or dashboard
-        const urlParams = new URLSearchParams(window.location.search);
-        const topicId = urlParams.get("topicId");
-        if (topicId) {
-          window.location.href = `/lessons?topicId=${topicId}`;
-        } else {
-          window.location.href = '/dashboard';
-        }
-      }
-    });
-
-    if (progress > totalQuestions) {
-      doneButton.classList.add("enabled");
-    } else {
-      doneButton.classList.remove("enabled");
-    }
-  }
 
   if (
     progress > totalQuestions &&
@@ -402,15 +380,6 @@ function saveLessonProgress(topicId, lessonId) {
           const urlParams = new URLSearchParams(window.location.search);
           redirectTopicId = urlParams.get("topicId");
         }
-        
-        // Optionally redirect to lessons page after successful completion
-        setTimeout(() => {
-          if (redirectTopicId) {
-            window.location.href = `/lessons?topicId=${redirectTopicId}`;
-          } else {
-            window.location.href = '/dashboard';
-          }
-        }, 2000); // Give user time to see completion message
       })      .catch(err => {
         console.error("=== Fetch error caught ===");
         console.error("Error type:", typeof err);
@@ -439,14 +408,6 @@ function saveLessonProgress(topicId, lessonId) {
           const urlParams = new URLSearchParams(window.location.search);
           redirectTopicId = urlParams.get("topicId");
         }
-        
-        setTimeout(() => {
-          if (redirectTopicId) {
-            window.location.href = `/lessons?topicId=${redirectTopicId}`;
-          } else {
-            window.location.href = '/dashboard';
-          }
-        }, 1000);
       });
       
   } catch (immediateError) {

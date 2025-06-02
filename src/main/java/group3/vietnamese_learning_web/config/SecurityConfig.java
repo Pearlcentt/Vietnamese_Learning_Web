@@ -31,25 +31,27 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/login", "/register", "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
-                        .anyRequest().authenticated()
-                )
+                        .requestMatchers("/login", "/register", "/css/**", "/js/**", "/images/**", "/favicon.ico")
+                        .permitAll()
+                        .anyRequest().authenticated())
                 .formLogin(form -> form
                         .loginPage("/login")
                         .defaultSuccessUrl("/dashboard", true)
                         .permitAll()
                         .successHandler(new AuthenticationSuccessHandler() {
                             @Override
-                            public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws java.io.IOException, ServletException {
+                            public void onAuthenticationSuccess(HttpServletRequest request,
+                                    HttpServletResponse response, Authentication authentication)
+                                    throws java.io.IOException, ServletException {
                                 logger.info("User '{}' logged in successfully.", authentication.getName());
                                 response.sendRedirect("/dashboard");
                             }
-                        })
-                )
+                        }))
                 .logout(logout -> logout
                         .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout")
-                );
+                        .logoutSuccessUrl("/login?logout"));
         return http.build();
     }
 }
+
+// filter chain,

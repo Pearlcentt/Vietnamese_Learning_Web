@@ -1,6 +1,5 @@
 package group3.vietnamese_learning_web.dto;
 
-import group3.vietnamese_learning_web.model.ProgressStatus;
 import lombok.*;
 
 @Data
@@ -12,5 +11,5 @@ public class ProgressDTO {
     private Integer topicId;
     private Integer lessonId;
     private Integer score;
-    private ProgressStatus status;
+    private String status;
 }

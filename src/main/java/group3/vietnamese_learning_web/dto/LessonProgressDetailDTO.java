@@ -11,7 +11,7 @@ public class LessonProgressDetailDTO {
     private Integer topicId;
     private Integer lessonId;
     private LessonType lessonType;
-    private String status;   // "Completed", "In_Progress", "Not_Started"
+    private String status; // "Completed", "In_Progress", "Not_Started"
     private Integer score;
     private Double progressPercentage; // 0-100% based on score or completion
 }

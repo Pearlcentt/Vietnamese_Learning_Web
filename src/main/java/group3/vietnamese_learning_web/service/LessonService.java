@@ -86,19 +86,23 @@ public class LessonService {
                 .stream()
                 .filter(lesson -> lesson.getLessonType() == lessonType)
                 .collect(Collectors.toList());
-    }    // Get lessons with detailed progress including score-based completion percentage
+    } // Get lessons with detailed progress including score-based completion
+      // percentage
+
     public List<LessonProgressDetailDTO> getLessonsWithDetailedProgress(Integer topicId, Integer userId) {
-        List<LessonWithProgressProjection> projections = lessonRepository.findAllWithProgressByTopicIdAndUserId(topicId, userId);
-        
-        System.out.println("DEBUG LessonService: Found " + projections.size() + " lesson projections for topic " + topicId + " and user " + userId);
+        List<LessonWithProgressProjection> projections = lessonRepository.findAllWithProgressByTopicIdAndUserId(topicId,
+                userId);
+
+        System.out.println("DEBUG LessonService: Found " + projections.size() + " lesson projections for topic "
+                + topicId + " and user " + userId);
 
         return projections.stream()
                 .map(p -> {
                     String actualStatus = determineActualStatus(p, projections);
                     Double progressPercentage = calculateLessonProgressPercentage(p, actualStatus);
-                    
-                    System.out.println("DEBUG LessonService: Lesson " + p.getLessonId() + " - Status: " + actualStatus + 
-                        ", Score: " + p.getScore() + ", Progress: " + progressPercentage + "%");
+
+                    System.out.println("DEBUG LessonService: Lesson " + p.getLessonId() + " - Status: " + actualStatus +
+                            ", Score: " + p.getScore() + ", Progress: " + progressPercentage + "%");
 
                     return LessonProgressDetailDTO.builder()
                             .topicId(p.getTopicId())
@@ -111,6 +115,7 @@ public class LessonService {
                 })
                 .collect(Collectors.toList());
     }// Calculate lesson progress percentage based on status and score
+
     private Double calculateLessonProgressPercentage(LessonWithProgressProjection lesson, String status) {
         if ("Completed".equals(status)) {
             return 100.0;

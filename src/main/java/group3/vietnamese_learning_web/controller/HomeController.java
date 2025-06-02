@@ -47,17 +47,19 @@ public class HomeController {
 
         if (userId == null) {
             return "redirect:/login";
-        }        try {
+        }
+        try {
             int streak = authService.calculateStreak(userId);
             user.setStreak(streak);
-            
+
             // Get topics with lesson-level progress data
             List<TopicWithLessonsProgressDTO> topicsWithLessons = topicService.getTopicsWithLessonsProgress(userId);
-            
+
             // Calculate overall progress using the new method
             double overallProgress = topicService.calculateOverallProgress(userId);
-            
-            // Convert to TopicProgressDTO list for backward compatibility with existing template parts
+
+            // Convert to TopicProgressDTO list for backward compatibility with existing
+            // template parts
             List<TopicProgressDTO> topics = topicsWithLessons.stream()
                     .map(t -> TopicProgressDTO.builder()
                             .topicId(t.getTopicId())
@@ -67,22 +69,22 @@ public class HomeController {
                             .completedLessons(t.getCompletedLessons())
                             .build())
                     .collect(java.util.stream.Collectors.toList());
-            
+
             // Add debugging logs
             System.out.println("DEBUG: User ID: " + userId);
             System.out.println("DEBUG: Topics count: " + topics.size());
             System.out.println("DEBUG: TopicsWithLessons count: " + topicsWithLessons.size());
             System.out.println("DEBUG: Overall progress: " + overallProgress);
-            
+
             for (TopicWithLessonsProgressDTO topic : topicsWithLessons) {
-                System.out.println("DEBUG: Topic " + topic.getTopicId() + " - " + topic.getTopicName() + 
-                    " - Progress: " + topic.getProgressPercentage() + "% - Lessons: " + topic.getLessons().size());
+                System.out.println("DEBUG: Topic " + topic.getTopicId() + " - " + topic.getTopicName() +
+                        " - Progress: " + topic.getProgressPercentage() + "% - Lessons: " + topic.getLessons().size());
                 for (LessonProgressDetailDTO lesson : topic.getLessons()) {
-                    System.out.println("  Lesson " + lesson.getLessonId() + " - Status: " + lesson.getStatus() + 
-                        " - Score: " + lesson.getScore() + " - Progress: " + lesson.getProgressPercentage() + "%");
+                    System.out.println("  Lesson " + lesson.getLessonId() + " - Status: " + lesson.getStatus() +
+                            " - Score: " + lesson.getScore() + " - Progress: " + lesson.getProgressPercentage() + "%");
                 }
             }
-            
+
             model.addAttribute("topics", topics);
             model.addAttribute("topicsWithLessons", topicsWithLessons);
             model.addAttribute("overallProgress", overallProgress);
