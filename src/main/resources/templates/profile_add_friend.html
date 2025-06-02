@@ -180,8 +180,7 @@
     <!-- Main Content (Profile View & Edit View) -->
     <main class="main-profile-content">
         <div id="profileView" class="profile-view-active">
-            <div class="profile-main">
-                <div class="profile-header">
+            <div class="profile-main">                <div class="profile-header">
                     <div class="avatar-container">
                         <img src="/images/avatar3.png" alt="Avatar" id="profileAvatarDisplay" class="avatar-placeholder">
                     </div>
@@ -256,10 +255,14 @@
                     <div class="form-group">
                         <label for="editUsernameInput">Username</label>
                         <input type="text" id="editUsernameInput" th:value="${userDto?.username} ?: ''" readonly>
-                    </div>
-                    <div class="form-group">
+                    </div>                    <div class="form-group">
                         <label for="editEmailInput">Email</label>
                         <input type="email" id="editEmailInput" th:field="*{email}">
+                    </div>
+                    <div class="form-group">
+                        <label for="editAvatarInput">Avatar URL</label>
+                        <input type="url" id="editAvatarInput" th:field="*{avatar}" placeholder="Enter avatar image URL">
+                        <small class="form-text">Enter a valid image URL for your profile picture</small>
                     </div>
                     <div class="form-group">
                         <label for="editCurrentPasswordInput">Current password</label>
@@ -304,9 +307,8 @@
                 <i class="fas fa-search"></i>
                 <span>Find friends</span>
                 <i class="fas fa-chevron-right"></i>
-            </div>
-            <div id="findFriendsContent" class="collapsible-content">
-                <input type="text" id="findFriendInput" placeholder="Enter name or username">
+            </div>            <div id="findFriendsContent" class="collapsible-content">
+                <input type="text" id="findFriendInput" placeholder="Enter username">
                 <button id="searchFriendBtn"><i class="fas fa-search"></i> Find</button>
                 <ul id="searchResultsUi"></ul>
             </div>
@@ -337,12 +339,13 @@
     </aside>
 </div>
 
-<script th:inline="javascript">
-    /*<![CDATA[*/
-    var serverData = {
+<script th:inline="javascript">    /*<![CDATA[*/
+    window.serverData = {
         currentUser: /*[[${userDto}]]*/ null,
         csrfToken: /*[[${_csrf?.token}]]*/ '',
+
         csrfHeaderName: /*[[${_csrf?.headerName}]]*/ '',
+
         urls: {
             updateProfile: /*[[@{/api/profile/update}]]*/ '/api/profile/update',
             searchFriends: /*[[@{/friends/search}]]*/ '/friends/search',
@@ -351,30 +354,43 @@
             declineFriendRequest: /*[[@{/friends/request/decline}]]*/ '/friends/request/decline',
             cancelFriendRequest: /*[[@{/friends/request/cancel}]]*/ '/friends/request/cancel',
             unfriend: /*[[@{/friends/unfriend}]]*/ '/friends/unfriend'
-        }
+        },
+        sampleAvatars: [
+            '/images/avatar1.png',
+            '/images/avatar2.png',
+            '/images/avatar3.png',
+            '/images/avatar4.png',
+            '/images/avatar5.png',
+            '/images/avatar6.png',
+            '/images/avatar7.png'
+        ],
+        defaultAvatarUrl: '/images/default_avatar.png'
     };
+
 
     // DEBUG: Log initial server data
     console.log('DEBUG: Initial serverData:', serverData);
 
     // Restructure friend data for JavaScript compatibility
-    if (serverData.currentUser) {
+    if (window.serverData.currentUser) {
         // Ensure friends array exists
-        if (!serverData.currentUser.friends) {
-            serverData.currentUser.friends = [];
+        if (!window.serverData.currentUser.friends) {
+            window.serverData.currentUser.friends = [];
         }
 
         // Structure friend requests data as expected by JavaScript
-        serverData.currentUser.friendRequests = {
-            received: serverData.currentUser.receivedFriendRequests || [],
-            sent: serverData.currentUser.sentFriendRequests || []
+        window.serverData.currentUser.friendRequests = {
+            received: window.serverData.currentUser.receivedFriendRequests || [],
+            sent: window.serverData.currentUser.sentFriendRequests || []
         };
+
 
         // DEBUG: Log structured data
         console.log('DEBUG: Structured currentUser:', serverData.currentUser);
         console.log('DEBUG: Friends count:', serverData.currentUser.friends.length);
         console.log('DEBUG: Received requests count:', serverData.currentUser.friendRequests.received.length);
         console.log('DEBUG: Sent requests count:', serverData.currentUser.friendRequests.sent.length);
+
     }
     /*]]>*/
 </script>

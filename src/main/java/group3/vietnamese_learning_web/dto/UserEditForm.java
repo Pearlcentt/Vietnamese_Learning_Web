@@ -11,4 +11,5 @@ public class UserEditForm {
     private String email;
     private String currentPassword;
     private String newPassword;
+    private String avatar; // Added avatar field for profile editing
 }

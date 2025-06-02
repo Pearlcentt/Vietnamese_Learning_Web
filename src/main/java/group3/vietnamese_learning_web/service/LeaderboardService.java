@@ -50,10 +50,9 @@ public class LeaderboardService {
                     Integer score1 = userScoreMap.getOrDefault(u1.getUId(), 0);
                     Integer score2 = userScoreMap.getOrDefault(u2.getUId(), 0);
                     return score2.compareTo(score1); // Descending order
-                })
-                .limit(limit)
+                }).limit(limit)
                 .map(user -> {
-                    UserResponseDTO dto = authService.toResponseDTO(user);
+                    UserResponseDTO dto = authService.toResponseDTOWithoutStreak(user);
                     // Set the calculated progress score as points for display
                     dto.setPoints(userScoreMap.getOrDefault(user.getUId(), 0));
                     return dto;
