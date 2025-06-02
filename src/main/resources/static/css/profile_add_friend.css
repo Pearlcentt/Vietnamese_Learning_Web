@@ -1,6 +1,14 @@
 /* --- START OF FILE profile_add_friend.css --- */
 
 :root {
+    /* Các biến từ leaderboard để đảm bảo sidebar hiển thị giống hệt */
+    --PRIMARY_COLOR: #f5efe6; /* Màu nền giống leaderboard */
+    --ACTIVE_ITEM_COLOR: #da251d; /* Màu active */
+    --TITLE-text: #ff9e0c; /* Màu nâu cam cho active và các phần thay thế xanh dương */
+    --ITEM-text: #c75a00; /* Màu text */
+    --BORDER_LINE: #d9cfc0; /* Màu đường viền */
+
+    /* Các biến hiện có được giữ nguyên */
     --primary-color: #58cc02;
     --primary-color-darker: #4aa802;
     --secondary-color: #1cb0f6;
@@ -34,42 +42,6 @@ body {
     width: 100%;
 }
 
-/* --- Sidebar Trái --- */
-.left-sidebar-profile {
-    width: 200px;
-    min-width: 180px;
-    padding: 20px;
-    background-color: #f8f9fa;
-    border-right: 1px solid var(--border-color);
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    height: 100%;
-    box-sizing: border-box;
-}
-
-.back-to-home-btn-profile {
-    display: inline-flex;
-    align-items: center;
-    padding: 10px 15px;
-    background-color: var(--light-green-button);
-    color: var(--text-color);
-    text-decoration: none;
-    border-radius: 8px;
-    font-weight: bold;
-    transition: background-color 0.2s;
-    width: 100%;
-    box-sizing: border-box;
-    justify-content: center;
-}
-
-.back-to-home-btn-profile i {
-    margin-right: 8px;
-}
-
-.back-to-home-btn-profile:hover {
-    background-color: #b9d8ba;
-}
 
 /* --- Main Profile Content --- */
 .main-profile-content {
@@ -119,7 +91,7 @@ body {
     width: 150px;
     height: 150px;
     border-radius: 50%;
-    background-color: var(--secondary-color);
+    background-color: var(--TITLE-text); /* Thay từ secondary-color thành TITLE-text */
     color: white;
     display: flex;
     justify-content: center;
@@ -175,7 +147,7 @@ body {
 }
 
 .follow-stats a {
-    color: var(--secondary-color);
+    color: var(--TITLE-text); /* Đã thay đổi ở trên */
     text-decoration: none;
     margin: 0 10px;
     font-weight: bold;
@@ -186,7 +158,7 @@ body {
 }
 
 .action-btn {
-    background-color: var(--secondary-color);
+    background-color: var(--TITLE-text); /* Đã thay đổi ở trên */
     color: var(--button-text-color);
     border: none;
     padding: 10px 20px;
@@ -204,15 +176,15 @@ body {
 }
 
 .action-btn:hover {
-    background-color: var(--secondary-color-darker);
+    background-color: #e68a00; /* Đã thay đổi ở trên */
 }
 
 .action-btn.primary {
-    background-color: var(--primary-color);
+    background-color: var(--TITLE-text);
 }
 
 .action-btn.primary:hover {
-    background-color: var(--primary-color-darker);
+    background-color: var(--TITLE-text);
 }
 
 .statistics-section {
@@ -303,7 +275,7 @@ body {
 
 .card h3 i {
     margin-right: 8px;
-    color: var(--primary-color);
+    color: var(--TITLE-text);
 }
 
 .sidebar-user-stats {
@@ -434,12 +406,12 @@ ul.friend-requests-list-display .fr-info-name {
 }
 
 .send-request-btn {
-    color: var(--secondary-color);
-    border-color: var(--secondary-color);
+    color: var(--TITLE-text); /* Thay từ secondary-color thành TITLE-text */
+    border-color: var(--TITLE-text);
 }
 
 .send-request-btn:hover {
-    background-color: var(--secondary-color);
+    background-color: var(--TITLE-text);
     color: var(--button-text-color);
 }
 
@@ -453,8 +425,6 @@ ul.friend-requests-list-display .fr-info-name {
 .send-request-btn:disabled i::before {
     content: "\f00c";
 }
-
-/* FontAwesome check icon */
 
 .accept-request-btn {
     color: var(--primary-color);
@@ -527,7 +497,7 @@ ul.friend-requests-list-display .fr-actions-btns {
 
 .action-item i:first-child {
     margin-right: 12px;
-    color: var(--secondary-color);
+    color: var(--TITLE-text); /* Thay từ secondary-color thành TITLE-text */
     width: 20px;
     text-align: center;
 }
@@ -565,7 +535,7 @@ ul.friend-requests-list-display .fr-actions-btns {
 
 .collapsible-content button#searchFriendBtn {
     padding: 10px 15px;
-    background-color: var(--secondary-color);
+    background-color: var(--TITLE-text); /* Thay từ secondary-color thành TITLE-text */
     color: var(--button-text-color);
     border: none;
     border-radius: 6px;
@@ -575,7 +545,7 @@ ul.friend-requests-list-display .fr-actions-btns {
 }
 
 .collapsible-content button#searchFriendBtn:hover {
-    background-color: var(--secondary-color-darker);
+    background-color: #e68a00;
 }
 
 .collapsible-content button#searchFriendBtn i {
@@ -610,7 +580,7 @@ ul.friend-requests-list-display .fr-actions-btns {
 }
 
 .fr-tab-btn.active {
-    color: var(--secondary-color);
+    color: var(--TITLE-text); /* Thay từ secondary-color thành TITLE-text */
 }
 
 .fr-tab-btn.active::after {
@@ -621,7 +591,7 @@ ul.friend-requests-list-display .fr-actions-btns {
     transform: translateX(-50%);
     width: 60%;
     height: 3px;
-    background-color: var(--secondary-color);
+    background-color: var(--TITLE-text); /* Thay từ secondary-color thành TITLE-text */
     border-radius: 2px;
 }
 
@@ -666,7 +636,7 @@ ul.friend-requests-list-display .fr-actions-btns {
 
 .edit-profile-container h2 i {
     margin-right: 10px;
-    color: var(--primary-color);
+    color: var(--TITLE-text);
 }
 
 .form-group {
@@ -728,7 +698,7 @@ ul.friend-requests-list-display .fr-actions-btns {
 }
 
 .edit-avatar-icon-btn {
-    background-color: var(--primary-color);
+    background-color: var(--TITLE-text);
     color: white;
     border: none;
     border-radius: 50%;
@@ -742,7 +712,7 @@ ul.friend-requests-list-display .fr-actions-btns {
 }
 
 .edit-avatar-icon-btn:hover {
-    background-color: var(--primary-color-darker);
+    background-color: var(--TITLE-text);
 }
 
 .form-actions {
@@ -862,10 +832,10 @@ ul.friend-requests-list-display .fr-actions-btns {
 
 /* Total XP - Amber */
 .statistics-section .stat-box:nth-of-type(3) .stat-icon {
-    color: var(--secondary-color);
+    color: var(--TITLE-text); /* Thay từ secondary-color thành TITLE-text */
 }
 
-/* Current league - Blue */
+/* Current league - Nâu cam */
 .statistics-section .stat-box:nth-of-type(4) .stat-icon {
     color: #cd7f32;
 }
@@ -902,25 +872,28 @@ ul.friend-requests-list-display .fr-actions-btns {
 
 /* Media Queries */
 @media (max-width: 900px) {
-    .left-sidebar-profile {
+    .sidebar {
         width: 60px;
         min-width: 60px;
         padding: 15px 5px;
     }
 
-    .back-to-home-btn-profile span {
-        display: none;
+    .nav-text {
+        display: none; /* Ẩn text trong sidebar nhỏ */
     }
 
-    .back-to-home-btn-profile {
-        width: 40px;
-        height: 40px;
-        padding: 0;
+    .nav-item {
         justify-content: center;
+        padding: 10px;
+        margin: 0;
     }
 
-    .back-to-home-btn-profile i {
+    .nav-icon {
         margin-right: 0;
+    }
+
+    .logo h1 {
+        font-size: 20px; /* Giảm kích thước logo */
     }
 }
 
@@ -929,23 +902,39 @@ ul.friend-requests-list-display .fr-actions-btns {
         flex-direction: column;
     }
 
-    .left-sidebar-profile {
+    .sidebar {
         width: 100%;
         height: auto;
         border-right: none;
-        border-bottom: 1px solid var(--border-color);
+        border-bottom: 2px solid var(--BORDER_LINE);
         flex-direction: row;
         padding: 10px;
     }
 
-    .back-to-home-btn-profile {
-        width: auto;
-        height: auto;
-        padding: 8px 15px;
+    .logo {
+        margin-bottom: 0;
+        padding: 0 10px;
     }
 
-    .back-to-home-btn-profile span {
-        display: inline;
+    .nav-items {
+        flex-direction: row;
+        justify-content: space-around;
+        width: 100%;
+    }
+
+    .nav-item {
+        flex-direction: column;
+        align-items: center;
+        padding: 8px;
+    }
+
+    .nav-icon {
+        margin-bottom: 5px;
+    }
+
+    .nav-text {
+        display: block; /* Hiển thị lại text trong layout ngang */
+        font-size: 12px;
     }
 
     .main-profile-content,
