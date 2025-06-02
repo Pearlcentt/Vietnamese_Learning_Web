@@ -71,14 +71,22 @@ public class AuthService implements UserDetailsService {
                 .password(user.getPassword()) // must be encoded
                 .roles("USER") // or user.getRole() if present
                 .build();
-    }
-
-    public UserResponseDTO getUserByUsername(String username) throws UsernameNotFoundException {
+    }    public UserResponseDTO getUserByUsername(String username) throws UsernameNotFoundException {
         Optional<User> userOpt = userRepository.findByUsername(username);
         if (!userOpt.isPresent()) {
             throw new UsernameNotFoundException("User not found");
         }
         User user = userOpt.get();
+        
+        // Convert friend IDs from comma-separated string to List<String>
+        List<String> friendIdStrings = new ArrayList<>();
+        if (user.getFriendIds() != null && !user.getFriendIds().trim().isEmpty()) {
+            List<Integer> friendIdInts = user.getFriendIdsList();
+            friendIdStrings = friendIdInts.stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.toList());
+        }
+        
         return UserResponseDTO.builder()
                 .uId(user.getUId())
                 .username(user.getUsername())
@@ -89,7 +97,7 @@ public class AuthService implements UserDetailsService {
                 .gems(306)
                 .points(user.getPoints() != null ? user.getPoints() : 0)
                 .avatar(user.getAvatar() != null ? user.getAvatar() : "/images/default_avatar.png")
-                .friendIds(user.getFriendIds() != null ? user.getFriendIds() : new ArrayList<>())
+                .friendIds(friendIdStrings)
                 .build();
     }
 
@@ -156,9 +164,16 @@ public class AuthService implements UserDetailsService {
             // If there's any issue with streak calculation, return 0
             return 0;
         }
-    }
-
-    public UserResponseDTO toResponseDTO(User user) {
+    }    public UserResponseDTO toResponseDTO(User user) {
+        // Convert friend IDs from comma-separated string to List<String>
+        List<String> friendIdStrings = new ArrayList<>();
+        if (user.getFriendIds() != null && !user.getFriendIds().trim().isEmpty()) {
+            List<Integer> friendIdInts = user.getFriendIdsList();
+            friendIdStrings = friendIdInts.stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.toList());
+        }
+        
         UserResponseDTO dto = UserResponseDTO.builder()
                 .uId(user.getUId())
                 .username(user.getUsername())
@@ -169,20 +184,27 @@ public class AuthService implements UserDetailsService {
                 .gems(306)
                 .points(user.getPoints() != null ? user.getPoints() : 0)
                 .avatar(user.getAvatar() != null ? user.getAvatar() : "/images/default_avatar.png")
-                .friendIds(user.getFriendIds() != null ? user.getFriendIds() : new ArrayList<>())
+                .friendIds(friendIdStrings)
                 .build();
 
         // Set streak
         int streak = calculateStreak(user.getUId());
         dto.setStreak(streak);
         return dto;
-    }
-
-    /**
+    }    /**
      * Optimized version of toResponseDTO that doesn't calculate streak
      * Use this for search results and friend lists to avoid N+1 queries
      */
     public UserResponseDTO toResponseDTOWithoutStreak(User user) {
+        // Convert friend IDs from comma-separated string to List<String>
+        List<String> friendIdStrings = new ArrayList<>();
+        if (user.getFriendIds() != null && !user.getFriendIds().trim().isEmpty()) {
+            List<Integer> friendIdInts = user.getFriendIdsList();
+            friendIdStrings = friendIdInts.stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.toList());
+        }
+        
         return UserResponseDTO.builder()
                 .uId(user.getUId())
                 .username(user.getUsername())
@@ -193,7 +215,7 @@ public class AuthService implements UserDetailsService {
                 .gems(306)
                 .points(user.getPoints() != null ? user.getPoints() : 0)
                 .avatar(user.getAvatar() != null ? user.getAvatar() : "/images/default_avatar.png")
-                .friendIds(user.getFriendIds() != null ? user.getFriendIds() : new ArrayList<>())
+                .friendIds(friendIdStrings)
                 .streak(0) // Default streak to avoid database query
                 .build();
     }

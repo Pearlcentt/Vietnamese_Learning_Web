@@ -1,4 +1,5 @@
-const totalQuestions = 2;
+// Get total questions from template (fallback to 10 if not provided)
+const totalQuestions = window.totalQuestions || 10;
 
 // Initialize score tracking
 let currentScore = 0;
@@ -359,8 +360,7 @@ function saveLessonProgress(topicId, lessonId) {
             throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
           });
         }
-        return response.text();
-      }).then(message => {
+        return response.text();      }).then(message => {
         console.log("Progress Saved:", message);
         console.log("Backend response:", message);
         // Reset score tracking after successful save
@@ -380,7 +380,16 @@ function saveLessonProgress(topicId, lessonId) {
           const urlParams = new URLSearchParams(window.location.search);
           redirectTopicId = urlParams.get("topicId");
         }
-      })      .catch(err => {
+
+        // Navigate to lessons page after successful save
+        if (redirectTopicId) {
+          console.log(`Navigating to lessons page for topic ${redirectTopicId}`);
+          window.location.href = `/lessons?topicId=${redirectTopicId}`;
+        } else {
+          console.log("No topicId found, navigating to dashboard");
+          window.location.href = '/dashboard';
+        }
+      }).catch(err => {
         console.error("=== Fetch error caught ===");
         console.error("Error type:", typeof err);
         console.error("Error name:", err.name);
@@ -392,8 +401,7 @@ function saveLessonProgress(topicId, lessonId) {
         if (err instanceof TypeError && err.message.includes('fetch')) {
           console.error("This appears to be a network error - server might not be reachable");
         }
-        
-        // Even if save fails, we can still redirect (progress might be saved client-side)
+          // Even if save fails, we can still redirect (progress might be saved client-side)
         
         // Extract topicId from current URL path for redirect
         const pathParts = window.location.pathname.split('/');
@@ -407,6 +415,15 @@ function saveLessonProgress(topicId, lessonId) {
         if (!redirectTopicId) {
           const urlParams = new URLSearchParams(window.location.search);
           redirectTopicId = urlParams.get("topicId");
+        }
+
+        // Navigate to lessons page even if save failed
+        if (redirectTopicId) {
+          console.log(`Save failed but navigating to lessons page for topic ${redirectTopicId}`);
+          window.location.href = `/lessons?topicId=${redirectTopicId}`;
+        } else {
+          console.log("Save failed and no topicId found, navigating to dashboard");
+          window.location.href = '/dashboard';
         }
       });
       

@@ -43,6 +43,7 @@
 <script th:inline="javascript">  window.questionData = {
     answer: /*[[${questions != null and !questions.isEmpty() and questions[0].answer != null ? questions[0].answer : 'defaultAnswer'}]]*/ 'defaultAnswer'
   };
+  window.totalQuestions = /*[[${totalQuestions}]]*/ 10;
 </script>
 <script th:src="@{/js/choose-1.js}" defer></script>
 <script th:src="@{/js/answer.js}" defer></script>

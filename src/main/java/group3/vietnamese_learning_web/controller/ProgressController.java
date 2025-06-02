@@ -82,9 +82,10 @@ public class ProgressController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Failed to start lesson: " + e.getMessage());
         }
-    } // Complete lesson endpoint called from frontend with actual score
-      // @PostMapping("/complete")
+    }
 
+    // Complete lesson endpoint called from frontend with actual score
+    @PostMapping("/complete")
     public ResponseEntity<String> completeLesson(
             @RequestParam Integer topicId,
             @RequestParam Integer lessonId,

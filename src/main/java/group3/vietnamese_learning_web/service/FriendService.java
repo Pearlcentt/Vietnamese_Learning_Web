@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -106,53 +105,34 @@ public class FriendService {
             }
         }
         return sentRequests;
-    }
-
-    // Helper method to get friends from database
+    }    // Helper method to get friends from database
     private Set<Integer> getFriendsFromDatabase(Integer uid) {
         try {
             Optional<User> userOpt = userRepository.findById(uid);
             if (userOpt.isPresent()) {
                 User user = userOpt.get();
-                if (user.getFriendIds() != null && !user.getFriendIds().isEmpty()) {
-                    return user.getFriendIds().stream()
-                            .map(friendIdStr -> {
-                                try {
-                                    return Integer.parseInt(friendIdStr);
-                                } catch (NumberFormatException e) {
-                                    // Log error and skip invalid friend ID
-                                    System.err.println("Invalid friend ID format: " + friendIdStr + " for user " + uid);
-                                    return null;
-                                }
-                            })
-                            .filter(Objects::nonNull)
-                            .collect(Collectors.toSet());
-                }
+                // Use the new helper method to get friend IDs as integers
+                List<Integer> friendIdsList = user.getFriendIdsList();
+                return new HashSet<>(friendIdsList);
             }
         } catch (Exception e) {
             System.err.println("Error fetching friends from database for user " + uid + ": " + e.getMessage());
         }
         return Collections.emptySet();
-    }
-
-    // Helper method to update user friendship in database
+    }    // Helper method to update user friendship in database
     @Transactional
     private void updateUserFriendship(Integer userId, Integer friendId, boolean addFriend) {
         try {
             Optional<User> userOpt = userRepository.findById(userId);
             if (userOpt.isPresent()) {
                 User user = userOpt.get();
-                if (user.getFriendIds() == null) {
-                    user.setFriendIds(new ArrayList<>());
-                }
-
-                String friendIdStr = friendId.toString();
+                
                 if (addFriend) {
-                    if (!user.getFriendIds().contains(friendIdStr)) {
-                        user.getFriendIds().add(friendIdStr);
-                    }
+                    // Use the helper method to add friend
+                    user.addFriendId(friendId);
                 } else {
-                    user.getFriendIds().remove(friendIdStr);
+                    // Use the helper method to remove friend
+                    user.removeFriendId(friendId);
                 }
 
                 userRepository.save(user);

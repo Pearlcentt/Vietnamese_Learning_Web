@@ -29,9 +29,11 @@
       "
       onmouseover="this.style.backgroundColor='#3cbf1f'"
       onmouseout="this.style.backgroundColor='#52f52a'"
-      >
-      Start <span th:text="'(' + ${lessonType} + ')'">Loading...</span>
+      >      Start <span th:text="'(' + ${lessonType} + ')'">Loading...</span>
     </div>
+    <script th:inline="javascript">
+      window.totalQuestions = /*[[${totalQuestions}]]*/ 10;
+    </script>
     <script th:src="@{/js/progress.js}" defer></script>
   </body>
 </html>
