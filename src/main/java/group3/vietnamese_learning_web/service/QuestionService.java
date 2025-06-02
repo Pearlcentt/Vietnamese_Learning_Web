@@ -135,6 +135,7 @@ public class QuestionService {
     }
 
     // Lesson 2: Fill in the blank - Vietnamese sentence with one word blanked out
+    // Enhanced version with better Word entity utilization
     private QuestionDTO buildFillInBlankQuestion(Sentence sentence, List<Word> words) {
         if (words.isEmpty()) {
             // Fallback: use first word from sentence and create a blank
@@ -152,7 +153,6 @@ public class QuestionService {
                         .type(2)
                         .build();
             } else {
-                // Ultimate fallback if sentence is empty
                 return QuestionDTO.builder()
                         .sId(sentence.getSId())
                         .question("_____ từ thiếu")
@@ -163,52 +163,81 @@ public class QuestionService {
             }
         }
 
-        // Randomly pick one word to blank out instead of always using the first
-        Word targetWord = words.get((int) (Math.random() * words.size()));
+        // Enhanced: Prefer words with more similar words for better choice generation
+        Word targetWord = words.stream()
+                .filter(word -> word.getVietSimilarWordsList() != null && !word.getVietSimilarWordsList().isEmpty())
+                .findFirst()
+                .orElse(words.get((int) (Math.random() * words.size())));
         String originalSentence = sentence.getViet();
-        String wordToBlank = targetWord.getViet();
 
-        // Create the blanked sentence by replacing the target word with "_____"
+        // Enhanced: Better sentence reconstruction using word index
+        String blankedSentence = createBlankedSentence(originalSentence, words, targetWord);
+
+        // Enhanced: Smarter choice generation
+        List<String> choices = generateChoicesForWord(targetWord, words);
+        Collections.shuffle(choices);
+
+        return QuestionDTO.builder()
+                .sId(sentence.getSId())
+                .question(blankedSentence)
+                .answer(targetWord.getViet())
+                .choices(choices).type(2)
+                .build();
+    }
+
+    // Helper method: Create blanked sentence using word positions
+    private String createBlankedSentence(String originalSentence, List<Word> words, Word targetWord) {
+        // Try to use word boundaries first
         String blankedSentence = originalSentence
-                .replaceFirst("\\b" + java.util.regex.Pattern.quote(wordToBlank) + "\\b", "_____");
+                .replaceFirst("\\b" + java.util.regex.Pattern.quote(targetWord.getViet()) + "\\b", "_____");
 
         // If replacement didn't work, try without word boundaries
         if (blankedSentence.equals(originalSentence)) {
-            blankedSentence = originalSentence.replaceFirst(java.util.regex.Pattern.quote(wordToBlank), "_____");
+            blankedSentence = originalSentence.replaceFirst(java.util.regex.Pattern.quote(targetWord.getViet()),
+                    "_____");
         }
 
-        // If still no replacement happened, create a simple pattern
+        // If still no replacement, create a simple pattern
         if (blankedSentence.equals(originalSentence)) {
             blankedSentence = "_____ " + originalSentence;
         }
 
-        // Create choices: correct answer + similar words
+        return blankedSentence;
+    }
+
+    // Helper method: Generate smart choices for a word
+    private List<String> generateChoicesForWord(Word targetWord, List<Word> allWords) {
         List<String> choices = new ArrayList<>();
         choices.add(targetWord.getViet()); // Correct answer
 
-        // Add similar words as wrong choices
+        // Add similar words from the target word
         List<String> similarWords = targetWord.getVietSimilarWordsList();
         choices.addAll(similarWords);
+
+        // If we need more choices, add words from other words in the sentence
+        if (choices.size() < 4) {
+            allWords.stream()
+                    .filter(word -> !word.getWId().equals(targetWord.getWId()))
+                    .map(Word::getViet)
+                    .distinct()
+                    .limit(4 - choices.size())
+                    .forEach(choices::add);
+        }
 
         // Ensure we have at least 4 choices
         while (choices.size() < 4) {
             choices.add("từ " + choices.size());
         }
 
-        // Limit to 4 choices and shuffle
+        // Limit to 4 choices
         if (choices.size() > 4) {
             choices = choices.subList(0, 4);
         }
-        Collections.shuffle(choices);
 
-        return QuestionDTO.builder()
-                .sId(sentence.getSId())
-                .question(blankedSentence) // Vietnamese sentence with blank
-                .answer(targetWord.getViet()) // The word that should fill the blank
-                .choices(choices)
-                .type(2)
-                .build();
-    } // Lesson 3: Reorder Chars - Vietnamese word split into characters and shuffled
+        return choices;
+    }
+
+    // Lesson 3: Reorder Chars - Vietnamese word split into characters and shuffled
 
     private QuestionDTO buildReorderWordQuestion(Sentence sentence, List<Word> words) {
         // Use the first word from the sentence, or fallback to first word in sentence

@@ -267,6 +267,15 @@ body {
   border-width: 2%;
   border-color: #7192d9;
   border-style: solid;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.choice-box:hover,
+.Fill-box:hover {
+  background-color: #f0f4ff;
+  border-color: #5a7bd8;
+  transform: scale(1.02);
 }
 
 .Choices > .choice-box,
