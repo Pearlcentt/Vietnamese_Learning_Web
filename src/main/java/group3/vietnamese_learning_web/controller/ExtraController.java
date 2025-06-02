@@ -42,6 +42,8 @@ public class ExtraController {
 
         // Get leaderboard data
         List<UserResponseDTO> topUsers = leaderboardService.getTopUsers(10);
+        List<UserResponseDTO> friendsLeaderboard = user != null ?
+                leaderboardService.getFriendsLeaderboard(user.getUId(), 10) : List.of();
 
         // Simple league simulation based on points
         String leagueName = "Bronze League";
@@ -59,7 +61,7 @@ public class ExtraController {
         model.addAttribute("user", user);
         model.addAttribute("currentUserDto", user);
         model.addAttribute("globalLeaderboardData", topUsers);
-        model.addAttribute("friendsLeaderboardData", topUsers); // For now, same as global
+        model.addAttribute("friendsLeaderboardData", friendsLeaderboard);
         model.addAttribute("leagueSettingsDto", new LeagueSettings(leagueName, 7, 4));
         return "leaderboard";
     }
