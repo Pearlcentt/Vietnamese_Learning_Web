@@ -6,57 +6,187 @@
     <title th:text="${userDto != null and userDto.name != null} ? ${userDto.name} + ' - Profile' : 'Profile and Add Friend'">Profile and Add Friend</title>
     <link rel="stylesheet" th:href="@{/css/profile_add_friend.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* Reset and Base Styles from dashboard theme */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+            Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+        }
+
+        :root {
+            --PRIMARY_COLOR: #f5efe6;
+            --ACTIVE_ITEM_COLOR: #da251d;
+            --TITLE-text: #ff9e0c;
+            --ITEM-text: #c75a00;
+            --BORDER_LINE: #d9cfc0;
+            --RIGHT-BOX: #5c5149;
+            --duo-green: #58cc02;
+            --duo-blue: #1cb0f6;
+            --duo-gray-light: #e5e5e5;
+            --duo-gray-medium: #afafaf;
+            --duo-gray-dark: #777777;
+            --duo-text-dark: #4b4b4b;
+            --duo-text-light: #ffffff;
+            --duo-border: #e5e5e5;
+            --duo-yellow: #ffc800;
+            --duo-red: #ff4b4b;
+            --pearl-color: #f7b9d0;
+            --light-green-button: #c8e6c9;
+            --light-green-button-hover: #b9d8ba;
+        }
+
+        body {
+            background-color: var(--PRIMARY_COLOR);
+            color: var(--ITEM-text);
+            overflow-x: hidden;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .app-layout-container {
+            display: flex;
+            min-height: 100vh;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Left Sidebar Styles (from dashboard) */
+        .sidebar {
+            width: 20%;
+            background-color: var(--PRIMARY_COLOR);
+            padding: 20px 0;
+            border-right: 2px solid var(--BORDER_LINE);
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            min-width: 220px;
+        }
+
+        .logo {
+            padding: 0 20px;
+            margin-bottom: 25px;
+        }
+
+        .logo h1 {
+            color: var(--ITEM-text);
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .nav-items {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #afafaf;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 16px;
+            margin: 0 8px;
+            text-decoration: none;
+        }
+
+        .nav-item:hover {
+            background-color: var(--TITLE-text);
+            color: #ffffff;
+        }
+
+        .nav-item.active {
+            background-color: var(--TITLE-text);
+            color: white;
+        }
+
+        .nav-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .nav-icon img {
+            width: 28px;
+            height: 28px;
+            object-fit: contain;
+        }
+
+        .home-icon {
+            background-color: #e1d9c8;
+            border-radius: 8px;
+        }
+
+        .nav-text {
+            font-weight: 700;
+            font-size: 15px;
+        }
+    </style>
 </head>
 <body>
 <div class="app-layout-container">
-    <!-- Left Sidebar -->
-    <div class="sidebar">
+    <!-- Left Sidebar (giống với leaderboard) -->
+    <aside class="sidebar">
         <div class="logo">
             <h1>VietLingo</h1>
         </div>
-        <div class="nav-items">
-            <a th:href="@{/dashboard}" class="nav-item"
-               th:classappend="${#request.requestURI == '/dashboard' ? 'active' : ''}">
+        <nav class="nav-items">
+            <!-- LEARN -->
+            <a th:href="@{/dashboard}" class="nav-item">
                 <div class="nav-icon home-icon">
-                    <img th:src="@{/images/play-button.png}" alt="Learn Icon" />
+                    <img th:src="@{/images/play-button.png}" alt="Learn" />
                 </div>
                 <span class="nav-text">LEARN</span>
             </a>
-            <a th:href="@{/leaderboard}" class="nav-item"
-               th:classappend="${#request.requestURI == '/leaderboard' ? 'active' : ''}">
+
+            <!-- LEADERBOARDS -->
+            <a th:href="@{/leaderboard}" class="nav-item">
                 <div class="nav-icon">
-                    <img th:src="@{/images/businessman-with-target.png}" alt="Leaderboards Icon" />
+                    <img th:src="@{/images/businessman-with-target.png}" alt="Leaderboards" />
                 </div>
                 <span class="nav-text">LEADERBOARDS</span>
             </a>
-            <a th:href="@{/profile}" class="nav-item"
-               th:classappend="${#strings.startsWith(#request.requestURI, '/profile') ? 'active' : ''}">
+
+            <!-- PROFILE (active) -->
+            <a th:href="@{/profile_add_friend}" class="nav-item active">
                 <div class="nav-icon">
-                    <img th:src="@{/images/person.png}" alt="Profile Icon" />
+                    <img th:src="@{/images/person.png}" alt="Profile" />
                 </div>
                 <span class="nav-text">PROFILE</span>
             </a>
-            <form th:action="@{/logout}" method="post" class="nav-item-form">
-                <button type="submit" class="nav-item nav-item-logout-btn" id="logoutButton">
-                    <div class="nav-icon logout-icon">
-                        <img th:src="@{/images/log_out.png}" alt="Logout Icon" />
-                    </div>
-                    <span class="nav-text">LOGOUT</span>
-                </button>
-            </form>
-        </div>
-    </div>
 
-    <!-- Main Content -->
+            <!-- LOGOUT -->
+            <a th:href="@{/logout}" class="nav-item" id="logoutLink">
+                <div class="nav-icon">
+                    <img th:src="@{/images/log_out.png}" alt="Logout" />
+                </div>
+                <span class="nav-text">LOGOUT</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content (Profile View & Edit View) -->
     <main class="main-profile-content">
         <div id="profileView" class="profile-view-active">
             <div class="profile-main">
                 <div class="profile-header">
                     <div class="avatar-container">
-                        <!-- SỬA Ở ĐÂY: userDto.avatar -->
-                        <img th:src="${userDto?.avatar ?: '/images/default-avatar.svg'}" alt="Avatar" id="profileAvatarDisplay" class="avatar-placeholder">
+                        <img src="/images/avatar3.png" alt="Avatar" id="profileAvatarDisplay" class="avatar-placeholder">
                     </div>
                 </div>
+
                 <div class="user-info">
                     <h1 id="displayName" th:text="${userDto?.name} ?: 'User Name'">User Name</h1>
                     <p class="username-joined">
@@ -65,10 +195,12 @@
                         <span th:if="${userDto?.dateCreated == null}">Unknown Date</span>
                     </p>
                     <div class="follow-stats">
-                        <a href="#" id="followingCountLink"><span id="followingCount" th:text="${userDto?.friends != null} ? ${#lists.size(userDto.friends)} : 0">0</span> Following</a>
-                        <a href="#" id="followersCountLink"><span id="followersCount" th:text="${userDto?.friends != null} ? ${#lists.size(userDto.friends)} : 0">0</span> Followers</a>
+                        <a href="#" id="followingCountLink"><span id="followingCount" th:text="${userDto?.friends != null} ? ${userDto.friends.size()} : 0">0</span> Following</a>
+                        <a href="#" id="followersCountLink"><span id="followersCount" th:text="${userDto?.friends != null} ? ${userDto.friends.size()} : 0">0</span> Followers</a>
                     </div>
+                    <!-- Show edit button only for own profile -->
                     <button id="editProfileBtn" class="action-btn" th:if="${!viewOnly}"><i class="fas fa-user-edit"></i> Edit profile</button>
+                    <!-- Show friend request actions for other users -->
                     <div th:if="${viewOnly}">
                         <button class="action-btn" th:if="${alreadyFriends}" disabled><i class="fas fa-users"></i> Friends</button>
                         <button class="action-btn" th:if="${requestSent}" disabled><i class="fas fa-check"></i> Request Sent</button>
@@ -77,6 +209,7 @@
                         <button class="action-btn" th:if="${!alreadyFriends and !requestSent and !requestReceived}" th:attr="data-target-id=${userDto.uId}" id="sendFriendRequestBtn"><i class="fas fa-user-plus"></i> Add Friend</button>
                     </div>
                 </div>
+
                 <div class="statistics-section">
                     <h2>Statistics</h2>
                     <div class="stats-grid">
@@ -87,7 +220,7 @@
                         </div>
                         <div class="stat-box">
                             <i class="fas fa-star stat-icon"></i>
-                            <p><strong id="totalXP" th:text="${userDto?.gems} ?: 0">0</strong></p> <!-- ID là totalXP nhưng hiển thị gems -->
+                            <p><strong id="totalXP" th:text="${userDto?.gems} ?: 0">0</strong></p>
                             <p>Total Gems</p>
                         </div>
                         <div class="stat-box">
@@ -106,27 +239,19 @@
         </div>
         <div id="editProfileView" class="edit-profile-container" style="display: none;">
             <h2><i class="fas fa-user-cog"></i> Edit profile</h2>
+            <!-- Success Message -->
             <div th:if="${param.success}" class="alert alert-success">
                 <i class="fas fa-check-circle"></i> Profile updated successfully!
             </div>
+            <!-- Error Message -->
             <div th:if="${errorMessage}" class="alert alert-error">
                 <i class="fas fa-exclamation-circle"></i> <span th:text="${errorMessage}">Error message</span>
             </div>
             <div th:if="${userEditForm != null}">
                 <form id="editProfileForm" th:action="@{/profile/update}" method="post" th:object="${userEditForm}">
-                    <div class="form-group avatar-edit-group">
-                        <!-- SỬA Ở ĐÂY: userEditForm.avatar (giả sử UserEditForm cũng dùng 'avatar') hoặc userDto.avatar -->
-                        <img th:src="${userEditForm?.avatar ?: (userDto?.avatar ?: '/images/default-avatar.svg')}" alt="Current Avatar" id="editAvatarPreview" class="avatar-preview">
-                        <!-- SỬA Ở ĐÂY: th:field="*{avatar}" (nếu UserEditForm có trường 'avatar') -->
-                        <input type="hidden" id="selectedAvatarUrlInput" th:field="*{avatar}"> <!-- Giả sử UserEditForm có trường 'avatar' -->
-                        <div>
-                            <button type="button" id="openAvatarModalBtnEdit" class="action-btn"><i class="fas fa-image"></i> Change Avatar</button>
-                            <p class="avatar-note">Select a new avatar or upload your own.</p>
-                        </div>
-                    </div>
                     <div class="form-group">
                         <label for="editNameInput">Name</label>
-                        <input type="text" id="editNameInput" th:field="*{displayName}"> <!-- Giả sử UserEditForm có trường 'displayName' -->
+                        <input type="text" id="editNameInput" th:field="*{displayName}">
                     </div>
                     <div class="form-group">
                         <label for="editUsernameInput">Username</label>
@@ -137,14 +262,14 @@
                         <input type="email" id="editEmailInput" th:field="*{email}">
                     </div>
                     <div class="form-group">
-                        <label for="editCurrentPasswordInput">Current password (leave blank to keep current)</label>
+                        <label for="editCurrentPasswordInput">Current password</label>
                         <div class="password-wrapper">
                             <input type="password" id="editCurrentPasswordInput" th:field="*{currentPassword}">
                             <i class="fas fa-eye toggle-password"></i>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="editNewPasswordInput">New password (leave blank to keep current)</label>
+                        <label for="editNewPasswordInput">New password</label>
                         <div class="password-wrapper">
                             <input type="password" id="editNewPasswordInput" th:field="*{newPassword}">
                             <i class="fas fa-eye toggle-password"></i>
@@ -164,11 +289,15 @@
 
     <!-- Sidebar Phải -->
     <aside class="profile-sidebar">
+        <!-- Friend List -->
         <div class="friend-list-container card">
             <h3><i class="fas fa-users"></i> Friend List</h3>
-            <ul id="friendListUi"></ul>
-            <p id="noFriendsMessage" class="empty-message" th:if="${userDto?.friends == null or #lists.isEmpty(userDto.friends)}">You have no friends. Let's connect with other people.</p>
+            <ul id="friendListUi">
+                <!-- Friend list items will be populated by JavaScript -->
+            </ul>
+            <p id="noFriendsMessage" class="empty-message" th:if="${userDto?.friends == null or userDto.friends.isEmpty()}">You have no friends. Let's connect with other people.</p>
         </div>
+
         <div class="add-friends-section card">
             <h3><i class="fas fa-user-plus"></i> Add Friends</h3>
             <div class="action-item" id="findFriendsToggle">
@@ -181,6 +310,7 @@
                 <button id="searchFriendBtn"><i class="fas fa-search"></i> Find</button>
                 <ul id="searchResultsUi"></ul>
             </div>
+
             <div class="action-item" id="friendRequestsToggle">
                 <i class="fas fa-user-friends"></i>
                 <span>Friend requests</span>
@@ -188,11 +318,15 @@
             </div>
             <div id="friendRequestsContent" class="collapsible-content">
                 <div class="friend-request-tabs">
-                    <button class="fr-tab-btn active" data-tab="received">Received (<span id="receivedRequestCountBadge" th:text="${userDto?.receivedFriendRequests != null} ? ${#lists.size(userDto.receivedFriendRequests)} : 0">0</span>)</button>
-                    <button class="fr-tab-btn" data-tab="sent">Sent (<span id="sentRequestCountBadge" th:text="${userDto?.sentFriendRequests != null} ? ${#lists.size(userDto.sentFriendRequests)} : 0">0</span>)</button>
+                    <button class="fr-tab-btn active" data-tab="received">Received (<span id="receivedRequestCountBadge" th:text="${userDto?.receivedFriendRequests != null} ? ${userDto.receivedFriendRequests.size()} : 0">0</span>)</button>
+                    <button class="fr-tab-btn" data-tab="sent">Sent (<span id="sentRequestCountBadge" th:text="${userDto?.sentFriendRequests != null} ? ${userDto.sentFriendRequests.size()} : 0">0</span>)</button>
                 </div>
-                <ul id="friendRequestsListUiReceived" class="friend-requests-list-display active"></ul>
-                <ul id="friendRequestsListUiSent" class="friend-requests-list-display" style="display:none;"></ul>
+                <ul id="friendRequestsListUiReceived" class="friend-requests-list-display active">
+                    <!-- Received friend requests will be populated by JavaScript -->
+                </ul>
+                <ul id="friendRequestsListUiSent" class="friend-requests-list-display" style="display:none;">
+                    <!-- Sent friend requests will be populated by JavaScript -->
+                </ul>
                 <p id="noFriendRequestsMessage" class="empty-message" style="display: none;">No requests</p>
             </div>
         </div>
@@ -203,35 +337,14 @@
     </aside>
 </div>
 
-<!-- Avatar Modal -->
-<div id="avatarModal" class="modal">
-    <div class="modal-content">
-        <span class="close-modal-btn" id="closeAvatarModalBtn">×</span>
-        <h3>Choose Your Avatar</h3>
-        <div class="avatar-selection-grid" id="avatarSelectionGrid"></div>
-        <p>Or <label for="avatarUpload" class="upload-link">upload your own image</label>.</p>
-        <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
-        <button id="confirmAvatarSelectionBtn" class="action-btn primary">Confirm Selection</button>
-    </div>
-</div>
-
 <script th:inline="javascript">
     /*<![CDATA[*/
     var serverData = {
-        currentUser: /*[[${userDto}]]*/ null, // userDto có trường 'avatar', 'name', 'dateCreated'
-        viewOnly: /*[[${viewOnly}]]*/ false,
-        alreadyFriends: /*[[${alreadyFriends}]]*/ false,
-        requestSent: /*[[${requestSent}]]*/ false,
-        requestReceived: /*[[${requestReceived}]]*/ false,
-        userEditForm: /*[[${userEditForm}]]*/ null, // Giả sử UserEditForm cũng có trường 'avatar'
-        errorMessage: /*[[${errorMessage}]]*/ null,
-        sampleAvatars: /*[[${sampleAvatars ?: T(java.util.Arrays).asList('/images/av1.png', '/images/av2.png')}]]*/ [],
-        defaultAvatarUrl: /*[[@{/images/default-avatar.svg}]]*/ '/images/default-avatar.svg', // Đây là URL mặc định
+        currentUser: /*[[${userDto}]]*/ null,
         csrfToken: /*[[${_csrf?.token}]]*/ '',
         csrfHeaderName: /*[[${_csrf?.headerName}]]*/ '',
         urls: {
-            updateProfile: /*[[@{/profile/update}]]*/ '/profile/update',
-            uploadAvatar: /*[[@{/profile/avatar/upload}]]*/ '/profile/avatar/upload',
+            updateProfile: /*[[@{/api/profile/update}]]*/ '/api/profile/update',
             searchFriends: /*[[@{/friends/search}]]*/ '/friends/search',
             sendFriendRequest: /*[[@{/friends/request/send}]]*/ '/friends/request/send',
             acceptFriendRequest: /*[[@{/friends/request/accept}]]*/ '/friends/request/accept',
@@ -241,18 +354,43 @@
         }
     };
 
+    // DEBUG: Log initial server data
+    console.log('DEBUG: Initial serverData:', serverData);
+
+    // Restructure friend data for JavaScript compatibility
     if (serverData.currentUser) {
+        // Ensure friends array exists
         if (!serverData.currentUser.friends) {
             serverData.currentUser.friends = [];
         }
-        // Đã có receivedFriendRequests và sentFriendRequests trong DTO
+
+        // Structure friend requests data as expected by JavaScript
         serverData.currentUser.friendRequests = {
             received: serverData.currentUser.receivedFriendRequests || [],
             sent: serverData.currentUser.sentFriendRequests || []
         };
+
+        // DEBUG: Log structured data
+        console.log('DEBUG: Structured currentUser:', serverData.currentUser);
+        console.log('DEBUG: Friends count:', serverData.currentUser.friends.length);
+        console.log('DEBUG: Received requests count:', serverData.currentUser.friendRequests.received.length);
+        console.log('DEBUG: Sent requests count:', serverData.currentUser.friendRequests.sent.length);
     }
     /*]]>*/
 </script>
 <script th:src="@{/js/profile_add_friend.js}"></script>
+
+<!-- Script xác nhận logout giống như trong leaderboard -->
+<script>
+    const logoutLink = document.getElementById("logoutLink");
+    if (logoutLink) {
+        logoutLink.addEventListener("click", (event) => {
+            event.preventDefault();
+            if (confirm("Are you sure you want to logout?")) {
+                window.location.href = logoutLink.href;
+            }
+        });
+    }
+</script>
 </body>
 </html>
