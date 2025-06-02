@@ -204,25 +204,17 @@
                 ></div>
               </div>
             </div>
-          </div>
-          <!-- Topic-by-topic Progress -->
+          </div>          <!-- Topic-by-topic Progress -->
           <div class="topics-progress">
-            <th:block th:each="topic : ${topics}">
+            <th:block th:each="topicWithLessons : ${topicsWithLessons}">
               <div class="topic-progress-item">
                 <div class="topic-progress-header">
-                  <span class="topic-name" th:text="${topic.topicName}"
+                  <span class="topic-name" th:text="${topicWithLessons.topicName}"
                     >Topic Name</span
                   >
-                  <!-- <span
-                    class="topic-percentage"
-                    th:text="${topic.completedLessons != null and topic.totalLessons != null and topic.totalLessons > 0} ? 
-                             ${#numbers.formatDecimal((topic.completedLessons * 100.0 / topic.totalLessons), 0, 0)} + '%' : '0%'"
-                  >
-                    0%
-                  </span> -->
                   <button
                     class="dropdown-toggle"
-                    th:onclick="'toggleLessons(' + ${topic.topicId} + ')'"
+                    th:onclick="'toggleLessons(' + ${topicWithLessons.topicId} + ')'"
                   >
                     <svg
                       class="dropdown-arrow"
@@ -236,52 +228,54 @@
                       <polyline points="6,9 12,15 18,9"></polyline>
                     </svg>
                   </button>
-                </div>
-                <div class="topic-progress-bar-wrapper">
+                </div>                <div class="topic-progress-bar-wrapper">
                   <div
                     class="topic-progress-bar"
-                    th:style="'width:' + (${topic.completedLessons != null and topic.totalLessons != null and topic.totalLessons > 0} ? 
-                             (${topic.completedLessons} * 100 / ${topic.totalLessons}) : 0) + '%'"
+                    th:style="'width:' + ${topicWithLessons.progressPercentage} + '%'"
                   ></div>
                 </div>
                 <div class="topic-progress-details">
-                  <!-- <span
-                    th:text="${topic.completedLessons != null and topic.totalLessons != null} ? 
-                                 (${topic.completedLessons} + ' / ' + ${topic.totalLessons} + ' lessons') : 
-                                 '0 / 0 lessons'"
+                  <span
+                    th:text="${#numbers.formatDecimal(topicWithLessons.progressPercentage, 0, 1)} + '%'"
                   >
-                    0 / 0 lessons
-                  </span> -->
+                    0%
+                  </span>
                 </div>
                 <!-- Lessons Dropdown -->
                 <div
                   class="lessons-dropdown"
-                  th:id="'lessons-' + ${topic.topicId}"
+                  th:id="'lessons-' + ${topicWithLessons.topicId}"
                 >
                   <div class="lessons-container">
-                    <!-- Loop through lessons for this topic -->
-                    <th:block
-                      th:each="lesson, lessonStat : ${#numbers.sequence(1, 5)}"
-                    >
-                      <div class="lesson-progress-item">
-                        <div class="lesson-header">
+                    <!-- Loop through actual lessons for this topic -->
+                    <th:block th:each="lesson : ${topicWithLessons.lessons}">
+                      <div class="lesson-progress-item">                        <div class="lesson-header">
                           <span
                             class="lesson-name"
-                            th:text="'Lesson ' + ${lesson}"
+                            th:text="'Lesson ' + ${lesson.lessonId} + ' (' + ${lesson.lessonType} + ')'"
                             >Lesson 1</span
                           >
                           <span class="lesson-status">
-                            <!-- You can add logic here to check if lesson is completed -->
-                            <span class="status-icon completed">✓</span>
-                            <!-- <span class="status-icon in-progress">◐</span> -->
-                            <!-- <span class="status-icon not-started">○</span> -->
+                            <!-- Dynamic status icons based on actual progress -->
+                            <span 
+                              th:if="${lesson.status == 'Completed'}"
+                              class="status-icon completed">✓</span>
+                            <span 
+                              th:if="${lesson.status == 'In_Progress'}"
+                              class="status-icon in-progress">◐</span>
+                            <span 
+                              th:if="${lesson.status == 'Not_Started'}"
+                              class="status-icon not-started">○</span>
                           </span>
                         </div>
                         <div class="lesson-progress-bar-wrapper">
                           <div
                             class="lesson-progress-bar"
-                            style="width: 75%"
+                            th:style="'width: ' + ${lesson.progressPercentage} + '%'"
                           ></div>
+                          <span class="lesson-progress-text"
+                            th:text="${#numbers.formatDecimal(lesson.progressPercentage, 0, 1)} + '%'"
+                            >0%</span>
                         </div>
                       </div>
                     </th:block>

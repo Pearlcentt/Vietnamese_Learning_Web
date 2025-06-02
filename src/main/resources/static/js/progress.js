@@ -250,15 +250,58 @@ function recordAnswer(isCorrect) {
   console.log(`Question answered. Score: ${currentScore}/${questionsAnswered}`);
 }
 
+// Function to get CSRF token
+function getCsrfToken() {
+  const tokenElement = document.querySelector('meta[name="_csrf"]') || 
+                      document.querySelector('input[name="_csrf"]');
+  if (tokenElement) {
+    return tokenElement.getAttribute('content') || tokenElement.value;
+  }
+  
+  // Try to get from cookie
+  const csrfCookie = document.cookie
+    .split('; ')
+    .find(row => row.startsWith('XSRF-TOKEN='));
+  
+  if (csrfCookie) {
+    return csrfCookie.split('=')[1];
+  }
+  
+  console.warn("CSRF token not found");
+  return null;
+}
+
+// Function to get CSRF header name
+function getCsrfHeaderName() {
+  const headerElement = document.querySelector('meta[name="_csrf_header"]');
+  return headerElement ? headerElement.getAttribute('content') : 'X-CSRF-TOKEN';
+}
+
 function startLessonProgress(topicId, lessonId) {
+  console.log("=== Starting lesson progress ===");
+  
+  const csrfToken = getCsrfToken();
+  const csrfHeaderName = getCsrfHeaderName();
+  
+  console.log("CSRF token:", csrfToken);
+  console.log("CSRF header name:", csrfHeaderName);
+  
+  const headers = {
+    'X-Requested-With': 'XMLHttpRequest'
+  };
+  
+  if (csrfToken) {
+    headers[csrfHeaderName] = csrfToken;
+  }
+  
   // Call API to mark lesson as started (In Progress)
   fetch(`/api/progress/start?topicId=${topicId}&lessonId=${lessonId}`, {
     method: "POST",
-    headers: {
-      'X-Requested-With': 'XMLHttpRequest'
-    }
+    headers: headers,
+    credentials: 'same-origin'
   })
   .then(response => {
+    console.log("Start lesson response status:", response.status);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -278,50 +321,138 @@ function saveLessonProgress(topicId, lessonId) {
   const currentScore = parseInt(localStorage.getItem("currentScore")) || 0;
   const questionsAnswered = parseInt(localStorage.getItem("questionsAnswered")) || 0;
   
-  console.log(`Saving lesson progress: ${currentScore}/${questionsAnswered} correct`);
+  console.log(`=== saveLessonProgress called ===`);
+  console.log(`topicId: ${topicId}, lessonId: ${lessonId}`);
+  console.log(`currentScore: ${currentScore}, questionsAnswered: ${questionsAnswered}`);
   
-  // Call our Spring Boot API endpoint with actual score data
-  fetch(`/api/progress/complete?topicId=${topicId}&lessonId=${lessonId}&score=${currentScore}&totalQuestions=${questionsAnswered}`, {
-    method: "POST",
-    headers: {
-      'X-Requested-With': 'XMLHttpRequest'
-    }
-  })
-      .then(response => {
+  // Validate parameters
+  if (!topicId || !lessonId || topicId === "unknown" || lessonId === "unknown") {
+    console.error("Invalid topicId or lessonId for progress save:", { topicId, lessonId });
+    return;
+  }
+  
+  // Ensure we have at least 1 question answered to avoid division by zero
+  const totalQuestions = Math.max(questionsAnswered, 1);
+  
+  const apiUrl = `/api/progress/complete?topicId=${topicId}&lessonId=${lessonId}&score=${currentScore}&totalQuestions=${totalQuestions}`;
+  console.log(`API URL: ${apiUrl}`);
+    // Call our Spring Boot API endpoint with actual score data  console.log("=== Making fetch request ===");
+  console.log("Request URL:", apiUrl);
+  console.log("Request method: POST");
+  
+  const csrfToken = getCsrfToken();
+  const csrfHeaderName = getCsrfHeaderName();
+  
+  console.log("CSRF token:", csrfToken);
+  console.log("CSRF header name:", csrfHeaderName);
+  
+  const headers = {
+    'X-Requested-With': 'XMLHttpRequest',
+    'Content-Type': 'application/x-www-form-urlencoded'
+  };
+  
+  if (csrfToken) {
+    headers[csrfHeaderName] = csrfToken;
+  }
+  
+  console.log("Request headers:", headers);
+  
+  try {
+    const fetchPromise = fetch(apiUrl, {
+      method: "POST",
+      headers: headers,
+      credentials: 'same-origin'  // Include cookies for Spring Security authentication
+    });
+    
+    console.log("Fetch promise created:", fetchPromise);
+    
+    fetchPromise.then(response => {
+        console.log("=== Fetch response received ===");
+        console.log(`Response status: ${response.status}`);
+        console.log(`Response ok: ${response.ok}`);
+        console.log(`Response statusText: ${response.statusText}`);
+        console.log(`Response headers:`, response.headers);
+        
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          console.error(`HTTP error! status: ${response.status}, statusText: ${response.statusText}`);
+          // Try to read response body for more error details
+          return response.text().then(errorText => {
+            console.error("Error response body:", errorText);
+            throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
+          });
         }
         return response.text();
-      })
-      .then(message => {
+      }).then(message => {
         console.log("Progress Saved:", message);
+        console.log("Backend response:", message);
         // Reset score tracking after successful save
         localStorage.setItem("currentScore", "0");
         localStorage.setItem("questionsAnswered", "0");
         
+        // Extract topicId from current URL path for redirect
+        const pathParts = window.location.pathname.split('/');
+        let redirectTopicId = null;
+        
+        if (pathParts.length >= 3 && pathParts[1] === 'questions') {
+          redirectTopicId = pathParts[2];
+        }
+        
+        // Fallback: try URL params
+        if (!redirectTopicId) {
+          const urlParams = new URLSearchParams(window.location.search);
+          redirectTopicId = urlParams.get("topicId");
+        }
+        
         // Optionally redirect to lessons page after successful completion
         setTimeout(() => {
-          const urlParams = new URLSearchParams(window.location.search);
-          const topicId = urlParams.get("topicId");
-          if (topicId) {
-            window.location.href = `/lessons?topicId=${topicId}`;
+          if (redirectTopicId) {
+            window.location.href = `/lessons?topicId=${redirectTopicId}`;
           } else {
             window.location.href = '/dashboard';
           }
         }, 2000); // Give user time to see completion message
-      })
-      .catch(err => {
-        console.error("Failed to save progress:", err);
+      })      .catch(err => {
+        console.error("=== Fetch error caught ===");
+        console.error("Error type:", typeof err);
+        console.error("Error name:", err.name);
+        console.error("Error message:", err.message);
+        console.error("Error stack:", err.stack);
+        console.error("Full error object:", err);
+        
+        // Check if it's a network error
+        if (err instanceof TypeError && err.message.includes('fetch')) {
+          console.error("This appears to be a network error - server might not be reachable");
+        }
+        
         // Even if save fails, we can still redirect (progress might be saved client-side)
-        setTimeout(() => {
+        
+        // Extract topicId from current URL path for redirect
+        const pathParts = window.location.pathname.split('/');
+        let redirectTopicId = null;
+        
+        if (pathParts.length >= 3 && pathParts[1] === 'questions') {
+          redirectTopicId = pathParts[2];
+        }
+        
+        // Fallback: try URL params
+        if (!redirectTopicId) {
           const urlParams = new URLSearchParams(window.location.search);
-          const topicId = urlParams.get("topicId");
-          if (topicId) {
-            window.location.href = `/lessons?topicId=${topicId}`;
+          redirectTopicId = urlParams.get("topicId");
+        }
+        
+        setTimeout(() => {
+          if (redirectTopicId) {
+            window.location.href = `/lessons?topicId=${redirectTopicId}`;
           } else {
             window.location.href = '/dashboard';
           }
         }, 1000);
       });
+      
+  } catch (immediateError) {
+    console.error("=== Immediate error in fetch setup ===");
+    console.error("Immediate error:", immediateError);
+    console.error("This error occurred before the fetch was even attempted");
+  }
 }
 

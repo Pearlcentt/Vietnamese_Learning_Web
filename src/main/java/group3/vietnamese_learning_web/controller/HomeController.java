@@ -1,6 +1,8 @@
 package group3.vietnamese_learning_web.controller;
 
 import group3.vietnamese_learning_web.dto.TopicProgressDTO;
+import group3.vietnamese_learning_web.dto.TopicWithLessonsProgressDTO;
+import group3.vietnamese_learning_web.dto.LessonProgressDetailDTO;
 import group3.vietnamese_learning_web.dto.UserResponseDTO;
 import group3.vietnamese_learning_web.service.TopicService;
 import group3.vietnamese_learning_web.service.AuthService;
@@ -45,16 +47,48 @@ public class HomeController {
 
         if (userId == null) {
             return "redirect:/login";
-        }
-
-        try {
+        }        try {
             int streak = authService.calculateStreak(userId);
             user.setStreak(streak);
-            List<TopicProgressDTO> topics = topicService.getTopicProgressByUser(userId);
+            
+            // Get topics with lesson-level progress data
+            List<TopicWithLessonsProgressDTO> topicsWithLessons = topicService.getTopicsWithLessonsProgress(userId);
+            
+            // Calculate overall progress using the new method
+            double overallProgress = topicService.calculateOverallProgress(userId);
+            
+            // Convert to TopicProgressDTO list for backward compatibility with existing template parts
+            List<TopicProgressDTO> topics = topicsWithLessons.stream()
+                    .map(t -> TopicProgressDTO.builder()
+                            .topicId(t.getTopicId())
+                            .topicName(t.getTopicName())
+                            .description(t.getDescription())
+                            .totalLessons(t.getTotalLessons())
+                            .completedLessons(t.getCompletedLessons())
+                            .build())
+                    .collect(java.util.stream.Collectors.toList());
+            
+            // Add debugging logs
+            System.out.println("DEBUG: User ID: " + userId);
+            System.out.println("DEBUG: Topics count: " + topics.size());
+            System.out.println("DEBUG: TopicsWithLessons count: " + topicsWithLessons.size());
+            System.out.println("DEBUG: Overall progress: " + overallProgress);
+            
+            for (TopicWithLessonsProgressDTO topic : topicsWithLessons) {
+                System.out.println("DEBUG: Topic " + topic.getTopicId() + " - " + topic.getTopicName() + 
+                    " - Progress: " + topic.getProgressPercentage() + "% - Lessons: " + topic.getLessons().size());
+                for (LessonProgressDetailDTO lesson : topic.getLessons()) {
+                    System.out.println("  Lesson " + lesson.getLessonId() + " - Status: " + lesson.getStatus() + 
+                        " - Score: " + lesson.getScore() + " - Progress: " + lesson.getProgressPercentage() + "%");
+                }
+            }
+            
             model.addAttribute("topics", topics);
+            model.addAttribute("topicsWithLessons", topicsWithLessons);
+            model.addAttribute("overallProgress", overallProgress);
             model.addAttribute("user", user); // Provide user info to template
 
-            return "dashboard"; // Your main dashboard template (the one with the HTML you provided)
+            return "dashboard";// Your main dashboard template (the one with the HTML you provided)
         } catch (Exception e) {
             model.addAttribute("error", "Failed to load dashboard: " + e.getMessage());
             return "login";
