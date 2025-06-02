@@ -246,14 +246,14 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     const isCorrect = currentOrder.every(
       (char, index) => char === correctOrder[index]
-    );
-
-    if (isCorrect) {
+    );    if (isCorrect) {
       checkButton.style.backgroundColor = "#52f52a";
       resultMessage.textContent = "Correct!";
       resultMessage.classList.add("show");
       tickIcon.classList.add("show");
       errorIcon.classList.add("hidden");
+      // Record correct answer
+      recordAnswer(true);
     } else {
       resultMessage.textContent = "Incorrect!";
       resultMessage.style.color = "red";
@@ -261,6 +261,8 @@ document.addEventListener("DOMContentLoaded", function () {
       tickIcon.classList.add("hidden");
       errorIcon.classList.add("show");
       checkButton.style.backgroundColor = "#ff1d0d";
+      // Record incorrect answer
+      recordAnswer(false);
     }
 
     // Đổi văn bản nút Check thành "Continue"
@@ -291,14 +293,14 @@ document.addEventListener("DOMContentLoaded", function () {
       resultMessage.style.color = "red";
       resultMessage.classList.add("show");
       tickIcon.classList.add("hidden");
-      errorIcon.classList.add("show");
-
-      // Đổi nút Check thành Continue và màu đỏ
+      errorIcon.classList.add("show");      // Đổi nút Check thành Continue và màu đỏ
       checkButton.style.backgroundColor = "#ff1d0d";
       checkButton.innerText = "Continue";
 
       // Đánh dấu là đã nhấn Ignore
       isIgnored = true;
+      // Record ignored as incorrect
+      recordAnswer(false);
     });
   }
 

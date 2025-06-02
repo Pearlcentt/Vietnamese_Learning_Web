@@ -52,9 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Disable options
     buttons.forEach((btn) => {
       btn.style.pointerEvents = "none";
-    });
-
-    // Hide Ignore
+    });    // Hide Ignore
     ignoreDiv.classList.add("hidden");
 
     if (selectedWord === correctAnswer) {
@@ -63,6 +61,8 @@ document.addEventListener("DOMContentLoaded", () => {
       resultMessage.classList.add("show");
       tickIcon.classList.add("show");
       errorIcon.classList.add("hidden");
+      // Record correct answer
+      recordAnswer(true);
     } else {
       selectedButton.style.backgroundColor = "#f76c6c";
       resultMessage.textContent = "Incorrect!";
@@ -71,6 +71,8 @@ document.addEventListener("DOMContentLoaded", () => {
       tickIcon.classList.add("hidden");
       errorIcon.classList.add("show");
       checkButton.style.backgroundColor = "#ff1d0d";
+      // Record incorrect answer
+      recordAnswer(false);
     }
     checkButton.innerText = "Continue";
   });
@@ -100,12 +102,12 @@ document.addEventListener("DOMContentLoaded", () => {
       resultMessage.style.color = "red";
       resultMessage.classList.add("show");
       tickIcon.classList.add("hidden");
-      errorIcon.classList.add("show");
-
-      checkButton.style.backgroundColor = "#ff1d0d";
+      errorIcon.classList.add("show");      checkButton.style.backgroundColor = "#ff1d0d";
       checkButton.innerText = "Continue";
 
       isIgnored = true;
+      // Record ignored as incorrect
+      recordAnswer(false);
     });
   }
 });

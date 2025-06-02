@@ -189,18 +189,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 noFriendRequestsMessage.style.display = 'block';
             }
         } else {
-            if (noFriendRequestsMessage) noFriendRequestsMessage.style.display = 'none';
-            requests.forEach(request => {
+            if (noFriendRequestsMessage) noFriendRequestsMessage.style.display = 'none';            requests.forEach(request => {
                 const li = document.createElement('li');
                 let actionsHtml = '';
                 if (type === 'received') {
                     actionsHtml = `
-                        <button class="accept-request-btn" data-request-id="${request.id}" title="Accept"><i class="fas fa-check"></i></button>
-                        <button class="decline-request-btn" data-request-id="${request.id}" title="Decline"><i class="fas fa-times"></i></button>
+                        <button class="accept-request-btn" data-request-id="${request.uId}" title="Accept"><i class="fas fa-check"></i></button>
+                        <button class="decline-request-btn" data-request-id="${request.uId}" title="Decline"><i class="fas fa-times"></i></button>
                     `;
                 } else { // sent
                     actionsHtml = `
-                        <button class="cancel-request-btn" data-request-id="${request.id}" title="Cancel Request"><i class="fas fa-ban"></i></button>
+                        <button class="cancel-request-btn" data-request-id="${request.uId}" title="Cancel Request"><i class="fas fa-ban"></i></button>
                     `;
                 }
                 li.innerHTML = `
@@ -374,17 +373,22 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!searchTerm) {
                 searchResultsUi.innerHTML = '<li>Please enter a name to search.</li>';
                 return;
-            }
-
-            try {
+            }            try {
+                console.log('DEBUG: Searching for friends with query:', searchTerm);
                 const results = await makeApiCall(`${backendUrls.searchFriends}?query=${encodeURIComponent(searchTerm)}`, 'GET');
+                console.log('DEBUG: Search results:', results);
+                
                 if (results && results.length > 0) {
                     results.forEach(user => {
+                        console.log('DEBUG: Processing user:', user);
                         const li = document.createElement('li');
+                        
                         // Check if already friends or request sent
-                        const isFriend = currentUserData.friends.some(f => f.id === user.id);
-                        const isRequestSent = currentUserData.friendRequests.sent.some(r => r.id === user.id);
-                        let buttonHtml = `<button class="send-request-btn" data-user-id="${user.id}" title="Send Friend Request"><i class="fas fa-user-plus"></i></button>`;
+                        const isFriend = currentUserData.friends.some(f => f.uId === user.uId);
+                        const isRequestSent = currentUserData.friendRequests.sent.some(r => r.uId === user.uId);
+                        console.log('DEBUG: User', user.uId, 'isFriend:', isFriend, 'isRequestSent:', isRequestSent);
+                        
+                        let buttonHtml = `<button class="send-request-btn" data-user-id="${user.uId}" title="Send Friend Request"><i class="fas fa-user-plus"></i></button>`;
                         if (isFriend) {
                             buttonHtml = `<button disabled class="send-request-btn"><i class="fas fa-users"></i></button>`; // Already friends
                         } else if (isRequestSent) {
@@ -393,10 +397,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         li.innerHTML = `
                             <img src="${user.avatar || defaultAvatarUrl}" alt="${user.name} Avatar">
-                            <span>${user.name}</span>
+                            <a href="/profile/${user.uId}" class="user-profile-link"><span>${user.name}</span></a>
                             ${buttonHtml}
                         `;
                         searchResultsUi.appendChild(li);
+                    });
+                    
+                    // Add event listeners to the newly created send request buttons
+                    const sendRequestBtns = searchResultsUi.querySelectorAll('.send-request-btn:not([disabled])');
+                    console.log('DEBUG: Found', sendRequestBtns.length, 'send request buttons');
+                    sendRequestBtns.forEach(btn => {
+                        btn.addEventListener('click', async function() {
+                            const targetUid = this.getAttribute('data-user-id');
+                            console.log('DEBUG: Sending friend request to user:', targetUid);
+                            if (targetUid) {
+                                try {
+                                    const response = await makeApiCall(`${backendUrls.sendFriendRequest}/${targetUid}`, 'POST');
+                                    console.log('DEBUG: Friend request response:', response);
+                                    if (response) {
+                                        // Update UI to show request sent
+                                        this.innerHTML = '<i class="fas fa-check"></i>';
+                                        this.disabled = true;
+                                        this.title = 'Request Sent';
+                                        
+                                        // Update current user data
+                                        const targetUser = { uId: parseInt(targetUid) };
+                                        currentUserData.friendRequests.sent.push(targetUser);
+                                        
+                                        // Re-render friend requests to update counts
+                                        renderFriendRequests('sent');
+                                    }
+                                } catch (error) {
+                                    console.error('Error sending friend request:', error);
+                                }
+                            }
+                        });
                     });
                 } else {
                     searchResultsUi.innerHTML = '<li>No users found matching your search.</li>';
@@ -450,12 +485,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 renderFriendRequests('received');
                 alert(`Friend request accepted!`);
             } catch (e) { /* Error handled */ }
-        }
-        if (declineRequestBtn) {
+        }        if (declineRequestBtn) {
             const requestId = declineRequestBtn.dataset.requestId;
             try {
                 await makeApiCall(`${backendUrls.declineFriendRequest}/${requestId}`, 'POST');
-                currentUserData.friendRequests.received = currentUserData.friendRequests.received.filter(r => r.id != requestId);
+                currentUserData.friendRequests.received = currentUserData.friendRequests.received.filter(r => r.uId != requestId);
                 renderFriendRequests('received');
                 alert(`Friend request declined.`);
             } catch (e) { /* Error handled */ }
@@ -464,7 +498,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const requestId = cancelRequestBtn.dataset.requestId;
             try {
                 await makeApiCall(`${backendUrls.cancelFriendRequest}/${requestId}`, 'POST');
-                currentUserData.friendRequests.sent = currentUserData.friendRequests.sent.filter(r => r.id != requestId);
+                currentUserData.friendRequests.sent = currentUserData.friendRequests.sent.filter(r => r.uId != requestId);
                 renderFriendRequests('sent');
                 alert(`Friend request cancelled.`);
             } catch (e) { /* Error handled */ }
@@ -474,7 +508,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 await makeApiCall(`${backendUrls.sendFriendRequest}/${userId}`, 'POST');
                 // Optimistically update UI or refetch data
-                const targetUser = { id: userId, name: sendRequestBtn.parentElement.querySelector('span').textContent, avatar: sendRequestBtn.parentElement.querySelector('img').src };
+                const targetUser = { uId: parseInt(userId), name: sendRequestBtn.parentElement.querySelector('span').textContent, avatar: sendRequestBtn.parentElement.querySelector('img').src };
                 currentUserData.friendRequests.sent.push(targetUser);
                 renderFriendRequests('sent'); // To update count and list if visible
 
@@ -482,8 +516,68 @@ document.addEventListener('DOMContentLoaded', () => {
                 sendRequestBtn.innerHTML = '<i class="fas fa-check"></i>';
                 alert(`Friend request sent!`);
             } catch (e) { /* Error handled */ }
-        }
-    });
+        }});
+
+    // --- Friend Request Actions for Profile View (other user) ---
+    // Friend request buttons for other user's profile
+    const sendFriendRequestBtn = document.getElementById('sendFriendRequestBtn');
+    const acceptFriendBtn = document.getElementById('acceptFriendBtn');
+    const declineFriendBtn = document.getElementById('declineFriendBtn');    if (sendFriendRequestBtn) {
+        console.log('DEBUG: Found sendFriendRequestBtn, adding event listener');
+        sendFriendRequestBtn.addEventListener('click', async function () {
+            const targetId = this.getAttribute('data-target-id');
+            console.log('DEBUG: Send friend request clicked, targetId:', targetId);
+            if (!targetId) {
+                console.log('DEBUG: No targetId found');
+                return;
+            }
+            try {
+                console.log('DEBUG: Making API call to send friend request');
+                const response = await makeApiCall(`${backendUrls.sendFriendRequest}/${targetId}`, 'POST');
+                console.log('DEBUG: Friend request API response:', response);
+                this.disabled = true;
+                this.innerHTML = '<i class="fas fa-check"></i> Request Sent';
+                alert('Friend request sent!');
+            } catch (e) {
+                console.log('DEBUG: Error sending friend request:', e);
+                alert('Failed to send friend request.');
+            }
+        });
+    } else {
+        console.log('DEBUG: sendFriendRequestBtn not found');
+    }
+    if (acceptFriendBtn) {
+        acceptFriendBtn.addEventListener('click', async function () {
+            const requesterId = this.getAttribute('data-requester-id');
+            if (!requesterId) return;
+            try {
+                await makeApiCall(`${backendUrls.acceptFriendRequest}/${requesterId}`, 'POST');
+                this.disabled = true;
+                this.innerHTML = '<i class="fas fa-check"></i> Accepted';
+                alert('Friend request accepted!');
+                // Optionally reload page or update UI
+                window.location.reload();
+            } catch (e) {
+                alert('Failed to accept friend request.');
+            }
+        });
+    }
+    if (declineFriendBtn) {
+        declineFriendBtn.addEventListener('click', async function () {
+            const requesterId = this.getAttribute('data-requester-id');
+            if (!requesterId) return;
+            try {
+                await makeApiCall(`${backendUrls.declineFriendRequest}/${requesterId}`, 'POST');
+                this.disabled = true;
+                this.innerHTML = '<i class="fas fa-times"></i> Declined';
+                alert('Friend request declined.');
+                window.location.reload();
+            } catch (e) {
+                alert('Failed to decline friend request.');
+            }
+        });
+    }
+
 
     // --- Initial Load ---
     function initializePage() {

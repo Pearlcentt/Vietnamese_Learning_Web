@@ -1,98 +1,149 @@
+/* Reset and Base Styles from dashboard theme */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+}
+
 :root {
+    --PRIMARY_COLOR: #f5efe6;
+    --ACTIVE_ITEM_COLOR: #da251d;
+    --TITLE-text: #ff9e0c;
+    --ITEM-text: #c75a00;
+    --BORDER_LINE: #d9cfc0;
+    --RIGHT-BOX: #5c5149; /* Not directly used here but part of theme */
+
+    /* Leaderboard specific colors (can be overridden or used selectively) */
     --duo-green: #58cc02;
     --duo-blue: #1cb0f6;
     --duo-gray-light: #e5e5e5;
     --duo-gray-medium: #afafaf;
     --duo-gray-dark: #777777;
-    --duo-text-dark: #4b4b4b;
+    --duo-text-dark: #4b4b4b; /* Default text for leaderboard content */
     --duo-text-light: #ffffff;
-    --duo-border: #e5e5e5;
+    --duo-border: #e5e5e5; /* Consider using --BORDER_LINE for consistency */
     --duo-yellow: #ffc800;
     --duo-red: #ff4b4b;
     --pearl-color: #f7b9d0;
-    --light-green-button: #c8e6c9;
+    --light-green-button: #c8e6c9; /* Example: old button color */
     --light-green-button-hover: #b9d8ba;
 }
 
-html,
 body {
-    height: 100%;
-    width: 100%;
+    background-color: var(--PRIMARY_COLOR);
+    color: var(--ITEM-text); /* Default text color from dashboard theme */
+    overflow-x: hidden;
+    min-height: 100vh;
     margin: 0;
     padding: 0;
-    font-family: 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    background-color: #f0f2f5;
-    color: var(--duo-text-dark);
-    overflow: hidden;
 }
 
-.app-container {
+.container {
     display: flex;
-    width: 100%;
-    height: 100%;
-    background-color: #fff;
-    overflow: hidden;
+    min-height: 100vh;
+    max-width: 1400px;
+    margin: 0 auto;
+    /* overflow: hidden; /* Can cause issues with sticky sidebars if not careful */
 }
 
-/* Left Navigation Sidebar */
-.left-nav-sidebar {
-    width: 200px;
-    min-width: 180px;
-    padding: 20px;
-    background-color: #f8f9fa;
-    border-right: 1px solid var(--duo-border);
+/* Left Sidebar Styles (from dashboard) */
+.sidebar {
+    width: 20%;
+    background-color: var(--PRIMARY_COLOR);
+    padding: 20px 0;
+    border-right: 2px solid var(--BORDER_LINE);
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    min-width: 220px; /* Prevent collapsing too much */
 }
 
-.back-to-home-button {
-    display: inline-flex;
+.logo {
+    padding: 0 20px;
+    margin-bottom: 25px;
+}
+
+.logo h1 {
+    color: var(--ITEM-text);
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.nav-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.nav-item {
+    display: flex;
     align-items: center;
-    padding: 10px 15px;
-    background-color: var(--light-green-button);
-    color: var(--duo-text-dark);
+    padding: 12px 20px;
+    color: #afafaf;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 16px;
+    margin: 0 8px;
     text-decoration: none;
-    border-radius: 8px;
-    font-weight: bold;
-    transition: background-color 0.2s;
-    width: calc(100% - 30px);
-    box-sizing: border-box;
+}
+
+.nav-item:hover {
+    background-color: var(--TITLE-text);
+    color: #ffffff;
+}
+
+.nav-item.active {
+    background-color: var(--TITLE-text);
+    color: white;
+}
+
+.nav-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    margin-right: 15px;
+    display: flex;
+    align-items: center;
     justify-content: center;
-
+    overflow: hidden;
 }
 
-.back-to-home-button i {
-    margin-right: 8px;
+.nav-icon img {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
 }
 
-.back-to-home-button:hover {
-    background-color: var(--light-green-button-hover);
+.home-icon {
+    background-color: #e1d9c8;
+    border-radius: 8px;
 }
 
+.nav-text {
+    font-weight: 700;
+    font-size: 15px;
+}
 
-/* Main Content */
+/* Main Content (Leaderboard Specific) */
 .main-content {
-    flex-grow: 1;
+    width: 55%;
     padding: 20px 30px;
-    background-color: #fff;
     overflow-y: auto;
-
+    color: var(--duo-text-dark); /* Keep specific text color for leaderboard content */
+    background-color: var(--PRIMARY_COLOR); /* Ensure it has the theme background */
 }
 
-/* Ẩn thanh trượt cho .main-content */
 .main-content::-webkit-scrollbar {
     display: none;
-
 }
-
 .main-content {
     -ms-overflow-style: none;
     scrollbar-width: none;
-
 }
-
 
 .leaderboard-header {
     text-align: center;
@@ -114,25 +165,14 @@ body {
     border: 3px solid transparent;
 }
 
-.league-icon.ruby {
-    background-color: #ff4b4b;
-}
-
-.league-icon.emerald {
-    background-color: #58cc02;
-}
-
-.league-icon.amethyst {
-    background-color: #9b59b6;
-}
-
-.league-icon.pearl {
-    background-color: var(--pearl-color);
-}
+.league-icon.ruby { background-color: #ff4b4b; }
+.league-icon.emerald { background-color: #58cc02; }
+.league-icon.amethyst { background-color: #9b59b6; }
+.league-icon.pearl { background-color: var(--pearl-color); }
 
 .league-icon.obsidian-locked::after,
 .league-icon.diamond-locked::after {
-    content: "\f023";
+    content: "\f023"; /* Font Awesome lock icon */
     font-family: "Font Awesome 5 Free";
     font-weight: 900;
     position: absolute;
@@ -144,13 +184,13 @@ body {
 }
 
 .league-icon.active-league {
-    border-color: #fff;
-    box-shadow: 0 0 0 3px var(--pearl-color);
+    border-color: #fff; /* Or a theme color like var(--TITLE-text) */
+    box-shadow: 0 0 0 3px var(--pearl-color); /* Or a theme color */
     transform: scale(1.1);
 }
 
-.league-icon.pearl.active-league::before {
-    content: "\f52d";
+.league-icon.pearl.active-league::before { /* Example for specific league icon */
+    content: "\f52d"; /* Font Awesome gem icon or similar */
     font-family: "Font Awesome 5 Free";
     font-weight: 900;
     position: absolute;
@@ -164,7 +204,7 @@ body {
 .leaderboard-header h1 {
     margin: 5px 0;
     font-size: 28px;
-    color: var(--duo-text-dark);
+    color: var(--duo-text-dark); /* Or var(--ITEM-text) for theme consistency */
 }
 
 .leaderboard-header .promotion-info {
@@ -174,7 +214,7 @@ body {
 }
 
 .leaderboard-header .time-left {
-    color: var(--duo-yellow);
+    color: var(--duo-yellow); /* Or var(--TITLE-text) */
     font-weight: bold;
     font-size: 16px;
 }
@@ -182,7 +222,7 @@ body {
 .tabs {
     display: flex;
     margin-bottom: 20px;
-    border-bottom: 1px solid var(--duo-border);
+    border-bottom: 1px solid var(--BORDER_LINE); /* Theme border */
 }
 
 .tab-button {
@@ -192,12 +232,12 @@ body {
     cursor: pointer;
     font-size: 16px;
     font-weight: bold;
-    color: var(--duo-gray-medium);
+    color: var(--duo-gray-medium); /* Adjust for theme if needed */
     position: relative;
 }
 
 .tab-button.active {
-    color: var(--duo-blue);
+    color: var(--ACTIVE_ITEM_COLOR); /* Theme active color */
 }
 
 .tab-button.active::after {
@@ -207,7 +247,7 @@ body {
     left: 0;
     width: 100%;
     height: 3px;
-    background-color: var(--duo-blue);
+    background-color: var(--ACTIVE_ITEM_COLOR); /* Theme active color */
 }
 
 #leaderboard-list-container {
@@ -218,20 +258,17 @@ body {
     display: flex;
     align-items: center;
     padding: 15px 10px;
-    border-bottom: 1px solid var(--duo-border);
+    border-bottom: 1px solid var(--BORDER_LINE); /* Theme border */
     transition: background-color 0.2s;
 }
-
 .leaderboard-item:last-child {
     border-bottom: none;
 }
-
 .leaderboard-item.current-user-highlight {
-    background-color: #e6f7ff;
+    background-color: #fff0db; /* Lighter shade of theme, e.g., light orange/yellow */
     border-radius: 8px;
     font-weight: bold;
 }
-
 .rank {
     width: 45px;
     height: 45px;
@@ -245,20 +282,16 @@ body {
     align-items: center;
     flex-shrink: 0;
 }
-
-/* Style cho ảnh huy chương */
 .rank-medal-image {
     width: 35px;
     height: auto;
     display: block;
 }
-
 .username-leaderboard {
     font-size: 17px;
     color: var(--duo-text-dark);
     flex-grow: 1;
 }
-
 .xp {
     font-size: 16px;
     font-weight: bold;
@@ -267,31 +300,29 @@ body {
     padding-left: 10px;
 }
 
-
-
-/* Right Sidebar */
+/* Right Sidebar (Leaderboard Specific Content, Themed Container) */
 .right-sidebar {
-    width: 320px;
-    min-width: 300px;
+    width: 25%;
     padding: 20px;
-    border-left: 1px solid var(--duo-border);
-    background-color: #fdfdfd;
+    border-left: 2px solid var(--BORDER_LINE);
+    background-color: var(--PRIMARY_COLOR);
     display: flex;
     flex-direction: column;
     overflow-y: auto;
-
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    color: var(--duo-text-dark); /* Specific text color for its content */
+    min-width: 280px; /* Prevent collapsing too much */
 }
-
 
 .right-sidebar::-webkit-scrollbar {
     display: none;
 }
-
 .right-sidebar {
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
-
 
 .user-language-stats {
     display: flex;
@@ -299,18 +330,14 @@ body {
     justify-content: space-between;
     padding-bottom: 15px;
     margin-bottom: 20px;
-    border-bottom: 1px solid var(--duo-border);
+    border-bottom: 1px solid var(--BORDER_LINE); /* Theme border */
     flex-wrap: wrap;
-
 }
-
 .language-info-group {
     display: flex;
     align-items: center;
     margin-right: 15px;
-
 }
-
 .language-info-group img {
     height: 24px;
     width: auto;
@@ -318,191 +345,130 @@ body {
     border-radius: 3px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
-
 .language-info-group span {
     font-size: 14px;
-    /* Điều chỉnh kích thước chữ ngôn ngữ */
     font-weight: bold;
-    color: var(--duo-text-dark);
+    color: var(--duo-text-dark); /* Or var(--ITEM-text) */
 }
-
 .stats-badges-group {
     display: flex;
     align-items: center;
 }
-
 .stats-badges-group .stat-item {
     display: flex;
     align-items: center;
     font-size: 14px;
-    /* Điều chỉnh kích thước chữ badge */
     font-weight: bold;
-    color: var(--duo-gray-dark);
+    color: var(--duo-gray-dark); /* Or var(--ITEM-text) */
     margin-left: 15px;
-    /* Khoảng cách giữa các badge items */
 }
-
-.stats-badges-group .stat-item:first-child {
-    margin-left: 0;
-    /* Không có margin cho item đầu tiên trong group */
-}
-
+.stats-badges-group .stat-item:first-child { margin-left: 0; }
 .stats-badges-group .stat-item i {
     font-size: 18px;
-    /* Điều chỉnh kích thước icon badge */
     margin-right: 5px;
 }
+.stats-badges-group .stat-item .fa-fire { color: #ff9600; /* Or var(--TITLE-text) */ }
+.stats-badges-group .stat-item .fa-gem { color: var(--duo-red); /* Or var(--ACTIVE_ITEM_COLOR) */ }
 
-.stats-badges-group .stat-item .fa-fire {
-    color: #ff9600;
-}
-
-.stats-badges-group .stat-item .fa-gem {
-    color: var(--duo-red);
-}
-
-
-.user-profile-section {
-    text-align: center;
-}
-
+.user-profile-section { text-align: center; }
 .user-profile-section .profile-avatar-main {
     width: 100px;
     height: 100px;
     border-radius: 50%;
     object-fit: cover;
     margin-bottom: 15px;
-    border: 3px solid var(--duo-green);
+    border: 3px solid var(--ACTIVE_ITEM_COLOR); /* Theme color */
 }
-
 .user-profile-section h3 {
     font-size: 22px;
     margin-top: 0;
     margin-bottom: 10px;
-    color: var(--duo-text-dark);
+    color: var(--duo-text-dark); /* Or var(--ITEM-text) */
 }
-
 .user-profile-section p {
     font-size: 15px;
     color: var(--duo-gray-dark);
     margin: 5px 0;
 }
-
 .user-profile-section h4 {
     font-size: 16px;
     margin-top: 20px;
     margin-bottom: 10px;
-    color: var(--duo-text-dark);
+    color: var(--duo-text-dark); /* Or var(--ITEM-text) */
     text-align: left;
 }
-
 .user-profile-section #profile-achievements-list {
     list-style: none;
     padding: 0;
     text-align: left;
 }
-
 .user-profile-section #profile-achievements-list li {
     padding: 8px 0;
     font-size: 14px;
     color: var(--duo-gray-dark);
-    border-bottom: 1px solid var(--duo-gray-light);
+    border-bottom: 1px solid var(--duo-gray-light); /* Or var(--BORDER_LINE) */
 }
-
-.user-profile-section #profile-achievements-list li:last-child {
-    border-bottom: none;
-}
-
+.user-profile-section #profile-achievements-list li:last-child { border-bottom: none; }
 .user-profile-section #profile-achievements-list i {
     margin-right: 10px;
-    color: var(--duo-yellow);
+    color: var(--duo-yellow); /* Or var(--TITLE-text) */
 }
 
-
-/* Responsive adjustments */
-@media (max-width: 900px) {
-    .left-nav-sidebar {
-        width: auto;
-        /* Cho phép thu nhỏ hơn */
-        min-width: 60px;
-        /* Chỉ hiển thị icon nếu cần */
-        padding: 15px 10px;
+/* Responsive Design (Adapted from Dashboard and Leaderboard) */
+@media (max-width: 1200px) {
+    .container {
+        flex-direction: column;
+        height: auto;
+        max-width: 100%;
     }
-
-    .back-to-home-button {
-        width: auto;
-        /* Nút co lại theo nội dung */
-        padding: 8px 10px;
-    }
-
-    .back-to-home-button span {
-        /* Ẩn chữ "Homepage" trên màn hình nhỏ nếu chỉ muốn icon */
-        /* display: none; */
-    }
-
+    .sidebar,
     .right-sidebar {
-        display: none;
+        position: static;
+        width: 100% !important; /* Override fixed widths */
+        height: auto;
+        border-right: none;
+        border-left: none;
+        min-width: unset;
     }
+    .sidebar { /* Left sidebar */
+        border-bottom: 2px solid var(--BORDER_LINE);
+    }
+    .nav-items {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .nav-item { width: auto; }
+    .main-content { width: 100%; }
+}
 
+@media (max-width: 900px) {
+    .right-sidebar {
+        display: none; /* Hide right sidebar as per original leaderboard behavior */
+    }
     .main-content {
         padding: 20px;
     }
 }
 
 @media (max-width: 768px) {
-    .left-nav-sidebar {
-        /* Có thể ẩn hoàn toàn sidebar trái trên mobile */
-        display: none;
-    }
-
+    /* Left sidebar (.sidebar) becomes horizontal due to 1200px rule.
+       If you want to hide it completely:
+    .sidebar { display: none; }
+    */
     .main-content {
         padding: 15px;
     }
+    /* Leaderboard specific content adjustments */
+    .leaderboard-header h1 { font-size: 24px; }
+    .league-icon { width: 35px; height: 40px; margin: 0 3px; }
 }
 
 @media (max-width: 600px) {
-    .leaderboard-header h1 {
-        font-size: 24px;
-    }
-
-    .league-icon {
-        width: 35px;
-        height: 40px;
-        margin: 0 3px;
-    }
-
-    .tab-button {
-        padding: 8px 15px;
-        font-size: 15px;
-    }
-
-    .username-leaderboard {
-        font-size: 15px;
-    }
-
-    .xp {
-        font-size: 15px;
-    }
-
-    .user-language-stats {
-        flex-direction: column;
-        /* Xếp cờ/ngôn ngữ và badges thành 2 dòng trên mobile */
-        align-items: flex-start;
-    }
-
-    .language-info-group {
-        margin-bottom: 10px;
-        /* Khoảng cách khi xuống dòng */
-        margin-right: 0;
-    }
-
-    .stats-badges-group .stat-item {
-        margin-left: 0;
-        margin-right: 15px;
-        /* Khoảng cách giữa các badge items khi trên 1 dòng */
-    }
-
-    .stats-badges-group .stat-item:last-child {
-        margin-right: 0;
-    }
+    .tab-button { padding: 8px 15px; font-size: 15px; }
+    .username-leaderboard, .xp { font-size: 15px; }
+    .user-language-stats { flex-direction: column; align-items: flex-start; }
+    .language-info-group { margin-bottom: 10px; margin-right: 0; }
+    .stats-badges-group .stat-item { margin-left: 0; margin-right: 15px; }
+    .stats-badges-group .stat-item:last-child { margin-right: 0; }
 }

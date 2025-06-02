@@ -4,6 +4,7 @@ import group3.vietnamese_learning_web.dto.UserEditForm;
 import group3.vietnamese_learning_web.dto.UserResponseDTO;
 import group3.vietnamese_learning_web.service.AuthService;
 import group3.vietnamese_learning_web.service.LeaderboardService;
+import group3.vietnamese_learning_web.service.FriendService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,19 +17,25 @@ import org.springframework.http.HttpStatus;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.Set;
 
 @Controller
 @RequiredArgsConstructor
 public class ExtraController {
     private final AuthService authService;
     private final LeaderboardService leaderboardService;
-
-    @GetMapping("/leaderboard")
+    private final FriendService friendService;    @GetMapping("/leaderboard")
     public String leaderboard(Model model) {
         // Get current user
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         UserResponseDTO user = authService.getUserByUsername(username);
+
+        // Populate friend data for the current user
+        if (user != null) {
+            populateFriendData(user);
+        }
 
         // Get leaderboard data
         List<UserResponseDTO> topUsers = leaderboardService.getTopUsers(10);
@@ -52,14 +59,10 @@ public class ExtraController {
         model.addAttribute("friendsLeaderboardData", topUsers); // For now, same as global
         model.addAttribute("leagueSettingsDto", new LeagueSettings(leagueName, 7, 4));
         return "leaderboard";
-    }
-
-    @GetMapping("/profile")
+    }@GetMapping("/profile")
     public String profile(Model model) {
         return profileAddFriend(model); // Delegate to profileAddFriend for consistency
-    }
-
-    @GetMapping("/profile_add_friend")
+    }@GetMapping("/profile_add_friend")
     public String profileAddFriend(Model model) {
         // Get current user
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -73,9 +76,20 @@ public class ExtraController {
             userEditForm.setEmail(user.getEmail());
         }
 
+        // Populate friend data for the user
+        if (user != null) {
+            populateFriendData(user);
+        }
+
         // Add attributes to model
         model.addAttribute("userDto", user);
         model.addAttribute("userEditForm", userEditForm);
+        model.addAttribute("viewOnly", false); // This is the user's own profile, so not view-only
+        
+        // For own profile, show incoming friend requests
+        if (user != null) {
+            model.addAttribute("friendRequests", friendService.getFriendRequests(user.getUId()));
+        }
 
         return "profile_add_friend";
     }
@@ -114,9 +128,7 @@ public class ExtraController {
             authService.updateProfile(username, userEditForm);
 
             // Redirect to profile page with success message
-            return "redirect:/profile_add_friend?success=true";
-
-        } catch (RuntimeException e) {
+            return "redirect:/profile_add_friend?success=true";        } catch (RuntimeException e) {
             // Handle error
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String username = authentication.getName();
@@ -129,6 +141,7 @@ public class ExtraController {
 
             model.addAttribute("userDto", user);
             model.addAttribute("userEditForm", newForm);
+            model.addAttribute("viewOnly", false); // This is the user's own profile
             model.addAttribute("errorMessage", e.getMessage());
 
             // Return to the profile page with error
@@ -166,6 +179,170 @@ public class ExtraController {
 
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
+    }
+
+    // --- Friend Request Endpoints ---
+    @GetMapping("/friends/search")
+    @ResponseBody
+    public ResponseEntity<?> searchFriends(@RequestParam String query) {
+        try {
+            List<UserResponseDTO> results = authService.searchUsersByName(query);
+            return ResponseEntity.ok(results);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Search failed");
+        }
+    }    @PostMapping("/friends/request/send/{targetUid}")
+    @ResponseBody
+    public ResponseEntity<?> sendFriendRequest(@PathVariable Integer targetUid) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        UserResponseDTO user = authService.getUserByUsername(username);
+        
+        // DEBUG: Log the friend request attempt
+        System.out.println("DEBUG: Sending friend request from user " + user.getUId() + " to user " + targetUid);
+        
+        boolean sent = friendService.sendFriendRequest(user.getUId(), targetUid);
+        
+        // DEBUG: Log the result
+        System.out.println("DEBUG: Friend request sent result: " + sent);
+        
+        if (sent) {
+            return ResponseEntity.ok("Friend request sent");
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot send friend request");
+        }
+    }
+
+    @PostMapping("/friends/request/accept/{requesterUid}")
+    @ResponseBody
+    public ResponseEntity<?> acceptFriendRequest(@PathVariable Integer requesterUid) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        UserResponseDTO user = authService.getUserByUsername(username);
+        boolean accepted = friendService.acceptFriendRequest(user.getUId(), requesterUid);
+        if (accepted) {
+            return ResponseEntity.ok("Friend request accepted");
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot accept friend request");
+        }
+    }
+
+    @PostMapping("/friends/request/decline/{requesterUid}")
+    @ResponseBody
+    public ResponseEntity<?> declineFriendRequest(@PathVariable Integer requesterUid) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        UserResponseDTO user = authService.getUserByUsername(username);
+        boolean declined = friendService.declineFriendRequest(user.getUId(), requesterUid);
+        if (declined) {
+            return ResponseEntity.ok("Friend request declined");
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot decline friend request");
+        }
+    }
+
+    @PostMapping("/friends/request/cancel/{targetUid}")
+    @ResponseBody
+    public ResponseEntity<?> cancelFriendRequest(@PathVariable Integer targetUid) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        UserResponseDTO user = authService.getUserByUsername(username);
+        boolean cancelled = friendService.cancelFriendRequest(user.getUId(), targetUid);
+        if (cancelled) {
+            return ResponseEntity.ok("Friend request cancelled");
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot cancel friend request");
+        }
+    }
+
+    @PostMapping("/friends/unfriend/{friendUid}")
+    @ResponseBody
+    public ResponseEntity<?> unfriend(@PathVariable Integer friendUid) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        UserResponseDTO user = authService.getUserByUsername(username);
+        boolean unfriended = friendService.unfriend(user.getUId(), friendUid);
+        if (unfriended) {
+            return ResponseEntity.ok("Unfriended successfully");
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot unfriend user");
+        }
+    }    // View another user's profile (read-only or with friend actions)
+    @GetMapping("/profile/{uid}")
+    public String viewUserProfile(@PathVariable Integer uid, Model model) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        UserResponseDTO currentUser = authService.getUserByUsername(username);
+        UserResponseDTO user = authService.getUserByUid(uid);
+        if (user == null) {
+            model.addAttribute("errorMessage", "User not found");
+            return "error";
+        }
+        
+        boolean isOwnProfile = currentUser != null && currentUser.getUId().equals(uid);
+        
+        // Populate friend data for the user being viewed
+        populateFriendData(user);
+        
+        model.addAttribute("userDto", user);
+        model.addAttribute("viewOnly", !isOwnProfile);
+        if (!isOwnProfile) {
+            boolean alreadyFriends = friendService.areFriends(currentUser.getUId(), uid);
+            boolean requestSent = friendService.getFriendRequests(uid).contains(currentUser.getUId());
+            boolean requestReceived = friendService.getFriendRequests(currentUser.getUId()).contains(uid);
+            model.addAttribute("alreadyFriends", alreadyFriends);
+            model.addAttribute("requestSent", requestSent);
+            model.addAttribute("requestReceived", requestReceived);
+        } else {
+            // For own profile, show incoming friend requests
+            model.addAttribute("friendRequests", friendService.getFriendRequests(currentUser.getUId()));
+        }
+        return "profile_add_friend";
+    }    /**
+     * Helper method to populate friend data in UserResponseDTO
+     */
+    private void populateFriendData(UserResponseDTO user) {
+        if (user == null || user.getUId() == null) return;
+        
+        // DEBUG: Log data population
+        System.out.println("DEBUG: Populating friend data for user " + user.getUId());
+        
+        // Get friends list
+        Set<Integer> friendIds = friendService.getFriends(user.getUId());
+        List<UserResponseDTO> friendsList = new ArrayList<>();
+        for (Integer friendId : friendIds) {
+            UserResponseDTO friend = authService.getUserByUid(friendId);
+            if (friend != null) {
+                friendsList.add(friend);
+            }
+        }
+        user.setFriends(friendsList);
+        
+        // Get received friend requests
+        Set<Integer> receivedRequestIds = friendService.getFriendRequests(user.getUId());
+        List<UserResponseDTO> receivedRequestsList = new ArrayList<>();
+        for (Integer requesterId : receivedRequestIds) {
+            UserResponseDTO requester = authService.getUserByUid(requesterId);
+            if (requester != null) {
+                receivedRequestsList.add(requester);
+            }
+        }
+        user.setReceivedFriendRequests(receivedRequestsList);
+        
+        // Get sent friend requests
+        Set<Integer> sentRequestIds = friendService.getSentFriendRequests(user.getUId());
+        List<UserResponseDTO> sentRequestsList = new ArrayList<>();
+        for (Integer targetId : sentRequestIds) {
+            UserResponseDTO target = authService.getUserByUid(targetId);
+            if (target != null) {
+                sentRequestsList.add(target);
+            }
+        }
+        user.setSentFriendRequests(sentRequestsList);
+        
+        // DEBUG: Log populated data
+        System.out.println("DEBUG: User " + user.getUId() + " has " + friendsList.size() + " friends, " + 
+                         receivedRequestsList.size() + " received requests, " + sentRequestsList.size() + " sent requests");
     }
 
     // Simple DTO for league settings

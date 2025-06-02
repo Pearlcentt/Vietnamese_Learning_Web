@@ -2,7 +2,7 @@ package group3.vietnamese_learning_web.model;
 
 public enum ProgressStatus {
     Not_Started("Not Started"),
-    In_Progress("In Progress"), 
+    In_Progress("In Progress"),
     Completed("Completed");
 
     private final String dbValue;
