@@ -9,11 +9,37 @@
 </head>
 <body>
 <div class="app-layout-container">
-    <!-- Sidebar Trái -->
-    <aside class="left-sidebar-profile">
-        <a th:href="@{/dashboard}" class="back-to-home-btn-profile">
-            <i class="fas fa-arrow-left"></i> Dashboard
-        </a>
+    <!-- Left Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <h1>VietLingo</h1>
+        </div>
+        <nav class="nav-items">
+            <a th:href="@{/dashboard}" class="nav-item">
+                <div class="nav-icon home-icon">
+                    <img th:src="@{/images/play-button.png}" alt="Learn" />
+                </div>
+                <span class="nav-text">LEARN</span>
+            </a>
+            <a th:href="@{/leaderboard}" class="nav-item">
+                <div class="nav-icon">
+                    <img th:src="@{/images/businessman-with-target.png}" alt="Leaderboards" />
+                </div>
+                <span class="nav-text">LEADERBOARDS</span>
+            </a>
+            <a th:href="@{/profile_add_friend}" class="nav-item active">
+                <div class="nav-icon">
+                    <img th:src="@{/images/person.png}" alt="Profile" />
+                </div>
+                <span class="nav-text">PROFILE</span>
+            </a>
+            <a th:href="@{/logout}" class="nav-item" id="logoutLink">
+                <div class="nav-icon">
+                    <img th:src="@{/images/log_out.png}" alt="Logout" />
+                </div>
+                <span class="nav-text">LOGOUT</span>
+            </a>
+        </nav>
     </aside>
 
     <!-- Main Content (Profile View & Edit View) -->
