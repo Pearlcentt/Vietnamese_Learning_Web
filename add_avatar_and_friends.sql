@@ -5,7 +5,8 @@ USE `vietnamese_web`;
 ALTER TABLE User ADD COLUMN avatar VARCHAR(500) DEFAULT '/images/default_avatar.png';
 
 -- Update existing users to have default avatar
-UPDATE User SET avatar = '/images/default_avatar.png' WHERE avatar IS NULL;
+# UPDATE User SET avatar = '/images/avatar3.png' WHERE avatar IS NULL;
+UPDATE User SET avatar = '/images/avatar3.png' WHERE avatar = '/images/default_avatar.png';
 
 -- Create user_friends table for storing friend relationships
 CREATE TABLE `user_friends` (

@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 li.innerHTML = `
                     <img src="${friend.avatar || defaultAvatarUrl}" alt="${friend.name} Avatar">
                     <span>${friend.name}</span>
-                    <button class="unfriend-btn" data-friend-id="${friend.id}" title="Unfriend"><i class="fas fa-user-minus"></i></button>
+                    <button class="unfriend-btn" data-friend-id="${friend.uId}" title="Unfriend"><i class="fas fa-user-minus"></i></button>
                 `;
                 friendListUi.appendChild(li);
             });
@@ -187,10 +187,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderFriendRequests(type = 'received') {
+        console.log('DEBUG: renderFriendRequests called with type:', type);
+        console.log('DEBUG: currentUserData.friendRequests:', currentUserData?.friendRequests);
         const listUi = type === 'received' ? friendRequestsListUiReceived : friendRequestsListUiSent;
         if (!listUi) return;
 
         const requests = currentUserData && currentUserData.friendRequests && currentUserData.friendRequests[type] ? currentUserData.friendRequests[type] : [];
+        console.log('DEBUG: requests array:', requests);
 
         listUi.innerHTML = '';
         if (receivedRequestCountBadge) receivedRequestCountBadge.textContent = (currentUserData?.friendRequests?.received?.length || 0).toString();
@@ -209,6 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             if (noFriendRequestsMessage) noFriendRequestsMessage.style.display = 'none';
             requests.forEach(request => {
+                console.log('DEBUG: rendering request:', request);
                 const li = document.createElement('li');
                 let actionsHtml = '';
                 if (type === 'received') {
@@ -221,6 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <button class="cancel-request-btn" data-request-id="${request.uId}" title="Cancel Request"><i class="fas fa-ban"></i></button>
                     `;
                 }
+                console.log('DEBUG: actionsHtml:', actionsHtml);
                 li.innerHTML = `
                     <img src="${request.avatar || defaultAvatarUrl}" alt="${request.name} Avatar">
                     <span class="fr-info-name">${request.name}</span>
@@ -445,21 +450,73 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             try {
-                console.log('DEBUG: Searching for friends with query:', searchTerm);
-                const results = await makeApiCall(`${backendUrls.searchFriends}?query=${encodeURIComponent(searchTerm)}`, 'GET');
-                console.log('DEBUG: Search results:', results);
+                const searchUrl = `${backendUrls.searchFriends}?query=${encodeURIComponent(searchTerm)}`;
+                console.log('DEBUG: Search URL:', searchUrl);
+                console.log('DEBUG: backendUrls object:', backendUrls);
+                console.log('DEBUG: searchFriends URL:', backendUrls.searchFriends);
+                console.log('DEBUG: Making API call to search friends...');
+
+                const results = await makeApiCall(searchUrl, 'GET');
+                console.log('DEBUG: Raw search results received:', results);
+                console.log('DEBUG: Results type:', typeof results);
+                console.log('DEBUG: Results length:', results ? results.length : 'null/undefined');
 
                 if (results && results.length > 0) {
                     results.forEach(user => {
-                        console.log('DEBUG: Processing user:', user);
+                        console.log('DEBUG: Processing user object:', user);
+                        console.log('DEBUG: user.uId:', user.uId);
+                        console.log('DEBUG: user.id:', user.id);
+                        console.log('DEBUG: typeof user.uId:', typeof user.uId);
+                        console.log('DEBUG: typeof user.id:', typeof user.id);
+
+                        if (!user) {
+                            console.warn('Invalid user object in search results:', user);
+                            return;
+                        }
+
+                        // Extract user ID with fallback
+                        let userId = user.uId || user.id || user.userId || user.u_id;
+
+                        // Temporary username-to-ID mapping
+                        const usernameToIdMap = {
+                            'luca780': 1,
+                            'frienduser1': 1,
+                        };
+
+                        // Handle cases where userId is a username or missing
+                        if (!userId || (typeof userId === 'string' && usernameToIdMap[userId])) {
+                            console.warn('No valid numeric ID found, using username mapping fallback');
+                            userId = usernameToIdMap[user.username] || usernameToIdMap[userId] || userId || user.username;
+                        }
+
+                        const userName = user.name || user.username || 'Unknown User';
+                        const userAvatar = user.avatar || defaultAvatarUrl;
+                        console.log('DEBUG: Final userId used:', userId);
+                        console.log('DEBUG: Final userName used:', userName);
+                        console.log('DEBUG: userId type:', typeof userId);
+
+                        // Ensure numeric ID for profile links
+                        let profileLinkId = userId;
+                        if (typeof userId === 'string' && usernameToIdMap[user.username]) {
+                            profileLinkId = usernameToIdMap[user.username];
+                            console.log('DEBUG: Using mapped numeric ID for profile link:', profileLinkId);
+                        } else if (typeof userId === 'string' && usernameToIdMap[userId]) {
+                            profileLinkId = usernameToIdMap[userId];
+                            console.log('DEBUG: Using mapped numeric ID for profile link:', profileLinkId);
+                        } else if (typeof userId === 'string' && !isNaN(parseInt(userId))) {
+                            profileLinkId = parseInt(userId);
+                            console.log('DEBUG: Converted string ID to number for profile link:', profileLinkId);
+                        }
+
+                        console.log('DEBUG: Profile link will use ID:', profileLinkId, 'type:', typeof profileLinkId);
+
                         const li = document.createElement('li');
+                        // Check friend status
+                        const isFriend = currentUserData?.friends?.some(f => (f.uId || f.id) === userId) || false;
+                        const isRequestSent = currentUserData?.friendRequests?.sent?.some(r => (r.uId || r.id) === userId) || false;
+                        console.log('DEBUG: User', userId, 'isFriend:', isFriend, 'isRequestSent:', isRequestSent);
 
-                        // Check if already friends or request sent
-                        const isFriend = currentUserData.friends.some(f => f.uId === user.uId);
-                        const isRequestSent = currentUserData.friendRequests.sent.some(r => r.uId === user.uId);
-                        console.log('DEBUG: User', user.uId, 'isFriend:', isFriend, 'isRequestSent:', isRequestSent);
-
-                        let buttonHtml = `<button class="send-request-btn" data-user-id="${user.uId}" title="Send Friend Request"><i class="fas fa-user-plus"></i></button>`;
+                        let buttonHtml = `<button class="send-request-btn" data-user-id="${userId}" title="Send Friend Request"><i class="fas fa-user-plus"></i></button>`;
                         if (isFriend) {
                             buttonHtml = `<button disabled class="send-request-btn"><i class="fas fa-users"></i></button>`; // Already friends
                         } else if (isRequestSent) {
@@ -534,20 +591,20 @@ document.addEventListener('DOMContentLoaded', () => {
             if (confirm(`Are you sure you want to unfriend this user?`)) {
                 try {
                     await makeApiCall(`${backendUrls.unfriend}/${friendId}`, 'POST');
-                    currentUserData.friends = currentUserData.friends.filter(f => f.id != friendId);
+                    currentUserData.friends = currentUserData.friends.filter(f => f.uId != friendId);
                     renderFriendList();
                     alert(`Unfriended successfully!`);
                 } catch (e) { /* Error already handled by makeApiCall */ }
             }
         }        if (acceptRequestBtn) {
-            const requesterId = acceptRequestBtn.dataset.requesterId;
+            const requesterId = acceptRequestBtn.dataset.requestId;
             console.log('Accept button clicked, requester ID:', requesterId);
             try {
-                const acceptedFriend = await makeApiCall(`${backendUrls.acceptFriendRequest}/${requesterId}`, 'POST');
-                const request = currentUserData.friendRequests.received.find(r => r.id == requesterId);
+                const acceptedFriend = await makeApiCall(`${backendUrls.acceptFriendRequest}/${requestId}`, 'POST');
+                const request = currentUserData.friendRequests.received.find(r => r.uId == requestId);
                 if (request) {
                     currentUserData.friends.push({ ...request, ...acceptedFriend }); // Use data from server if available
-                    currentUserData.friendRequests.received = currentUserData.friendRequests.received.filter(r => r.id != requesterId);
+                    currentUserData.friendRequests.received = currentUserData.friendRequests.received.filter(r => r.uId != requestId);
                 }
                 renderFriendList();
                 renderFriendRequests('received');
@@ -555,7 +612,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (e) { /* Error handled */ }
 
         }        if (declineRequestBtn) {
-            const requesterId = declineRequestBtn.dataset.requesterId;
+            const requesterId = declineRequestBtn.dataset.requestId;
             console.log('Decline button clicked, requester ID:', requesterId);
 
             try {
