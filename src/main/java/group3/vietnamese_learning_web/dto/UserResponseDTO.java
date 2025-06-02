@@ -4,6 +4,7 @@ import group3.vietnamese_learning_web.model.Gender;
 import lombok.*;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.ArrayList;
 
 @Data
 @NoArgsConstructor
@@ -20,7 +21,9 @@ public class UserResponseDTO {
     private int streak;
     private int gems;
     private Integer points;
-    private String avatar; // Added for user avatar
+    private String avatar; // User avatar URL/path
+    @Builder.Default
+    private List<String> friendIds = new ArrayList<>(); // Friend IDs as strings
     private LocalDate dateCreated; // Added to match template
     private List<UserResponseDTO> friends; // Added for friend list
     private List<UserResponseDTO> receivedFriendRequests; // Added for friend requests

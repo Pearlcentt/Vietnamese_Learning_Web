@@ -49,7 +49,8 @@ public class ProgressController {
             @RequestParam Integer lessonId,
             @RequestParam Integer score,
             @RequestParam ProgressStatus status) {
-        return progressService.updateProgress(uid, topicId, lessonId, score, status);    }
+        return progressService.updateProgress(uid, topicId, lessonId, score, status);
+    }
 
     // Start lesson endpoint - marks lesson as "In Progress" when user begins
     @PostMapping("/start")
@@ -64,7 +65,7 @@ public class ProgressController {
 
             // Check current progress
             ProgressDTO existingProgress = progressService.getProgress(userId, topicId, lessonId);
-            
+
             // Only update to In_Progress if not already completed
             if (existingProgress == null || existingProgress.getStatus() != ProgressStatus.Completed) {
                 // Mark lesson as in progress with initial score
@@ -77,7 +78,8 @@ public class ProgressController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Failed to start lesson: " + e.getMessage());
         }
-    }    // Complete lesson endpoint called from frontend with actual score
+    } // Complete lesson endpoint called from frontend with actual score
+
     @PostMapping("/complete")
     public ResponseEntity<String> completeLesson(
             @RequestParam Integer topicId,
@@ -93,7 +95,7 @@ public class ProgressController {
             // Calculate score percentage
             int maxScore = 100;
             int actualScore = Math.min(maxScore, (score * maxScore) / totalQuestions);
-            
+
             // Determine status based on score
             ProgressStatus status;
             if (actualScore >= maxScore) {
@@ -105,25 +107,29 @@ public class ProgressController {
             // Check if lesson was already completed
             ProgressDTO existingProgress = progressService.getProgress(userId, topicId, lessonId);
             boolean wasAlreadyCompleted = existingProgress != null &&
-                    existingProgress.getStatus() == ProgressStatus.Completed;
-
-            // Update progress with actual score and status
+                    existingProgress.getStatus() == ProgressStatus.Completed; // Update progress with actual score and
+                                                                              // status
             progressService.updateProgress(userId, topicId, lessonId, actualScore, status);
+            System.out.println(
+                    "DEBUG: Progress updated for user " + userId + " - Score: " + actualScore + ", Status: " + status);
 
             // Sync user points with updated Progress scores
+            System.out.println("DEBUG: Syncing points for user " + userId);
             leaderboardService.syncUserPointsFromProgress(userId);
+            System.out.println("DEBUG: Points sync completed for user " + userId);
 
             String message;
             if (status == ProgressStatus.Completed) {
                 if (!wasAlreadyCompleted) {
-                    message = String.format("Perfect! Lesson completed with %d/%d correct answers! +%d points", 
+                    message = String.format("Perfect! Lesson completed with %d/%d correct answers! +%d points",
                             score, totalQuestions, actualScore);
                 } else {
-                    message = String.format("Perfect score again! %d/%d correct answers (already completed)", 
+                    message = String.format("Perfect score again! %d/%d correct answers (already completed)",
                             score, totalQuestions);
                 }
             } else {
-                message = String.format("Good try! %d/%d correct answers. Get all questions right to complete the lesson!", 
+                message = String.format(
+                        "Good try! %d/%d correct answers. Get all questions right to complete the lesson!",
                         score, totalQuestions);
             }
 

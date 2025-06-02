@@ -63,10 +63,12 @@ public class QuestionController {
             List<LessonSentence> lessonSentences = lessonSentenceRepository
                     .findByIdTopicIdAndIdLessonId(topicId, lessonId);
 
-            System.out.println("DEBUG: Looking for lesson sentences with topicId=" + topicId + ", lessonId=" + lessonId);
+            System.out
+                    .println("DEBUG: Looking for lesson sentences with topicId=" + topicId + ", lessonId=" + lessonId);
             System.out.println("DEBUG: Found " + lessonSentences.size() + " lesson sentences");
 
-            // Fallback: If only 1 sentence, fetch a random second sentence from the same topic
+            // Fallback: If only 1 sentence, fetch a random second sentence from the same
+            // topic
             if (lessonSentences.size() == 1) {
                 // Get the topic name from the sentence
                 Integer onlySid = lessonSentences.get(0).getId().getSId();
@@ -77,17 +79,18 @@ public class QuestionController {
                     List<Sentence> allTopicSentences = sentenceRepository.findByTopicName(topicName);
                     // Exclude the already used sentence
                     List<Sentence> candidates = allTopicSentences.stream()
-                        .filter(s -> !s.getSId().equals(onlySid))
-                        .collect(Collectors.toList());
+                            .filter(s -> !s.getSId().equals(onlySid))
+                            .collect(Collectors.toList());
                     if (!candidates.isEmpty()) {
                         // Pick a random one
-                        Sentence extra = candidates.get((int)(Math.random() * candidates.size()));
+                        Sentence extra = candidates.get((int) (Math.random() * candidates.size()));
                         // Create a fake LessonSentence to add
                         LessonSentenceId extraId = new LessonSentenceId(topicId, lessonId, extra.getSId());
                         LessonSentence extraLessonSentence = new LessonSentence();
                         extraLessonSentence.setId(extraId);
                         lessonSentences.add(extraLessonSentence);
-                        System.out.println("DEBUG: Added fallback sentence " + extra.getSId() + " for topic " + topicName);
+                        System.out.println(
+                                "DEBUG: Added fallback sentence " + extra.getSId() + " for topic " + topicName);
                     }
                 }
             }

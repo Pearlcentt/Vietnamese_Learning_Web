@@ -10,6 +10,8 @@ CREATE TABLE `User` (
   `name`          VARCHAR(100)   NOT NULL,
   `dob`           DATE           NOT NULL,
   `gender`        ENUM('Male','Female','Other') NOT NULL,
+  `points`        INT            NOT NULL DEFAULT 0,
+  `avatar`        VARCHAR(500)   DEFAULT '/images/default_avatar.png',
   `date_created`  TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`u_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -108,6 +110,19 @@ CREATE TABLE `Lesson_Sentence` (
   CONSTRAINT `fk_lesson_sentence_sentence`
     FOREIGN KEY (`s_id`)
     REFERENCES `Sentence` (`s_id`)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Table for storing user friend relationships (supports JPA @ElementCollection)
+CREATE TABLE `user_friends` (
+  `user_id`   INT NOT NULL,
+  `friend_id` VARCHAR(255) NOT NULL,
+  PRIMARY KEY (`user_id`, `friend_id`),
+  INDEX (`user_id`),
+  CONSTRAINT `fk_user_friends_user`
+    FOREIGN KEY (`user_id`)
+    REFERENCES `User` (`u_id`)
     ON UPDATE CASCADE
     ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
