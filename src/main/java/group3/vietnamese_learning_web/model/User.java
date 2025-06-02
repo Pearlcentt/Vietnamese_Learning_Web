@@ -33,7 +33,7 @@ public class User {
 
     @Column(nullable = false)
     private LocalDate dob;
-    
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)
     private Gender gender; // enum Gender { Male, Female, Other }

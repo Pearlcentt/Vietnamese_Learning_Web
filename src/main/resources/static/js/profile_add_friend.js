@@ -172,24 +172,25 @@ document.addEventListener('DOMContentLoaded', () => {
         if (friends.length === 0) {
             if (noFriendsMessage) noFriendsMessage.style.display = 'block';
         } else {
-            if (noFriendsMessage) noFriendsMessage.style.display = 'none';
-            friends.forEach(friend => {
+            if (noFriendsMessage) noFriendsMessage.style.display = 'none';            friends.forEach(friend => {
                 const li = document.createElement('li');
                 li.innerHTML = `
                     <img src="${friend.avatar || defaultAvatarUrl}" alt="${friend.name} Avatar">
                     <span>${friend.name}</span>
-                    <button class="unfriend-btn" data-friend-id="${friend.id}" title="Unfriend"><i class="fas fa-user-minus"></i></button>
+                    <button class="unfriend-btn" data-friend-id="${friend.uId}" title="Unfriend"><i class="fas fa-user-minus"></i></button>
                 `;
                 friendListUi.appendChild(li);
             });
         }
-    }
-
-    function renderFriendRequests(type = 'received') {
+    }    function renderFriendRequests(type = 'received') {
+        console.log('DEBUG: renderFriendRequests called with type:', type);
+        console.log('DEBUG: currentUserData.friendRequests:', currentUserData?.friendRequests);
+        
         const listUi = type === 'received' ? friendRequestsListUiReceived : friendRequestsListUiSent;
         if (!listUi) return;
 
         const requests = currentUserData && currentUserData.friendRequests && currentUserData.friendRequests[type] ? currentUserData.friendRequests[type] : [];
+        console.log('DEBUG: requests array:', requests);
 
         listUi.innerHTML = '';
         if (receivedRequestCountBadge) receivedRequestCountBadge.textContent = (currentUserData?.friendRequests?.received?.length || 0).toString();
@@ -207,6 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } else {
             if (noFriendRequestsMessage) noFriendRequestsMessage.style.display = 'none';            requests.forEach(request => {
+                console.log('DEBUG: rendering request:', request);
                 const li = document.createElement('li');
                 let actionsHtml = '';
                 if (type === 'received') {
@@ -219,6 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <button class="cancel-request-btn" data-request-id="${request.uId}" title="Cancel Request"><i class="fas fa-ban"></i></button>
                     `;
                 }
+                console.log('DEBUG: actionsHtml:', actionsHtml);
                 li.innerHTML = `
                     <img src="${request.avatar || defaultAvatarUrl}" alt="${request.name} Avatar">
                     <span class="fr-info-name">${request.name}</span>
@@ -587,32 +590,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (unfriendBtn) {
             const friendId = unfriendBtn.dataset.friendId;
-            if (confirm(`Are you sure you want to unfriend this user?`)) {
-                try {
+            if (confirm(`Are you sure you want to unfriend this user?`)) {                try {
                     await makeApiCall(`${backendUrls.unfriend}/${friendId}`, 'POST');
-                    currentUserData.friends = currentUserData.friends.filter(f => f.id != friendId);
+                    currentUserData.friends = currentUserData.friends.filter(f => f.uId != friendId);
                     renderFriendList();
                     alert(`Unfriended successfully!`);
                 } catch (e) { /* Error already handled by makeApiCall */ }
             }
         }        if (acceptRequestBtn) {
-            const requesterId = acceptRequestBtn.dataset.requesterId;
+            const requesterId = acceptRequestBtn.dataset.requestId;
             console.log('Accept button clicked, requester ID:', requesterId);
+            console.log('Button element:', acceptRequestBtn);
+            console.log('Button dataset:', acceptRequestBtn.dataset);
+            console.log('All data attributes:', acceptRequestBtn.getAttributeNames().filter(name => name.startsWith('data-')));
+            
+            if (!requesterId) {
+                console.error('No requester ID found on accept button');
+                return;
+            }
+            
             try {
                 const acceptedFriend = await makeApiCall(`${backendUrls.acceptFriendRequest}/${requesterId}`, 'POST');
-                const request = currentUserData.friendRequests.received.find(r => r.id == requesterId);
-                if (request) {
+                const request = currentUserData.friendRequests.received.find(r => r.uId == requesterId);                if (request) {
                     currentUserData.friends.push({ ...request, ...acceptedFriend }); // Use data from server if available
-                    currentUserData.friendRequests.received = currentUserData.friendRequests.received.filter(r => r.id != requesterId);
+                    currentUserData.friendRequests.received = currentUserData.friendRequests.received.filter(r => r.uId != requesterId);
                 }
                 renderFriendList();
                 renderFriendRequests('received');
                 alert(`Friend request accepted!`);
             } catch (e) { /* Error handled */ }
         }        if (declineRequestBtn) {
-            const requesterId = declineRequestBtn.dataset.requesterId;
-            console.log('Decline button clicked, requester ID:', requesterId);
-            try {
+            const requesterId = declineRequestBtn.dataset.requestId;
+            console.log('Decline button clicked, requester ID:', requesterId);            try {
                 await makeApiCall(`${backendUrls.declineFriendRequest}/${requesterId}`, 'POST');
                 currentUserData.friendRequests.received = currentUserData.friendRequests.received.filter(r => r.uId != requesterId);
                 renderFriendRequests('received');

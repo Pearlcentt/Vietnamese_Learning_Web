@@ -35,17 +35,31 @@
   <div class="col-bot">
     <div class="col-mid">      <div class="main-question">
         <div class="Guidance">Fill in the blank!</div>        <div class="cartoon-telling">
-          <div class="cartoon-image"><img th:src="@{/images/fill.png}" /></div>
-          <div class="sentence-box" th:data-question="${questions[0].question}">
-            <span class="sentence-part1" th:text="${#strings.substringBefore(questions[0].question, '_____')}">Part 1</span>
-            <span class="sentence-part2">_____</span>
-            <span class="sentence-part3" th:text="${#strings.substringAfter(questions[0].question, '_____')}">Part 3</span>
+          <div class="cartoon-image"><img th:src="@{/images/fill.png}" /></div>          <div class="sentence-box" th:if="${questions != null and !questions.isEmpty()}" 
+               th:data-question="${questions[0].question != null ? questions[0].question : 'Default question'}">
+            <th:block th:if="${questions[0].question != null and #strings.contains(questions[0].question, '_____')}">
+              <span class="sentence-part1" th:text="${#strings.substringBefore(questions[0].question, '_____')}">Part 1</span>
+              <span class="sentence-part2">_____</span>
+              <span class="sentence-part3" th:text="${#strings.substringAfter(questions[0].question, '_____')}">Part 3</span>
+            </th:block>
+            <th:block th:unless="${questions[0].question != null and #strings.contains(questions[0].question, '_____')}">
+              <span class="sentence-part1" th:text="${questions[0].question != null ? questions[0].question : 'Loading...'}">Loading</span>
+            </th:block>
           </div>
-        </div>
-        <div class="Fills">
-          <div class="Fill-box" th:each="choice : ${questions[0].choices}">
-            <div class="Fill-word" th:text="${choice}">Word</div>
+          <div class="sentence-box" th:unless="${questions != null and !questions.isEmpty()}" th:data-question="Default question">
+            <span class="sentence-part1">Loading...</span>
           </div>
+        </div>        <div class="Fills">
+          <th:block th:if="${questions != null and !questions.isEmpty() and questions[0].choices != null}">
+            <div class="Fill-box" th:each="choice : ${questions[0].choices}">
+              <div class="Fill-word" th:text="${choice != null ? choice : 'Option'}">Word</div>
+            </div>
+          </th:block>
+          <th:block th:unless="${questions != null and !questions.isEmpty() and questions[0].choices != null}">
+            <div class="Fill-box">
+              <div class="Fill-word">Loading...</div>
+            </div>
+          </th:block>
         </div>
       </div>
       <div class="Submit-section">
@@ -59,7 +73,7 @@
 </div>
 <script th:inline="javascript">
   window.questionData = {
-    answer: /*[[${questions[0].answer}]]*/ 'defaultAnswer'
+    answer: /*[[${questions != null and !questions.isEmpty() and questions[0].answer != null ? questions[0].answer : 'defaultAnswer'}]]*/ 'defaultAnswer'
   };
 </script>
 <script th:src="@{/js/choose-2.js}" defer></script>

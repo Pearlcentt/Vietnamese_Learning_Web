@@ -132,24 +132,55 @@ public class QuestionService {
                 .choices(choices)
                 .type(1)
                 .build();
-    } // Lesson 2: Fill in the blank - Vietnamese sentence with one word blanked out
+    }
 
+    // Lesson 2: Fill in the blank - Vietnamese sentence with one word blanked out
     private QuestionDTO buildFillInBlankQuestion(Sentence sentence, List<Word> words) {
         if (words.isEmpty()) {
-            // Fallback: use full sentence if no words available
-            return QuestionDTO.builder()
-                    .sId(sentence.getSId())
-                    .question(sentence.getViet())
-                    .answer(sentence.getViet())
-                    .choices(List.of(sentence.getViet()))
-                    .type(2)
-                    .build();
+            // Fallback: use first word from sentence and create a blank
+            String originalSentence = sentence.getViet();
+            String[] sentenceWords = originalSentence.split("\\s+");
+            if (sentenceWords.length > 0) {
+                String firstWord = sentenceWords[0];
+                String blankedSentence = originalSentence
+                        .replaceFirst("\\b" + java.util.regex.Pattern.quote(firstWord) + "\\b", "_____");
+                return QuestionDTO.builder()
+                        .sId(sentence.getSId())
+                        .question(blankedSentence)
+                        .answer(firstWord)
+                        .choices(List.of(firstWord, "từ 1", "từ 2", "từ 3"))
+                        .type(2)
+                        .build();
+            } else {
+                // Ultimate fallback if sentence is empty
+                return QuestionDTO.builder()
+                        .sId(sentence.getSId())
+                        .question("_____ từ thiếu")
+                        .answer("từ")
+                        .choices(List.of("từ", "từ 1", "từ 2", "từ 3"))
+                        .type(2)
+                        .build();
+            }
         }
 
-        // Pick one word to blank out
-        Word targetWord = words.get(0);
+        // Randomly pick one word to blank out instead of always using the first
+        Word targetWord = words.get((int) (Math.random() * words.size()));
         String originalSentence = sentence.getViet();
-        String blankedSentence = originalSentence.replaceFirst("\\b" + targetWord.getViet() + "\\b", "_____");
+        String wordToBlank = targetWord.getViet();
+
+        // Create the blanked sentence by replacing the target word with "_____"
+        String blankedSentence = originalSentence
+                .replaceFirst("\\b" + java.util.regex.Pattern.quote(wordToBlank) + "\\b", "_____");
+
+        // If replacement didn't work, try without word boundaries
+        if (blankedSentence.equals(originalSentence)) {
+            blankedSentence = originalSentence.replaceFirst(java.util.regex.Pattern.quote(wordToBlank), "_____");
+        }
+
+        // If still no replacement happened, create a simple pattern
+        if (blankedSentence.equals(originalSentence)) {
+            blankedSentence = "_____ " + originalSentence;
+        }
 
         // Create choices: correct answer + similar words
         List<String> choices = new ArrayList<>();

@@ -74,7 +74,7 @@ public class ExtraController {
         // Get current user
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        UserResponseDTO user = authService.getUserByUsername(username);        // Create edit form
+        UserResponseDTO user = authService.getUserByUsername(username); // Create edit form
         UserEditForm userEditForm = new UserEditForm();
         if (user != null) {
             userEditForm.setDisplayName(user.getName());
@@ -139,7 +139,7 @@ public class ExtraController {
             // Handle error
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             String username = authentication.getName();
-            UserResponseDTO user = authService.getUserByUsername(username);            // Re-populate the form with user data
+            UserResponseDTO user = authService.getUserByUsername(username); // Re-populate the form with user data
             UserEditForm newForm = new UserEditForm();
             newForm.setDisplayName(user.getName());
             newForm.setEmail(user.getEmail());
@@ -181,7 +181,8 @@ public class ExtraController {
 
         } catch (RuntimeException e) {
             response.put("success", false);
-            response.put("message", "Failed to update profile: " + e.getMessage());            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+            response.put("message", "Failed to update profile: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
 
