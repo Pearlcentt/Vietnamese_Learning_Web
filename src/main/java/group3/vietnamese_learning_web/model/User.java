@@ -33,7 +33,6 @@ public class User {
 
     @Column(nullable = false)
     private LocalDate dob;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)
     private Gender gender; // enum Gender { Male, Female, Other }
@@ -42,17 +41,9 @@ public class User {
     @Column(name = "points", nullable = false, columnDefinition = "INT DEFAULT 0")
     private Integer points = 0;
 
-    // New avatar field - URL or path to avatar image
-    @Builder.Default
+    // New avatar field - URL or path to avatar image @Builder.Default
     @Column(name = "avatar", length = 500)
     private String avatar = "/images/default_avatar.png";
-
-    // New friend_ids field - List of friend user IDs as strings
-    @ElementCollection
-    @CollectionTable(name = "user_friends", joinColumns = @JoinColumn(name = "user_id"))
-    @Column(name = "friend_id")
-    @Builder.Default
-    private List<String> friendIds = new ArrayList<>();
 
     @Column(name = "date_created", nullable = false, updatable = false, insertable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private Timestamp dateCreated;

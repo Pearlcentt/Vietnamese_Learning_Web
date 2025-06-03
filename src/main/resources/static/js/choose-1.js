@@ -36,10 +36,15 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
-
   checkButton.addEventListener("click", () => {
     if (checkButton.innerText === "Continue") {
-      goToNextQuestion();
+      if (typeof goToNextQuestion === "function") {
+        goToNextQuestion();
+      } else {
+        console.error("goToNextQuestion function not found");
+        // Fallback: try to navigate manually
+        window.location.href = '/lessons';
+      }
       return;
     }
 

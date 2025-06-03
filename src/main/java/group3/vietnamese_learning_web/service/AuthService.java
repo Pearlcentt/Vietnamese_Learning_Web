@@ -1,8 +1,10 @@
 package group3.vietnamese_learning_web.service;
 
 import group3.vietnamese_learning_web.model.User;
+import group3.vietnamese_learning_web.model.UserFriend;
 import group3.vietnamese_learning_web.repository.ProgressRepository;
 import group3.vietnamese_learning_web.repository.UserRepository;
+import group3.vietnamese_learning_web.repository.UserFriendRepository;
 import group3.vietnamese_learning_web.dto.UserRegistrationDTO;
 import group3.vietnamese_learning_web.dto.UserLoginDTO;
 import group3.vietnamese_learning_web.dto.UserResponseDTO;
@@ -29,6 +31,7 @@ public class AuthService implements UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final ProgressRepository progressRepository;
+    private final UserFriendRepository userFriendRepository;
 
     public UserResponseDTO register(UserRegistrationDTO dto) {
         if (userRepository.findByEmail(dto.getEmail()).isPresent() ||
@@ -79,6 +82,10 @@ public class AuthService implements UserDetailsService {
             throw new UsernameNotFoundException("User not found");
         }
         User user = userOpt.get();
+
+        // Get friend IDs from UserFriend table
+        List<String> friendIdStrings = getFriendIdsForUser(user.getUId());
+
         return UserResponseDTO.builder()
                 .uId(user.getUId())
                 .username(user.getUsername())
@@ -89,7 +96,7 @@ public class AuthService implements UserDetailsService {
                 .gems(306)
                 .points(user.getPoints() != null ? user.getPoints() : 0)
                 .avatar(user.getAvatar() != null ? user.getAvatar() : "/images/default_avatar.png")
-                .friendIds(user.getFriendIds() != null ? user.getFriendIds() : new ArrayList<>())
+                .friendIds(friendIdStrings)
                 .build();
     }
 
@@ -159,6 +166,9 @@ public class AuthService implements UserDetailsService {
     }
 
     public UserResponseDTO toResponseDTO(User user) {
+        // Get friend IDs from UserFriend table
+        List<String> friendIdStrings = getFriendIdsForUser(user.getUId());
+
         UserResponseDTO dto = UserResponseDTO.builder()
                 .uId(user.getUId())
                 .username(user.getUsername())
@@ -169,7 +179,7 @@ public class AuthService implements UserDetailsService {
                 .gems(306)
                 .points(user.getPoints() != null ? user.getPoints() : 0)
                 .avatar(user.getAvatar() != null ? user.getAvatar() : "/images/default_avatar.png")
-                .friendIds(user.getFriendIds() != null ? user.getFriendIds() : new ArrayList<>())
+                .friendIds(friendIdStrings)
                 .build();
 
         // Set streak
@@ -183,6 +193,9 @@ public class AuthService implements UserDetailsService {
      * Use this for search results and friend lists to avoid N+1 queries
      */
     public UserResponseDTO toResponseDTOWithoutStreak(User user) {
+        // Get friend IDs from UserFriend table
+        List<String> friendIdStrings = getFriendIdsForUser(user.getUId());
+
         return UserResponseDTO.builder()
                 .uId(user.getUId())
                 .username(user.getUsername())
@@ -193,7 +206,7 @@ public class AuthService implements UserDetailsService {
                 .gems(306)
                 .points(user.getPoints() != null ? user.getPoints() : 0)
                 .avatar(user.getAvatar() != null ? user.getAvatar() : "/images/default_avatar.png")
-                .friendIds(user.getFriendIds() != null ? user.getFriendIds() : new ArrayList<>())
+                .friendIds(friendIdStrings)
                 .streak(0) // Default streak to avoid database query
                 .build();
     }
@@ -249,5 +262,22 @@ public class AuthService implements UserDetailsService {
         }
 
         return toResponseDTO(user);
+    }
+
+    // Helper method to get friend IDs from UserFriend table
+    private List<String> getFriendIdsForUser(Integer userId) {
+        try {
+            Optional<UserFriend> userFriendOpt = userFriendRepository.findByUserId(userId);
+            if (userFriendOpt.isPresent()) {
+                UserFriend userFriend = userFriendOpt.get();
+                List<Integer> friendIdInts = userFriend.getFriendIdsList();
+                return friendIdInts.stream()
+                        .map(String::valueOf)
+                        .collect(Collectors.toList());
+            }
+        } catch (Exception e) {
+            System.err.println("Error fetching friends for user " + userId + ": " + e.getMessage());
+        }
+        return new ArrayList<>();
     }
 }

@@ -48,11 +48,11 @@
           </div>
         </div>
       </div>
-    </div>
-    <script th:inline="javascript">
+    </div>    <script th:inline="javascript">
       window.questionData = {
         answer: /*[[${questions[0].answer}]]*/ "defaultAnswer",
       };
+      window.totalQuestions = /*[[${totalQuestions}]]*/ 10;
     </script>
     <script th:src="@{/js/choose-3.js}" defer></script>
     <script th:src="@{/js/answer.js}" defer></script>

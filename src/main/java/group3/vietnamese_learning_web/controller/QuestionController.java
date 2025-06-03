@@ -4,10 +4,7 @@ import group3.vietnamese_learning_web.dto.QuestionDTO;
 import group3.vietnamese_learning_web.dto.UserResponseDTO;
 import group3.vietnamese_learning_web.dto.LessonDTO;
 import group3.vietnamese_learning_web.model.LessonSentence;
-import group3.vietnamese_learning_web.model.Sentence;
-import group3.vietnamese_learning_web.model.LessonSentenceId;
 import group3.vietnamese_learning_web.repository.LessonSentenceRepository;
-import group3.vietnamese_learning_web.repository.SentenceRepository;
 import group3.vietnamese_learning_web.service.QuestionService;
 import group3.vietnamese_learning_web.service.AuthService;
 import group3.vietnamese_learning_web.service.LessonService;
@@ -35,6 +32,7 @@ public class QuestionController {
     private final LessonSentenceRepository lessonSentenceRepository;
     private final SentenceRepository sentenceRepository;
     private final TopicRepository topicRepository; // Inject TopicRepository
+
 
     // API endpoint for getting questions (for AJAX calls)
     @GetMapping("/api/lesson")
@@ -125,45 +123,17 @@ public class QuestionController {
 
         // Get lesson details to determine the correct lesson type
         try {
-            LessonDTO lesson = lessonService.getLesson(topicId, lessonId);
-
-            // Use lesson type from database, or from parameter if provided
+            LessonDTO lesson = lessonService.getLesson(topicId, lessonId); // Use lesson type from database, or from
+                                                                           // parameter if provided
             int actualLessonType = lessonType != null ? lessonType : lesson.getLessonType().ordinal() + 1;
-            // Get sentences for this lesson
+
+            // Get sentences for this lesson (database now always returns 10 sentences)
             List<LessonSentence> lessonSentences = lessonSentenceRepository
                     .findByIdTopicIdAndIdLessonId(topicId, lessonId);
 
             System.out
                     .println("DEBUG: Looking for lesson sentences with topicId=" + topicId + ", lessonId=" + lessonId);
             System.out.println("DEBUG: Found " + lessonSentences.size() + " lesson sentences");
-
-            // Fallback: If only 1 sentence, fetch a random second sentence from the same
-            // topic
-            if (lessonSentences.size() == 1) {
-                // Get the topic name from the sentence
-                Integer onlySid = lessonSentences.get(0).getId().getSId();
-                Sentence onlySentence = sentenceRepository.findById(onlySid)
-                        .orElse(null);
-                if (onlySentence != null) {
-                    String topicName = onlySentence.getTopicName();
-                    List<Sentence> allTopicSentences = sentenceRepository.findByTopicName(topicName);
-                    // Exclude the already used sentence
-                    List<Sentence> candidates = allTopicSentences.stream()
-                            .filter(s -> !s.getSId().equals(onlySid))
-                            .collect(Collectors.toList());
-                    if (!candidates.isEmpty()) {
-                        // Pick a random one
-                        Sentence extra = candidates.get((int) (Math.random() * candidates.size()));
-                        // Create a fake LessonSentence to add
-                        LessonSentenceId extraId = new LessonSentenceId(topicId, lessonId, extra.getSId());
-                        LessonSentence extraLessonSentence = new LessonSentence();
-                        extraLessonSentence.setId(extraId);
-                        lessonSentences.add(extraLessonSentence);
-                        System.out.println(
-                                "DEBUG: Added fallback sentence " + extra.getSId() + " for topic " + topicName);
-                    }
-                }
-            }
 
             if (lessonSentences.isEmpty()) {
                 System.out.println("DEBUG: No lesson sentences found, returning error");
@@ -178,9 +148,10 @@ public class QuestionController {
                     .collect(Collectors.toList());
 
             // Generate questions based on actual lesson type
-            List<QuestionDTO> questions = questionService.getQuestionsForLesson(sentenceIds, actualLessonType);
-
-            // Add data to model
+            List<QuestionDTO> questions = questionService.getQuestionsForLesson(sentenceIds, actualLessonType); // Add
+                                                                                                                // data
+                                                                                                                // to
+                                                                                                                // model
             model.addAttribute("questions", questions);
             model.addAttribute("sentences", questions); // For backward compatibility with templates
             model.addAttribute("user", user);
@@ -188,6 +159,7 @@ public class QuestionController {
             model.addAttribute("lessonId", lessonId);
             model.addAttribute("lessonType", actualLessonType);
             model.addAttribute("lesson", lesson);
+            model.addAttribute("totalQuestions", lessonSentences.size()); // Pass total questions to template
 
             // Add type-specific data to templates
             if (!questions.isEmpty()) {
@@ -233,15 +205,19 @@ public class QuestionController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
         UserResponseDTO user = authService.getUserByUsername(username);
-
         try {
             LessonDTO lesson = lessonService.getLesson(topicId, lessonId);
+
+            // Get lesson sentences to determine total questions count
+            List<LessonSentence> lessonSentences = lessonSentenceRepository
+                    .findByIdTopicIdAndIdLessonId(topicId, lessonId);
 
             model.addAttribute("lesson", lesson);
             model.addAttribute("user", user);
             model.addAttribute("topicId", topicId);
             model.addAttribute("lessonId", lessonId);
             model.addAttribute("lessonType", lesson.getLessonType().name());
+            model.addAttribute("totalQuestions", lessonSentences.size()); // Pass total questions to template
 
             return "q0"; // lesson start template
         } catch (Exception e) {
