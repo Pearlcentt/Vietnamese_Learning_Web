@@ -49,7 +49,7 @@
             <div class="profile-main">
                 <div class="profile-header">
                     <div class="avatar-container">
-                        <img th:src="${userDto?.avatar ?: '/images/avatar3.png'}" alt="Avatar" id="profileAvatarDisplay" class="avatar-placeholder">
+                        <img th:src="${userDto?.avatar != null ? userDto.avatar : '/images/default_avatar.png'}" alt="Avatar" id="profileAvatarDisplay" class="avatar-placeholder">
                         <button th:if="${!viewOnly}" id="openAvatarModalBtnMain" class="action-btn-avatar-change" title="Change Avatar"><i class="fas fa-camera"></i></button>
                     </div>
                 </div>
@@ -114,7 +114,7 @@
 
             <div th:if="${userEditForm != null}">
                 <form id="editProfileForm" th:action="@{/profile/update}" method="post" th:object="${userEditForm}" enctype="multipart/form-data">
-                    <div class="form-group avatar-edit-group">
+                    <div class="form-group avatar-edit-group">Add commentMore actions
                         <label>Avatar</label>
                         <div class="avatar-edit-controls">
                             <img th:src="${userDto?.avatar ?: '/images/avatar3.png'}" alt="Current Avatar" id="editAvatarPreview" class="avatar-placeholder-edit">
@@ -170,7 +170,8 @@
         <!-- Avatar Modal -->
         <div id="avatarModal" class="modal" style="display: none;">
             <div class="modal-content">
-                <span id="closeAvatarModalBtn" class="close-modal-btn">×</span>
+
+                <span id="closeAvatarModalBtn" class="close-modal-btn">×</span>Add commentMore actions
                 <h3>Choose Your Avatar</h3>
                 <p>Select from the options below or <label for="avatarUpload" class="upload-link">upload your own</label>.</p>
                 <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
@@ -271,7 +272,9 @@
         defaultAvatarUrl: '/images/avatar3.png'
     };
 
-    // Ensure nested structures in currentUserData are initialized if currentUserData itself exists
+
+    // Restructure friend data for JavaScript compatibility
+
     if (window.serverData.currentUser) {
         window.serverData.currentUser.friends = window.serverData.currentUser.friends || [];
         if (!window.serverData.currentUser.friendRequests) {
@@ -280,11 +283,12 @@
             window.serverData.currentUser.friendRequests.received = window.serverData.currentUser.friendRequests.received || window.serverData.currentUser.receivedFriendRequests || [];
             window.serverData.currentUser.friendRequests.sent = window.serverData.currentUser.friendRequests.sent || window.serverData.currentUser.sentFriendRequests || [];
         }
-        delete window.serverData.currentUser.receivedFriendRequests;
-        delete window.serverData.currentUser.sentFriendRequests;
-    }
-    if (window.serverData.profileUser) {
-        window.serverData.profileUser.friends = window.serverData.profileUser.friends || [];
+
+        // Structure friend requests data as expected by JavaScript
+        window.serverData.currentUser.friendRequests = {
+            received: window.serverData.currentUser.receivedFriendRequests || [],
+            sent: window.serverData.currentUser.sentFriendRequests || []
+        };
     }
     /*]]>*/
 </script>
