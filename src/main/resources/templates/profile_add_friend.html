@@ -44,14 +44,15 @@
 
     <!-- Main Content (Profile View & Edit View) -->
     <main class="main-profile-content">
-        <div id="profileView" class="profile-view-active">
-            <div class="profile-main">                <div class="profile-header">
+        <!-- Profile View -->
+        <div id="profileView" th:classappend="${viewOnly} ? '' : 'profile-view-active'">
+            <div class="profile-main">
+                <div class="profile-header">
                     <div class="avatar-container">
                         <img th:src="${userDto?.avatar != null ? userDto.avatar : '/images/default_avatar.png'}" alt="Avatar" id="profileAvatarDisplay" class="avatar-placeholder">
                         <button th:if="${!viewOnly}" id="openAvatarModalBtnMain" class="action-btn-avatar-change" title="Change Avatar"><i class="fas fa-camera"></i></button>
                     </div>
                 </div>
-
                 <div class="user-info">
                     <h1 id="displayName" th:text="${userDto?.name} ?: 'User Name'">User Name</h1>
                     <p class="username-joined">
@@ -60,21 +61,19 @@
                         <span th:if="${userDto?.dateCreated == null}">Unknown Date</span>
                     </p>
                     <div class="follow-stats">
-                        <a href="#" id="followingCountLink"><span id="followingCount" th:text="${userDto?.friends != null} ? ${userDto.friends.size()} : 0">0</span> Following</a>
-                        <a href="#" id="followersCountLink"><span id="followersCount" th:text="${userDto?.friends != null} ? ${userDto.friends.size()} : 0">0</span> Followers</a>
+                        <a href="#" id="friendsCountLink"><span id="followingCount" th:text="${userDto?.friends?.size()} ?: 0">0</span> Friends</a>
                     </div>
-                    <!-- Show edit button only for own profile -->
+
                     <button id="editProfileBtn" class="action-btn" th:if="${!viewOnly}"><i class="fas fa-user-edit"></i> Edit profile</button>
-                    <!-- Show friend request actions for other users -->
+
                     <div th:if="${viewOnly}">
                         <button class="action-btn" th:if="${alreadyFriends}" disabled><i class="fas fa-users"></i> Friends</button>
                         <button class="action-btn" th:if="${requestSent}" disabled><i class="fas fa-check"></i> Request Sent</button>
                         <button class="action-btn" th:if="${requestReceived}" th:attr="data-requester-id=${userDto.uId}" id="acceptFriendBtn"><i class="fas fa-user-plus"></i> Accept</button>
                         <button class="action-btn" th:if="${requestReceived}" th:attr="data-requester-id=${userDto.uId}" id="declineFriendBtn"><i class="fas fa-user-times"></i> Decline</button>
-                        <button class="action-btn" th:if="${!alreadyFriends and !requestSent and !requestReceived}" th:attr="data-target-id=${userDto.uId}" id="sendFriendRequestBtn"><i class="fas fa-user-plus"></i> Add Friend</button>
+                        <button class="action-btn" th:if="${!alreadyFriends and !requestSent and !requestReceived and userDto != null and currentUserDto != null and userDto.uId != currentUserDto.uId}" th:attr="data-target-id=${userDto.uId}" id="sendFriendRequestBtn"><i class="fas fa-user-plus"></i> Add Friend</button>
                     </div>
                 </div>
-
                 <div class="statistics-section">
                     <h2>Statistics</h2>
                     <div class="stats-grid">
@@ -101,19 +100,18 @@
                     </div>
                 </div>
             </div>
-        </div>        <div id="editProfileView" class="edit-profile-container" style="display: none;">
+        </div>
+
+        <!-- Edit Profile View -->
+        <div id="editProfileView" class="edit-profile-container" style="display: none;">
             <h2><i class="fas fa-user-cog"></i> Edit profile</h2>
-            
-            <!-- Success Message -->
-            <div th:if="${param.success}" class="alert alert-success">
+            <div th:if="${param.success_update}" class="alert alert-success">
                 <i class="fas fa-check-circle"></i> Profile updated successfully!
             </div>
-            
-            <!-- Error Message -->
-            <div th:if="${errorMessage}" class="alert alert-error">
-                <i class="fas fa-exclamation-circle"></i> <span th:text="${errorMessage}">Error message</span>
+            <div th:if="${param.error_update}" class="alert alert-error">
+                <i class="fas fa-exclamation-circle"></i> <span th:text="${param.error_update[0]}">Failed to update profile.</span>
             </div>
-            
+
             <div th:if="${userEditForm != null}">
                 <form id="editProfileForm" th:action="@{/profile/update}" method="post" th:object="${userEditForm}" enctype="multipart/form-data">
                     <div class="form-group avatar-edit-group">Add commentMore actions
@@ -125,43 +123,46 @@
                         <input type="hidden" id="selectedAvatarUrlInput" th:field="*{avatar}">
                         <small class="form-text">Select from presets, upload your own, or keep current.</small>
                     </div>
+
                     <div class="form-group">
                         <label for="editNameInput">Name</label>
                         <input type="text" id="editNameInput" th:field="*{displayName}">
+                        <div th:if="${#fields.hasErrors('displayName')}" th:errors="*{displayName}" class="field-error"></div>
                     </div>
                     <div class="form-group">
                         <label for="editUsernameInput">Username</label>
-                        <input type="text" id="editUsernameInput" th:value="${userDto?.username} ?: ''" readonly>
-                    </div>                    <div class="form-group">
+                        <input type="text" id="editUsernameInput" th:value="${userDto?.username}" readonly>
+                    </div>
+                    <div class="form-group">
                         <label for="editEmailInput">Email</label>
                         <input type="email" id="editEmailInput" th:field="*{email}">
+                        <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="field-error"></div>
                     </div>
+
                     <div class="form-group">
-                        <label for="editAvatarInput">Avatar URL</label>
-                        <input type="url" id="editAvatarInput" th:field="*{avatar}" placeholder="Enter avatar image URL">
-                        <small class="form-text">Enter a valid image URL for your profile picture</small>
-                    </div>
-                    <div class="form-group">
-                        <label for="editCurrentPasswordInput">Current password</label>
+                        <label for="editCurrentPasswordInput">Current password (only if changing password)</label>
                         <div class="password-wrapper">
-                            <input type="password" id="editCurrentPasswordInput" th:field="*{currentPassword}">
+                            <input type="password" id="editCurrentPasswordInput" th:field="*{currentPassword}" autocomplete="current-password">
                             <i class="fas fa-eye toggle-password"></i>
                         </div>
+                        <div th:if="${#fields.hasErrors('currentPassword')}" th:errors="*{currentPassword}" class="field-error"></div>
                     </div>
                     <div class="form-group">
-                        <label for="editNewPasswordInput">New password</label>
+                        <label for="editNewPasswordInput">New password (leave blank to keep current)</label>
                         <div class="password-wrapper">
-                            <input type="password" id="editNewPasswordInput" th:field="*{newPassword}">
+                            <input type="password" id="editNewPasswordInput" th:field="*{newPassword}" autocomplete="new-password">
                             <i class="fas fa-eye toggle-password"></i>
                         </div>
+                        <div th:if="${#fields.hasErrors('newPassword')}" th:errors="*{newPassword}" class="field-error"></div>
                     </div>
+
                     <div class="form-actions">
                         <button type="submit" id="saveProfileChangesBtn" class="action-btn primary">Save changes</button>
                         <button type="button" id="cancelEditProfileBtn" class="action-btn">Cancel</button>
                     </div>
                 </form>
             </div>
-            <div th:if="${userEditForm == null}" class="error-message">
+            <div th:if="${userEditForm == null and !viewOnly}" class="error-message">
                 <p>Unable to load edit form. Please try again later.</p>
             </div>
         </div>
@@ -169,6 +170,7 @@
         <!-- Avatar Modal -->
         <div id="avatarModal" class="modal" style="display: none;">
             <div class="modal-content">
+
                 <span id="closeAvatarModalBtn" class="close-modal-btn">×</span>Add commentMore actions
                 <h3>Choose Your Avatar</h3>
                 <p>Select from the options below or <label for="avatarUpload" class="upload-link">upload your own</label>.</p>
@@ -181,9 +183,22 @@
         </div>
     </main>
 
-    <!-- Sidebar Phải -->
+    <!-- Right Sidebar -->
     <aside class="profile-sidebar">
-        <!-- Friend List -->
+        <div class="user-stats-sidebar card" th:if="${currentUserDto != null and currentUserDto.languageLearning != null}">
+            <h3><i class="fas fa-graduation-cap"></i> Learning</h3>
+            <div class="stat-item">
+                <img th:src="${currentUserDto.languageLearning.flag ?: '/images/default-flag.png'}" alt="Language Flag" id="userFlagSidebar">
+                <span id="userLanguageSidebar" th:text="${currentUserDto.languageLearning.name?.toUpperCase()} ?: 'LANGUAGE'">LANGUAGE</span>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-fire"></i> Streak: <span id="userStreakSidebar" th:text="${currentUserDto.languageLearning.streak ?: 0}">0</span>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-gem"></i> Gems: <span id="userGemsSidebar" th:text="${currentUserDto.languageLearning.gems ?: 0}">0</span>
+            </div>
+        </div>
+
         <div class="friend-list-container card">
             <h3><i class="fas fa-users"></i> Friend List</h3>
             <ul id="friendListUi">
@@ -192,18 +207,20 @@
             <p id="noFriendsMessage" class="empty-message" th:if="${userDto?.friends == null or userDto.friends.isEmpty()}">You have no friends. Let's connect with other people.</p>
         </div>
 
-        <div class="add-friends-section card">
+        <div class="add-friends-section card" th:if="${!viewOnly}">
             <h3><i class="fas fa-user-plus"></i> Add Friends</h3>
             <div class="action-item" id="findFriendsToggle">
                 <i class="fas fa-search"></i>
                 <span>Find friends</span>
                 <i class="fas fa-chevron-right"></i>
-            </div>            <div id="findFriendsContent" class="collapsible-content">
-                <input type="text" id="findFriendInput" placeholder="Enter username">
-                <button id="searchFriendBtn"><i class="fas fa-search"></i> Find</button>
-                <ul id="searchResultsUi"></ul>
             </div>
-
+            <div id="findFriendsContent" class="collapsible-content">
+                <input type="text" id="findFriendInput" placeholder="Enter username or name">
+                <button id="searchFriendBtn"><i class="fas fa-search"></i> Find</button>
+                <ul id="searchResultsUi">
+                    <!-- Search results will be populated by JS -->
+                </ul>
+            </div>
             <div class="action-item" id="friendRequestsToggle">
                 <i class="fas fa-user-friends"></i>
                 <span>Friend requests</span>
@@ -211,16 +228,16 @@
             </div>
             <div id="friendRequestsContent" class="collapsible-content">
                 <div class="friend-request-tabs">
-                    <button class="fr-tab-btn active" data-tab="received">Received (<span id="receivedRequestCountBadge" th:text="${userDto?.receivedFriendRequests != null} ? ${userDto.receivedFriendRequests.size()} : 0">0</span>)</button>
-                    <button class="fr-tab-btn" data-tab="sent">Sent (<span id="sentRequestCountBadge" th:text="${userDto?.sentFriendRequests != null} ? ${userDto.sentFriendRequests.size()} : 0">0</span>)</button>
+                    <button class="fr-tab-btn active" data-tab="received">Received (<span id="receivedRequestCountBadge" th:text="${currentUserDto?.receivedFriendRequests?.size()} ?: 0">0</span>)</button>
+                    <button class="fr-tab-btn" data-tab="sent">Sent (<span id="sentRequestCountBadge" th:text="${currentUserDto?.sentFriendRequests?.size()} ?: 0">0</span>)</button>
                 </div>
                 <ul id="friendRequestsListUiReceived" class="friend-requests-list-display active">
-                    <!-- Received friend requests will be populated by JavaScript -->
+                    <!-- Received requests will be populated by JS -->
                 </ul>
                 <ul id="friendRequestsListUiSent" class="friend-requests-list-display" style="display:none;">
-                    <!-- Sent friend requests will be populated by JavaScript -->
+                    <!-- Sent requests will be populated by JS -->
                 </ul>
-                <p id="noFriendRequestsMessage" class="empty-message" style="display: none;">No requests</p>
+                <p id="noFriendRequestsMessage" class="empty-message" style="display: none;">No requests in this tab.</p>
             </div>
         </div>
         <div class="sidebar-promo card">
@@ -230,11 +247,14 @@
     </aside>
 </div>
 
-<script th:inline="javascript">    /*<![CDATA[*/
+<script th:inline="javascript">
+    /*<![CDATA[*/
     window.serverData = {
         currentUser: /*[[${userDto}]]*/ null,
+        profileUser: /*[[${userDto}]]*/ null,
+        isOwnProfile: /*[[${!viewOnly}]]*/ false,
         csrfToken: /*[[${_csrf?.token}]]*/ '',
-        csrfHeaderName: /*[[${_csrf?.headerName}]]*/ '',        
+        csrfHeaderName: /*[[${_csrf?.headerName}]]*/ '',
         urls: {
             updateProfile: /*[[@{/api/profile/update}]]*/ '/api/profile/update',
             searchFriends: /*[[@{/friends/search}]]*/ '/friends/search',
@@ -245,22 +265,23 @@
             unfriend: /*[[@{/friends/unfriend}]]*/ '/friends/unfriend'
         },
         sampleAvatars: [
-            '/images/avatar1.png',
-            '/images/avatar2.png',
-            '/images/avatar3.png',
-            '/images/avatar4.png',
-            '/images/avatar5.png',
-            '/images/avatar6.png',
+            '/images/avatar1.png', '/images/avatar2.png', '/images/avatar3.png',
+            '/images/avatar4.png', '/images/avatar5.png', '/images/avatar6.png',
             '/images/avatar7.png'
         ],
-        defaultAvatarUrl: '/images/default_avatar.png'
+        defaultAvatarUrl: '/images/avatar3.png'
     };
 
+
     // Restructure friend data for JavaScript compatibility
+
     if (window.serverData.currentUser) {
-        // Ensure friends array exists
-        if (!window.serverData.currentUser.friends) {
-            window.serverData.currentUser.friends = [];
+        window.serverData.currentUser.friends = window.serverData.currentUser.friends || [];
+        if (!window.serverData.currentUser.friendRequests) {
+            window.serverData.currentUser.friendRequests = { received: [], sent: [] };
+        } else {
+            window.serverData.currentUser.friendRequests.received = window.serverData.currentUser.friendRequests.received || window.serverData.currentUser.receivedFriendRequests || [];
+            window.serverData.currentUser.friendRequests.sent = window.serverData.currentUser.friendRequests.sent || window.serverData.currentUser.sentFriendRequests || [];
         }
 
         // Structure friend requests data as expected by JavaScript
@@ -272,5 +293,16 @@
     /*]]>*/
 </script>
 <script th:src="@{/js/profile_add_friend.js}"></script>
+<script>
+    const logoutLink = document.getElementById("logoutLink");
+    if (logoutLink) {
+        logoutLink.addEventListener("click", (event) => {
+            event.preventDefault();
+            if (confirm("Are you sure you want to logout?")) {
+                window.location.href = logoutLink.href;
+            }
+        });
+    }
+</script>
 </body>
 </html>
