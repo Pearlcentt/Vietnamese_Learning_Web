@@ -105,7 +105,7 @@
               class="lesson-box"
               th:classappend="${allLessonsCompleted} ? '' : ' locked'"
               id="Test"
-              th:onclick="${allLessonsCompleted} ? 'window.location.href=\'/test/start/' + ${topicId} + '\';' : ''"
+              th:onclick="${allLessonsCompleted} ? 'showQuestionTypeSelection(\'' + ${topicId} + '\');' : ''"
             >
               <h3>Topic's Test</h3>
             </div>

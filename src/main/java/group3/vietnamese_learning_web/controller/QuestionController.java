@@ -15,6 +15,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import group3.vietnamese_learning_web.repository.TopicRepository;
+
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,6 +30,9 @@ public class QuestionController {
     private final AuthService authService;
     private final LessonService lessonService;
     private final LessonSentenceRepository lessonSentenceRepository;
+    private final SentenceRepository sentenceRepository;
+    private final TopicRepository topicRepository; // Inject TopicRepository
+
 
     // API endpoint for getting questions (for AJAX calls)
     @GetMapping("/api/lesson")
@@ -34,6 +41,71 @@ public class QuestionController {
             @RequestParam List<Integer> sentenceIds,
             @RequestParam int lessonType) {
         return questionService.getQuestionsForLesson(sentenceIds, lessonType);
+    }
+
+    // New endpoint for Topic Test
+    @GetMapping("/test/start/{topicId}")
+    public String startTopicTest(
+            @PathVariable Integer topicId,
+            Model model) {
+
+        // Get current user
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        UserResponseDTO user = authService.getUserByUsername(username);
+
+        try {
+            // Get topic name from topicId
+            String topicName = topicRepository.findById(topicId)
+                                            .orElseThrow(() -> new RuntimeException("Topic not found"))
+                                            .getTopicName();
+
+            // Get all sentences for this topic
+            List<Sentence> topicSentences = sentenceRepository.findByTopicName(topicName);
+
+            if (topicSentences.isEmpty()) {
+                model.addAttribute("error", "No sentences found for this topic.");
+                return "error";
+            }
+
+            List<QuestionDTO> allQuestions = new ArrayList<>();
+            List<Integer> questionTypes = List.of(1, 2, 3, 4, 5); // All question types
+
+            // Generate questions for each sentence and each question type
+            for (Sentence sentence : topicSentences) {
+                List<Integer> sentenceIdList = Collections.singletonList(sentence.getSId());
+                for (Integer type : questionTypes) {
+                    // questionService.getQuestionsForLesson expects a list of sentence IDs
+                    // and a single lesson type. We call it for each sentence and each type.
+                    List<QuestionDTO> questionsForSentenceAndType = questionService.getQuestionsForLesson(sentenceIdList, type);
+                    allQuestions.addAll(questionsForSentenceAndType);
+                }
+            }
+
+            // Shuffle the questions for a mixed test
+            Collections.shuffle(allQuestions);
+
+            if (allQuestions.isEmpty()) {
+                model.addAttribute("error", "No questions could be generated for this topic test.");
+                return "error";
+            }
+
+            // For now, pass all questions and the type of the first question
+            // Frontend JavaScript will need to handle question progression
+            model.addAttribute("questions", allQuestions);
+            model.addAttribute("currentQuestion", allQuestions.get(0)); // Pass the first question
+            model.addAttribute("questionType", allQuestions.get(0).getType()); // Pass the type of the first question
+            model.addAttribute("user", user);
+            model.addAttribute("topicId", topicId);
+            model.addAttribute("totalQuestions", allQuestions.size()); // Pass total number of questions
+
+            return "topic-test"; // Return the new combined template
+
+        } catch (Exception e) {
+            model.addAttribute("error", "Failed to load topic test: " + e.getMessage());
+            e.printStackTrace(); // Print stack trace for debugging
+            return "error";
+        }
     }
 
     // Main question page controller that displays the appropriate template
