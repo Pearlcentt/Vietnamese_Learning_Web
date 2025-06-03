@@ -1,6 +1,8 @@
 package group3.vietnamese_learning_web.config;
 
-import lombok.RequiredArgsConstructor;
+import group3.vietnamese_learning_web.service.AuthService;
+import group3.vietnamese_learning_web.dto.UserResponseDTO;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -17,10 +19,14 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.security.core.Authentication;
 
 @Configuration
-@RequiredArgsConstructor
 public class SecurityConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
+    private final ApplicationContext applicationContext;
+
+    public SecurityConfig(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -28,13 +34,12 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {        http
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/login", "/register", "/css/**", "/js/**", "/images/**", "/favicon.ico")
                         .permitAll()
-                        .anyRequest().authenticated())
-                .formLogin(form -> form
+                        .requestMatchers("/adminpage").authenticated() // Ensure adminpage is accessible for authenticated users
+                        .anyRequest().authenticated()).formLogin(form -> form
                         .loginPage("/login")
                         .defaultSuccessUrl("/dashboard", true)
                         .permitAll()
@@ -43,8 +48,29 @@ public class SecurityConfig {
                             public void onAuthenticationSuccess(HttpServletRequest request,
                                     HttpServletResponse response, Authentication authentication)
                                     throws java.io.IOException, ServletException {
-                                logger.info("User '{}' logged in successfully.", authentication.getName());
-                                response.sendRedirect("/dashboard");
+                                
+                                String username = authentication.getName();
+                                logger.info("User '{}' logged in successfully.", username);
+                                  try {
+                                    // Get AuthService from ApplicationContext to avoid circular dependency
+                                    AuthService authService = applicationContext.getBean(AuthService.class);
+                                    // Get user details to check email
+                                    UserResponseDTO user = authService.getUserByUsername(username);
+                                    String email = user.getEmail();
+                                    
+                                    // Check if email matches admin pattern: contains "@adm" and "VLG"
+                                    if (email != null && email.contains("@adm") && email.contains("VLG")) {
+                                        logger.info("Admin user '{}' with email '{}' redirected to /adminpage", username, email);
+                                        response.sendRedirect("/adminpage");
+                                    } else {
+                                        logger.info("Regular user '{}' with email '{}' redirected to /dashboard", username, email);
+                                        response.sendRedirect("/dashboard");
+                                    }
+                                } catch (Exception e) {
+                                    logger.error("Error checking user email for '{}': {}", username, e.getMessage());
+                                    // Fallback to dashboard if there's an error
+                                    response.sendRedirect("/dashboard");
+                                }
                             }
                         }))
                 .logout(logout -> logout

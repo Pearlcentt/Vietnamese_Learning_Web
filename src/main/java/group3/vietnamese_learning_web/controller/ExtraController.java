@@ -125,6 +125,23 @@ public class ExtraController {
         return "redirect:/dashboard";
     }
 
+    @GetMapping("/adminpage")
+    public String adminpage(Model model) {
+        // Get current user
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        UserResponseDTO user = authService.getUserByUsername(username);
+        
+        // Verify user has admin privileges (email contains "@adm" and "VLG")
+        if (user.getEmail() == null || !user.getEmail().contains("@adm") || !user.getEmail().contains("VLG")) {
+            // If not admin, redirect to dashboard
+            return "redirect:/dashboard";
+        }
+        
+        model.addAttribute("user", user);
+        return "adminpage"; // Return the admin dashboard template
+    }
+
     @PostMapping("/profile/update")
     public String updateProfile(
             @ModelAttribute("userEditForm") UserEditForm userEditForm,

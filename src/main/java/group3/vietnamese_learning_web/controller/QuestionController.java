@@ -9,6 +9,8 @@ import group3.vietnamese_learning_web.service.QuestionService;
 import group3.vietnamese_learning_web.service.AuthService;
 import group3.vietnamese_learning_web.service.LessonService;
 import lombok.RequiredArgsConstructor;
+import group3.vietnamese_learning_web.model.Sentence;
+import group3.vietnamese_learning_web.repository.SentenceRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
