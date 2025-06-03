@@ -183,13 +183,13 @@ public class QuestionService {
         }
 
         // Ensure we have at least 4 choices
-        while (choices.size() < 4) {
+        while (choices.size() < 3) {
             choices.add("lựa chọn " + choices.size());
         }
 
         // Limit to 4 choices and shuffle deterministically
-        if (choices.size() > 4) {
-            choices = choices.subList(0, 4);
+        if (choices.size() > 3) {
+            choices = choices.subList(0, 3);
         }
 
         // Deterministic shuffle using question index as seed
@@ -203,35 +203,38 @@ public class QuestionService {
                 .choices(choices)
                 .type(1)
                 .build();
-    }
+    } // Lesson 2: Fill in the blank - Vietnamese sentence with one word blanked out
 
-    // Lesson 2: Fill in the blank - Vietnamese sentence with one word blanked out
     private QuestionDTO buildFillInBlankQuestion(Sentence sentence, List<Word> words, int questionIndex) {
         System.out.println("Building fill-in-blank question for sentence ID: " + sentence.getSId()
                 + ", question index: " + questionIndex);
 
+        // Always use Vietnamese sentence for question type 2
+        String vietnameseSentence = sentence.getViet();
+        System.out.println("Using Vietnamese sentence: " + vietnameseSentence);
+
         if (words.isEmpty()) {
-            System.out.println("No words available, using fallback approach");
-            // Fallback: use first word from sentence and create a blank
-            String originalSentence = sentence.getViet();
-            String[] sentenceWords = originalSentence.split("\\s+");
+            System.out.println("No words available, using fallback approach with Vietnamese sentence");
+            // Fallback: use first word from Vietnamese sentence and create a blank
+            String[] sentenceWords = vietnameseSentence.split("\\s+");
             if (sentenceWords.length > 0) {
                 String firstWord = sentenceWords[0];
-                String blankedSentence = originalSentence
+                String blankedSentence = vietnameseSentence
                         .replaceFirst("\\b" + java.util.regex.Pattern.quote(firstWord) + "\\b", "_____");
+                System.out.println("Fallback - Blanked Vietnamese sentence: " + blankedSentence);
                 return QuestionDTO.builder()
                         .sId(sentence.getSId())
-                        .question(blankedSentence)
-                        .answer(firstWord)
-                        .choices(List.of(firstWord, "từ 1", "từ 2", "từ 3"))
+                        .question(blankedSentence) // Vietnamese sentence with blank
+                        .answer(firstWord) // Vietnamese word as answer
+                        .choices(List.of(firstWord, "từ sai 1", "từ sai 2", "từ sai 3"))
                         .type(2)
                         .build();
             } else {
                 return QuestionDTO.builder()
                         .sId(sentence.getSId())
-                        .question("_____ từ thiếu")
+                        .question("Điền vào chỗ trống: _____ từ thiếu") // Vietnamese instruction
                         .answer("từ")
-                        .choices(List.of("từ", "từ 1", "từ 2", "từ 3"))
+                        .choices(List.of("từ", "từ sai 1", "từ sai 2", "từ sai 3"))
                         .type(2)
                         .build();
             }
@@ -252,40 +255,47 @@ public class QuestionService {
             targetWord = words.get(wordIndex);
         }
 
-        System.out.println("Selected word for blanking: " + targetWord.getViet());
+        System.out.println("Selected Vietnamese word for blanking: " + targetWord.getViet());
 
-        String originalSentence = sentence.getViet();
-        String blankedSentence = createBlankedSentence(originalSentence, words, targetWord);
+        // Create blanked Vietnamese sentence
+        String blankedVietnameseSentence = createBlankedSentence(vietnameseSentence, words, targetWord);
+        System.out.println("Final blanked Vietnamese sentence: " + blankedVietnameseSentence);
 
-        // Generate choices deterministically
+        // Generate choices using Vietnamese words only
         List<String> choices = generateChoicesForWord(targetWord, words, questionIndex);
 
         return QuestionDTO.builder()
                 .sId(sentence.getSId())
-                .question(blankedSentence)
-                .answer(targetWord.getViet())
-                .choices(choices)
+                .question(blankedVietnameseSentence) // Vietnamese sentence with blank
+                .answer(targetWord.getViet()) // Vietnamese word as answer
+                .choices(choices) // Vietnamese word choices
                 .type(2)
                 .build();
-    }
+    } // Helper method: Create blanked sentence using word positions
 
-    // Helper method: Create blanked sentence using word positions
-    private String createBlankedSentence(String originalSentence, List<Word> words, Word targetWord) {
+    private String createBlankedSentence(String vietnameseSentence, List<Word> words, Word targetWord) {
+        System.out.println("Creating blanked sentence from: " + vietnameseSentence);
+        System.out.println("Target Vietnamese word to blank: " + targetWord.getViet());
+
         // Try to use word boundaries first
-        String blankedSentence = originalSentence
+        String blankedSentence = vietnameseSentence
                 .replaceFirst("\\b" + java.util.regex.Pattern.quote(targetWord.getViet()) + "\\b", "_____");
 
         // If replacement didn't work, try without word boundaries
-        if (blankedSentence.equals(originalSentence)) {
-            blankedSentence = originalSentence.replaceFirst(java.util.regex.Pattern.quote(targetWord.getViet()),
+        if (blankedSentence.equals(vietnameseSentence)) {
+            System.out.println("Word boundary replacement failed, trying without boundaries");
+            blankedSentence = vietnameseSentence.replaceFirst(java.util.regex.Pattern.quote(targetWord.getViet()),
                     "_____");
         }
 
-        // If still no replacement, create a simple pattern
-        if (blankedSentence.equals(originalSentence)) {
-            blankedSentence = "_____ " + originalSentence;
+        // If still no replacement, create a simple pattern with the word at the
+        // beginning
+        if (blankedSentence.equals(vietnameseSentence)) {
+            System.out.println("Direct replacement failed, creating simple blank pattern");
+            blankedSentence = "_____ " + vietnameseSentence.replace(targetWord.getViet(), "").trim();
         }
 
+        System.out.println("Final blanked Vietnamese sentence: " + blankedSentence);
         return blankedSentence;
     }
 
@@ -301,23 +311,23 @@ public class QuestionService {
         }
 
         // If we need more choices, add words from other words in the sentence
-        if (choices.size() < 4) {
+        if (choices.size() < 3) {
             allWords.stream()
                     .filter(word -> !word.getWId().equals(targetWord.getWId()))
                     .map(Word::getViet)
                     .distinct()
-                    .limit(4 - choices.size())
+                    .limit(3 - choices.size())
                     .forEach(choices::add);
         }
 
         // Ensure we have at least 4 choices
-        while (choices.size() < 4) {
+        while (choices.size() < 3) {
             choices.add("từ " + choices.size());
         }
 
         // Limit to 4 choices
-        if (choices.size() > 4) {
-            choices = choices.subList(0, 4);
+        if (choices.size() > 3) {
+            choices = choices.subList(0, 3);
         }
 
         // Deterministic shuffle using question index as seed

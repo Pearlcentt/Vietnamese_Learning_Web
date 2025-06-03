@@ -25,11 +25,10 @@
               <div class="line-order"><span class="line-answer"></span></div>
             </div>
             <div class="line-wait">
-              <div class="tokenizer-parts">
-                <div id="first-line" class="char-container">
+              <div class="tokenizer-parts">                <div id="first-line" class="char-container">
                   <div
                     class="char-token"
-                    th:each="char : ${questions[0].chars}"
+                    th:each="char : ${currentQuestion.chars}"
                     th:text="${char}"
                   >
                     C
@@ -50,9 +49,10 @@
       </div>
     </div>    <script th:inline="javascript">
       window.questionData = {
-        answer: /*[[${questions[0].answer}]]*/ "defaultAnswer",
+        answer: /*[[${currentQuestion.answer}]]*/ "defaultAnswer",
       };
       window.totalQuestions = /*[[${totalQuestions}]]*/ 10;
+      window.currentQuestionIndex = /*[[${currentQuestionIndex}]]*/ 0;
     </script>
     <script th:src="@{/js/choose-3.js}" defer></script>
     <script th:src="@{/js/answer.js}" defer></script>

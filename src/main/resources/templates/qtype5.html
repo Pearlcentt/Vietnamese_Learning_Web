@@ -35,11 +35,12 @@
 <script th:inline="javascript">
   // Pass data from controller to JavaScript
   window.questionData = {
-    viet: /*[[${questions[0].question}]]*/ 'Thành đi ỉa',
-    eng: /*[[${questions[0].eng}]]*/ 'He goes to the toilet',
-    answer: /*[[${questions[0].answer}]]*/ 'Thành đi ỉa'
+    viet: /*[[${currentQuestion.question}]]*/ 'Thành đi ỉa',
+    eng: /*[[${currentQuestion.eng}]]*/ 'He goes to the toilet',
+    answer: /*[[${currentQuestion.answer}]]*/ 'Thành đi ỉa'
   };
   window.totalQuestions = /*[[${totalQuestions}]]*/ 10;
+  window.currentQuestionIndex = /*[[${currentQuestionIndex}]]*/ 0;
 </script>
 <script th:src="@{/js/choose-5.js}" defer></script>
 <script th:src="@{/js/answer.js}" defer></script>

@@ -165,16 +165,34 @@ function goToNextQuestion() {
       }, 500);
     }
 
-    // Get current URL parameters and stay in the same lesson
-    const urlParams = new URLSearchParams(window.location.search);
-    const topicId = urlParams.get("topicId");
-    const lessonId = urlParams.get("lessonId");
+    // Extract topicId and lessonId from current URL path
+    const pathParts = window.location.pathname.split('/');
+    let topicId = null;
+    let lessonId = null;
+    
+    // URL format: /questions/{topicId}/{lessonId} or /questions/{topicId}/{lessonId}?questionIndex=X
+    if (pathParts.length >= 4 && pathParts[1] === 'questions') {
+      topicId = pathParts[2];
+      lessonId = pathParts[3];
+    }
+    
+    // Fallback: try URL parameters
+    if (!topicId || !lessonId) {
+      const urlParams = new URLSearchParams(window.location.search);
+      topicId = topicId || urlParams.get("topicId");
+      lessonId = lessonId || urlParams.get("lessonId");
+    }
     
     if (topicId && lessonId) {
-      // Reload the same question controller (it will generate new questions)
-      window.location.href = `/questions/${topicId}/${lessonId}`;
+      // Navigate to next question by incrementing questionIndex
+      const currentQuestionIndex = window.currentQuestionIndex || 0;
+      const nextQuestionIndex = currentQuestionIndex + 1;
+      
+      console.log(`Moving from question ${currentQuestionIndex + 1} to ${nextQuestionIndex + 1}`);
+      window.location.href = `/questions/${topicId}/${lessonId}?questionIndex=${nextQuestionIndex}`;
     } else {
       // Fallback: refresh current page
+      console.error("Missing topicId or lessonId for navigation");
       window.location.reload();
     }
   } else {
@@ -192,14 +210,29 @@ function goToNextQuestion() {
     }
 
     // Save progress when lesson is completed
-    const urlParams = new URLSearchParams(window.location.search);
-    const topicId = urlParams.get("topicId");
-    const lessonId = urlParams.get("lessonId");
+    // Extract topicId and lessonId from current URL path  
+    const pathParts = window.location.pathname.split('/');
+    let topicId = null;
+    let lessonId = null;
+    
+    if (pathParts.length >= 4 && pathParts[1] === 'questions') {
+      topicId = pathParts[2];
+      lessonId = pathParts[3];
+    }
+    
+    // Fallback: try URL parameters
+    if (!topicId || !lessonId) {
+      const urlParams = new URLSearchParams(window.location.search);
+      topicId = topicId || urlParams.get("topicId");
+      lessonId = lessonId || urlParams.get("lessonId");
+    }
+    
     if (topicId && lessonId) {
       saveLessonProgress(topicId, lessonId);
     }
   }
 }
+
 
 function resetProgress() {
   localStorage.setItem("progress", "0");

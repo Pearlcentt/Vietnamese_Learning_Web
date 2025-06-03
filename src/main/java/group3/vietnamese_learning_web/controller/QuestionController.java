@@ -34,14 +34,14 @@ public class QuestionController {
             @RequestParam List<Integer> sentenceIds,
             @RequestParam int lessonType) {
         return questionService.getQuestionsForLesson(sentenceIds, lessonType);
-    }
+    } // Main question page controller that displays the appropriate template
 
-    // Main question page controller that displays the appropriate template
     @GetMapping("/{topicId}/{lessonId}")
     public String showQuestion(
             @PathVariable Integer topicId,
             @PathVariable Integer lessonId,
             @RequestParam(required = false) Integer lessonType,
+            @RequestParam(defaultValue = "0") Integer questionIndex, // Add question index parameter
             Model model) {
 
         // Get current user
@@ -76,40 +76,57 @@ public class QuestionController {
                     .collect(Collectors.toList());
 
             // Generate questions based on actual lesson type
-            List<QuestionDTO> questions = questionService.getQuestionsForLesson(sentenceIds, actualLessonType); // Add
-                                                                                                                // data
-                                                                                                                // to
-                                                                                                                // model
+            List<QuestionDTO> questions = questionService.getQuestionsForLesson(sentenceIds, actualLessonType);
+
+            // Validate question index
+            if (questionIndex < 0 || questionIndex >= questions.size()) {
+                questionIndex = 0; // Default to first question if invalid
+            }
+
+            // Get the current question
+            QuestionDTO currentQuestion = questions.get(questionIndex);
+
+            // Add data to model
             model.addAttribute("questions", questions);
             model.addAttribute("sentences", questions); // For backward compatibility with templates
+            model.addAttribute("currentQuestion", currentQuestion); // Add current question
+            model.addAttribute("currentQuestionIndex", questionIndex); // Add current question index
             model.addAttribute("user", user);
             model.addAttribute("topicId", topicId);
             model.addAttribute("lessonId", lessonId);
             model.addAttribute("lessonType", actualLessonType);
             model.addAttribute("lesson", lesson);
-            model.addAttribute("totalQuestions", lessonSentences.size()); // Pass total questions to template
-
-            // Add type-specific data to templates
-            if (!questions.isEmpty()) {
-                QuestionDTO firstQuestion = questions.get(0);
-
-                // For qtype1 (vocab) and qtype2 (fill in blank) - need choice words
-                if ((actualLessonType == 1 || actualLessonType == 2) && firstQuestion.getChoices() != null) {
-                    List<WordChoice> words = firstQuestion.getChoices().stream()
+            model.addAttribute("totalQuestions", questions.size()); // Use actual questions size // Add type-specific
+                                                                    // data to templates using the current question
+            if (currentQuestion != null) {
+                // For qtype1 (vocab) - needs WordChoice wrapper for words
+                if (actualLessonType == 1 && currentQuestion.getChoices() != null) {
+                    List<WordChoice> words = currentQuestion.getChoices().stream()
                             .map(choice -> new WordChoice(choice))
                             .collect(Collectors.toList());
                     model.addAttribute("words", words);
                 }
+                // For qtype2 (fill in blank) - translate English question to Vietnamese
+                // Uses currentQuestion.question (Vietnamese sentence with blank)
+                // Uses currentQuestion.choices (Vietnamese word options)
+                // Uses currentQuestion.answer (correct Vietnamese word)
+                if (actualLessonType == 2) {
+                    // Data is already prepared by QuestionService.buildFillInBlankQuestion()
+                    // Add explicit attributes for template clarity
+                    model.addAttribute("questionText", currentQuestion.getQuestion());
+                    model.addAttribute("wordChoices", currentQuestion.getChoices());
+                    model.addAttribute("correctAnswer", currentQuestion.getAnswer());
+                }
 
                 // For qtype3 (reorder words) - add word lists
                 if (actualLessonType == 3) {
-                    model.addAttribute("wordsToOrder", firstQuestion.getWords());
-                    model.addAttribute("correctOrder", firstQuestion.getCorrectOrder());
+                    model.addAttribute("wordsToOrder", currentQuestion.getWords());
+                    model.addAttribute("correctOrder", currentQuestion.getCorrectOrder());
                 }
                 // For qtype4 (reorder chars) - add character lists
                 if (actualLessonType == 4) {
-                    model.addAttribute("charsToOrder", firstQuestion.getChars());
-                    model.addAttribute("correctCharOrder", firstQuestion.getCharOrder());
+                    model.addAttribute("charsToOrder", currentQuestion.getChars());
+                    model.addAttribute("correctCharOrder", currentQuestion.getCharOrder());
                 }
             }
 

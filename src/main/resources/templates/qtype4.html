@@ -21,9 +21,8 @@
           <div class="cartoon-image"><img th:src="@{/images/fill.png}" /></div>
           <div class="line-order"><span class="line-answer"></span></div>
         </div>        <div class="line-wait">
-          <div class="tokenizer-parts">
-            <div id="first-line" class="word-container">
-              <div class="word-token" th:each="word : ${questions[0].words}" th:text="${word}">Word</div>
+          <div class="tokenizer-parts">            <div id="first-line" class="word-container">
+              <div class="word-token" th:each="word : ${currentQuestion.words}" th:text="${word}">Word</div>
             </div>
             <div id="second-line" class="word-container"></div>
           </div>
@@ -40,9 +39,10 @@
 </div>
 <script th:inline="javascript">
   window.questionData = {
-    answer: /*[[${questions[0].answer}]]*/ 'defaultAnswer'
+    answer: /*[[${currentQuestion.answer}]]*/ 'defaultAnswer'
   };
   window.totalQuestions = /*[[${totalQuestions}]]*/ 10;
+  window.currentQuestionIndex = /*[[${currentQuestionIndex}]]*/ 0;
 </script>
 <script th:src="@{/js/choose-4.js}" defer></script>
 <script th:src="@{/js/answer.js}" defer></script>
