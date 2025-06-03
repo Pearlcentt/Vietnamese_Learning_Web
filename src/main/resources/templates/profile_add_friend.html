@@ -201,10 +201,9 @@
         <div class="friend-list-container card">
             <h3><i class="fas fa-users"></i> Friend List</h3>
             <ul id="friendListUi">
-                <!-- Friend list items will be populated by JS -->
+                <!-- Friend list items will be populated by JavaScript -->
             </ul>
-            <p id="noFriendsMessage" class="empty-message" th:if="${(currentUserDto?.friends == null or currentUserDto.friends.isEmpty()) and !viewOnly}">You have no friends. Let's connect!</p>
-            <p id="noFriendsMessageOtherUser" class="empty-message" th:if="${(userDto?.friends == null or userDto.friends.isEmpty()) and viewOnly}" th:text="${userDto != null and userDto.name != null ? userDto.name : 'This user'} + ' has no friends yet.'"></p>
+            <p id="noFriendsMessage" class="empty-message" th:if="${userDto?.friends == null or userDto.friends.isEmpty()}">You have no friends. Let's connect with other people.</p>
         </div>
 
         <div class="add-friends-section card" th:if="${!viewOnly}">
@@ -253,7 +252,6 @@
         currentUser: /*[[${userDto}]]*/ null,
         profileUser: /*[[${userDto}]]*/ null,
         isOwnProfile: /*[[${!viewOnly}]]*/ false,
-
         csrfToken: /*[[${_csrf?.token}]]*/ '',
         csrfHeaderName: /*[[${_csrf?.headerName}]]*/ '',
         urls: {
@@ -276,14 +274,12 @@
     // Ensure nested structures in currentUserData are initialized if currentUserData itself exists
     if (window.serverData.currentUser) {
         window.serverData.currentUser.friends = window.serverData.currentUser.friends || [];
-        // Initialize friendRequests structure carefully
         if (!window.serverData.currentUser.friendRequests) {
             window.serverData.currentUser.friendRequests = { received: [], sent: [] };
         } else {
             window.serverData.currentUser.friendRequests.received = window.serverData.currentUser.friendRequests.received || window.serverData.currentUser.receivedFriendRequests || [];
             window.serverData.currentUser.friendRequests.sent = window.serverData.currentUser.friendRequests.sent || window.serverData.currentUser.sentFriendRequests || [];
         }
-        // Clean up redundant top-level request arrays if they were merged
         delete window.serverData.currentUser.receivedFriendRequests;
         delete window.serverData.currentUser.sentFriendRequests;
     }

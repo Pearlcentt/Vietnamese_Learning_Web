@@ -72,7 +72,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const friendListUi = document.getElementById('friendListUi');
     const noFriendsMessage = document.getElementById('noFriendsMessage');
-    const noFriendsMessageOtherUser = document.getElementById('noFriendsMessageOtherUser');
 
     let currentSelectedAvatarInModal = currentUserData ? (currentUserData.avatar || defaultAvatarUrl) : defaultAvatarUrl;
 
@@ -168,6 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (currentLeagueEl) currentLeagueEl.textContent = 'None';
             if (top3FinishesEl) top3FinishesEl.textContent = '0';
             if (profileAvatarDisplay) profileAvatarDisplay.src = defaultAvatarUrl;
+            if (noFriendsMessage) noFriendsMessage.style.display = 'block';
             return;
         }
 
@@ -194,18 +194,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (top3FinishesEl) top3FinishesEl.textContent = (displayUser.top3Finishes || 0).toString();
         if (profileAvatarDisplay) profileAvatarDisplay.src = displayUser.avatar || defaultAvatarUrl;
 
-        if (isOwnProfile) {
-            if (noFriendsMessage) noFriendsMessage.style.display = (currentUserData && currentUserData.friends && currentUserData.friends.length > 0) ? 'none' : 'block';
-            if (noFriendsMessageOtherUser) noFriendsMessageOtherUser.style.display = 'none';
-        } else {
-            if (noFriendsMessage) noFriendsMessage.style.display = 'none';
-            if (noFriendsMessageOtherUser) {
-                const hasFriends = displayUser.friends && displayUser.friends.length > 0;
-                noFriendsMessageOtherUser.style.display = hasFriends ? 'none' : 'block';
-                if (!hasFriends) {
-                    noFriendsMessageOtherUser.textContent = `${displayUser.name || 'This user'} has no friends yet.`;
-                }
-            }
+        if (noFriendsMessage) {
+            noFriendsMessage.style.display = (displayUser.friends && displayUser.friends.length > 0) ? 'none' : 'block';
         }
     }
 
@@ -235,10 +225,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderFriendList() {
-        if (!friendListUi || !currentUserData) return;
+        if (!friendListUi || !profileUserData) return;
         friendListUi.innerHTML = '';
-        const friends = currentUserData.friends || [];
-        if (noFriendsMessage) noFriendsMessage.style.display = (friends.length === 0 && isOwnProfile) ? 'block' : 'none';
+        const friends = profileUserData.friends || [];
+        if (noFriendsMessage) noFriendsMessage.style.display = (friends.length === 0) ? 'block' : 'none';
 
         friends.forEach(friend => {
             const friendId = friend.uId;
@@ -573,6 +563,9 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 await makeApiCall(`${backendUrls.unfriend}/${friendId}`, 'POST');
                 effectiveUserData.friends = effectiveUserData.friends.filter(f => f.uId !== friendId);
+                if (profileUserData && profileUserData.uId === effectiveUserData.uId) {
+                    profileUserData.friends = profileUserData.friends.filter(f => f.uId !== friendId);
+                }
                 renderFriendList();
                 showUserMessage(`Unfriended successfully!`, 'success');
                 if (profileUserData && profileUserData.uId === friendId) window.location.reload();
@@ -589,6 +582,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         name: (acceptedFriendData && acceptedFriendData.name) ? acceptedFriendData.name : request.name,
                         avatar: (acceptedFriendData && acceptedFriendData.avatar) ? acceptedFriendData.avatar : request.avatar
                     });
+                    if (profileUserData && profileUserData.uId === effectiveUserData.uId) {
+                        profileUserData.friends.push({
+                            uId: request.uId,
+                            name: (acceptedFriendData && acceptedFriendData.name) ? acceptedFriendData.name : request.name,
+                            avatar: (acceptedFriendData && acceptedFriendData.avatar) ? acceptedFriendData.avatar : request.avatar
+                        });
+                    }
                 }
                 effectiveUserData.friendRequests.received = effectiveUserData.friendRequests.received.filter(r => r.uId !== requesterId);
                 renderFriendList();
@@ -678,6 +678,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         name: acceptedData?.name || profileUserData.name,
                         avatar: acceptedData?.avatar || profileUserData.avatar
                     });
+                    if (profileUserData.uId === effectiveUserData.uId) {
+                        profileUserData.friends.push({
+                            uId: requesterId,
+                            name: acceptedData?.name || profileUserData.name,
+                            avatar: acceptedData?.avatar || profileUserData.avatar
+                        });
+                    }
                     effectiveUserData.friendRequests.received = effectiveUserData.friendRequests.received.filter(r => r.uId !== requesterId);
                     renderFriendList();
                     renderFriendRequests('received');
@@ -744,7 +751,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentUserData.friendRequests.sent = currentUserData.friendRequests.sent || [];
             }
             loadSidebarBadges();
-            renderFriendList();
             renderFriendRequests('received');
             const receivedTab = document.querySelector('.fr-tab-btn[data-tab="received"]');
             if (receivedTab && !receivedTab.classList.contains('active')) {
@@ -758,7 +764,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (userData) {
                     window.serverData.currentUser = userData;
                     loadSidebarBadges();
-                    renderFriendList();
                     renderFriendRequests('received');
                     const receivedTab = document.querySelector('.fr-tab-btn[data-tab="received"]');
                     if (receivedTab && !receivedTab.classList.contains('active')) {
@@ -773,6 +778,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         loadProfileDisplayData();
+        renderFriendList();
 
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('success_update')) {
@@ -783,7 +789,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showUserMessage(decodeURIComponent(urlParams.get('error_update')), 'error');
             window.history.replaceState({}, document.title, window.location.pathname);
         }
-        console.log("DEBUG: Page initialization complete.");
+        console.log("DEBUG: Page initialization completed.");
     }
 
     initializePage();
